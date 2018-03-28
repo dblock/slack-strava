@@ -1,0 +1,9 @@
+{
+	"name": "Slack Strava",
+	"description": "Slack integration with Strava.",
+	"respository": "https://github.com/dblock/slack-strava",
+	"keywords": ["slack", "bots", "stock strava"],
+	"addons": [
+		"mongolab"
+	]
+}

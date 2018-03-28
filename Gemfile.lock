@@ -1,0 +1,328 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    activemodel (4.2.10)
+      activesupport (= 4.2.10)
+      builder (~> 3.1)
+    activesupport (4.2.10)
+      i18n (~> 0.7)
+      minitest (~> 5.1)
+      thread_safe (~> 0.3, >= 0.3.4)
+      tzinfo (~> 1.1)
+    addressable (2.5.2)
+      public_suffix (>= 2.0.2, < 4.0)
+    ast (2.4.0)
+    axiom-types (0.1.1)
+      descendants_tracker (~> 0.0.4)
+      ice_nine (~> 0.11.0)
+      thread_safe (~> 0.3, >= 0.3.1)
+    bson (4.3.0)
+    builder (3.2.3)
+    capybara (2.18.0)
+      addressable
+      mini_mime (>= 0.1.3)
+      nokogiri (>= 1.3.3)
+      rack (>= 1.0.0)
+      rack-test (>= 0.5.4)
+      xpath (>= 2.0, < 4.0)
+    celluloid (0.17.3)
+      celluloid-essentials
+      celluloid-extras
+      celluloid-fsm
+      celluloid-pool
+      celluloid-supervision
+      timers (>= 4.1.1)
+    celluloid-essentials (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-extras (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-fsm (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-io (0.17.3)
+      celluloid (>= 0.17.2)
+      nio4r (>= 1.1)
+      timers (>= 4.1.1)
+    celluloid-pool (0.20.5)
+      timers (>= 4.1.1)
+    celluloid-supervision (0.20.6)
+      timers (>= 4.1.1)
+    childprocess (0.9.0)
+      ffi (~> 1.0, >= 1.0.11)
+    coercible (1.0.0)
+      descendants_tracker (~> 0.0.1)
+    concurrent-ruby (1.0.5)
+    crack (0.4.3)
+      safe_yaml (~> 1.0.0)
+    dante (0.2.0)
+    database_cleaner (1.6.2)
+    declarative (0.0.10)
+    declarative-option (0.1.0)
+    descendants_tracker (0.0.4)
+      thread_safe (~> 0.3, >= 0.3.1)
+    diff-lcs (1.3)
+    domain_name (0.5.20170404)
+      unf (>= 0.0.5, < 1.0.0)
+    equalizer (0.0.11)
+    fabrication (2.20.1)
+    faker (1.8.7)
+      i18n (>= 0.7)
+    faraday (0.14.0)
+      multipart-post (>= 1.2, < 3)
+    faraday-digestauth (0.3.0)
+      faraday (~> 0.7)
+      net-http-digest_auth (~> 1.4)
+    faraday_hal_middleware (0.1.0)
+      faraday_middleware (~> 0.9)
+    faraday_middleware (0.12.2)
+      faraday (>= 0.7.4, < 1.0)
+    faraday_middleware-parse_oj (0.3.2)
+      faraday (~> 0.9)
+      faraday_middleware (>= 0.9.1, < 1.0)
+      oj (>= 2.0, < 4.0)
+    ffi (1.9.23)
+    foreman (0.84.0)
+      thor (~> 0.19.1)
+    giphy (3.0.0)
+      faraday (~> 0.9)
+      faraday_middleware (~> 0.9)
+      faraday_middleware-parse_oj (~> 0.3)
+      launchy (~> 2.4)
+    gli (2.17.1)
+    grape (1.0.2)
+      activesupport
+      builder
+      mustermann-grape (~> 1.0.0)
+      rack (>= 1.3.0)
+      rack-accept
+      virtus (>= 1.0.0)
+    grape-roar (0.4.1)
+      grape
+      multi_json
+      roar (~> 1.1.0)
+    grape-swagger (0.28.0)
+      grape (>= 0.16.2)
+    hashdiff (0.3.7)
+    hashie (3.5.7)
+    hitimes (1.2.6)
+    httmultiparty (0.3.16)
+      httparty (>= 0.7.3)
+      mimemagic
+      multipart-post
+    http-cookie (1.0.3)
+      domain_name (~> 0.5)
+    httparty (0.16.1)
+      multi_xml (>= 0.5.2)
+    hyperclient (0.9.0)
+      faraday (>= 0.9.0)
+      faraday-digestauth
+      faraday_hal_middleware
+      faraday_middleware
+      net-http-digest_auth
+      uri_template
+    i18n (0.9.5)
+      concurrent-ruby (~> 1.0)
+    ice_nine (0.11.2)
+    kaminari-core (1.1.1)
+    kaminari-grape (1.0.1)
+      grape
+      kaminari-core (~> 1.0)
+    kgio (2.11.2)
+    launchy (2.4.3)
+      addressable (~> 2.3)
+    mime-types (3.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2016.0521)
+    mimemagic (0.3.2)
+    mini_mime (1.0.0)
+    mini_portile2 (2.3.0)
+    minitest (5.11.3)
+    mongo (2.5.1)
+      bson (>= 4.3.0, < 5.0.0)
+    mongoid (5.1.6)
+      activemodel (~> 4.0)
+      mongo (~> 2.1)
+      origin (~> 2.2)
+      tzinfo (>= 0.3.37)
+    mongoid-compatibility (0.5.1)
+      activesupport
+      mongoid (>= 2.0)
+    mongoid-scroll (0.3.5)
+      i18n
+      mongoid (>= 3.0)
+      mongoid-compatibility
+    mongoid-shell (0.4.6)
+      i18n
+      mongoid (>= 3.0.0)
+      mongoid-compatibility
+    multi_json (1.13.1)
+    multi_xml (0.6.0)
+    multipart-post (2.0.0)
+    mustermann (1.0.2)
+    mustermann-grape (1.0.0)
+      mustermann (~> 1.0.0)
+    net-http-digest_auth (1.4.1)
+    netrc (0.11.0)
+    newrelic_rpm (5.0.0.342)
+    nio4r (2.3.0)
+    nokogiri (1.8.2)
+      mini_portile2 (~> 2.3.0)
+    oj (3.5.0)
+    origin (2.3.1)
+    parallel (1.12.1)
+    parser (2.5.0.5)
+      ast (~> 2.4.0)
+    polylines (0.3.0)
+    powerpack (0.1.1)
+    public_suffix (3.0.2)
+    rack (2.0.4)
+    rack-accept (0.4.5)
+      rack (>= 0.4)
+    rack-cors (1.0.2)
+    rack-rewrite (1.5.1)
+    rack-robotz (0.0.4)
+      rack
+    rack-server-pages (0.1.0)
+      rack
+    rack-test (1.0.0)
+      rack (>= 1.0, < 3)
+    rainbow (2.2.2)
+      rake
+    raindrops (0.19.0)
+    rake (10.5.0)
+    representable (3.0.4)
+      declarative (< 0.1.0)
+      declarative-option (< 0.2.0)
+      uber (< 0.2.0)
+    rest-client (2.0.2)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 4.0)
+      netrc (~> 0.8)
+    roar (1.1.0)
+      representable (~> 3.0.0)
+    rspec (3.7.0)
+      rspec-core (~> 3.7.0)
+      rspec-expectations (~> 3.7.0)
+      rspec-mocks (~> 3.7.0)
+    rspec-core (3.7.1)
+      rspec-support (~> 3.7.0)
+    rspec-expectations (3.7.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.7.0)
+    rspec-mocks (3.7.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.7.0)
+    rspec-support (3.7.1)
+    rubocop (0.49.1)
+      parallel (~> 1.10)
+      parser (>= 2.3.3.1, < 3.0)
+      powerpack (~> 0.1)
+      rainbow (>= 1.99.1, < 3.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (~> 1.0, >= 1.0.1)
+    ruby-progressbar (1.9.0)
+    rubyzip (1.2.1)
+    safe_yaml (1.0.4)
+    selenium-webdriver (3.11.0)
+      childprocess (~> 0.5)
+      rubyzip (~> 1.2)
+    slack-ruby-bot (0.10.5)
+      hashie
+      slack-ruby-client (>= 0.6.0)
+    slack-ruby-bot-server (0.6.1)
+      celluloid-io
+      foreman
+      grape
+      grape-roar (>= 0.4.0)
+      grape-swagger
+      kaminari-grape
+      rack-cors
+      rack-rewrite
+      rack-server-pages
+      slack-ruby-bot
+      unicorn
+    slack-ruby-client (0.11.1)
+      activesupport
+      faraday (>= 0.9)
+      faraday_middleware
+      gli
+      hashie
+      websocket-driver
+    strava-api-v3 (0.7.0)
+      httmultiparty
+      multi_json
+    stripe (1.58.0)
+      rest-client (>= 1.4, < 4.0)
+    stripe-ruby-mock (2.4.1)
+      dante (>= 0.2.0)
+      multi_json (~> 1.0)
+      stripe (>= 1.31.0, <= 1.58.0)
+    thor (0.19.4)
+    thread_safe (0.3.6)
+    timers (4.1.2)
+      hitimes
+    tzinfo (1.2.5)
+      thread_safe (~> 0.1)
+    uber (0.1.0)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.5)
+    unicode-display_width (1.3.0)
+    unicorn (5.4.0)
+      kgio (~> 2.6)
+      raindrops (~> 0.7)
+    uri_template (0.7.0)
+    vcr (4.0.0)
+    virtus (1.0.5)
+      axiom-types (~> 0.1)
+      coercible (~> 1.0)
+      descendants_tracker (~> 0.0, >= 0.0.3)
+      equalizer (~> 0.0, >= 0.0.9)
+    wannabe_bool (0.7.1)
+    webmock (3.3.0)
+      addressable (>= 2.3.6)
+      crack (>= 0.3.2)
+      hashdiff
+    websocket-driver (0.7.0)
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.3)
+    xpath (3.0.0)
+      nokogiri (~> 1.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  capybara
+  database_cleaner
+  fabrication
+  faker
+  foreman
+  giphy
+  hyperclient
+  mongoid (~> 5.1.4)
+  mongoid-scroll
+  mongoid-shell
+  newrelic_rpm
+  nokogiri
+  polylines
+  rack-robotz
+  rack-server-pages
+  rack-test
+  rake (~> 10.4)
+  rspec
+  rubocop (= 0.49.1)
+  selenium-webdriver
+  slack-ruby-bot-server
+  slack-ruby-client
+  strava-api-v3
+  stripe (~> 1.58.0)
+  stripe-ruby-mock (~> 2.4.1)
+  vcr
+  wannabe_bool
+  webmock
+
+RUBY VERSION
+   ruby 2.3.1p112
+
+BUNDLED WITH
+   1.16.0

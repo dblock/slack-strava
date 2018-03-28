@@ -1,0 +1,20 @@
+rvm:
+  - 2.3.1
+
+language: ruby
+
+cache: bundler
+
+services:
+  - mongodb
+
+addons:
+  firefox: 54.0
+
+before_install:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - wget https://github.com/mozilla/geckodriver/releases/download/v0.18.0/geckodriver-v0.18.0-linux64.tar.gz
+  - mkdir geckodriver
+  - tar -xzf geckodriver-v0.18.0-linux64.tar.gz -C geckodriver
+  - export PATH=$PATH:$PWD/geckodriver

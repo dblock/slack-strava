@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <title>Slack Strava - Update Credit Card</title>
+    <%= partial 'public/partials/_head.html' %>
+    <%
+      team = Team.where(team_id: request['team_id']).first
+      stripe_token = request['stripeToken']
+      stripe_token_type = request['stripeTokenType']
+      stripe_email = request['stripeEmail']
+    %>
+  </head>
+  <body style='text-align: center'>
+    <p style='margin: 50px;'>
+      <a href='/'><img src='img/icon.png' width='120px'></a>
+    </p>
+    <p>
+      <h3>Slack Strava: Update Credit Card Info</h3>
+    </p>
+    <p id='messages' />
+    <p id='update_cc'>
+      <form action="" method="POST">
+        <script
+          src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+          data-key="<%= ENV['STRIPE_API_PUBLISHABLE_KEY'] %>"
+          data-image='/img/icon.png'
+          data-name='Slack Strava'
+          data-panel-label="Update Credit Card"
+          data-label="Update Credit Card"
+          data-allow-remember-me=false
+          data-locale="auto">
+        </script>
+      </form>
+      <p>
+        <img src='/img/stripe.png' width='119' height='26'></img>
+        <div class='small'>
+          Questions? Contact dblock[at]dblock[dot]org or DM <a href='https://twitter.com/playplayio'>@playplayio</a>.
+        </div>
+      </p>
+      <script>
+        $(document).ready(function() {
+          var data = {
+            stripe_token: "<%= stripe_token %>",
+            stripe_token_type: "<%= stripe_token_type %>",
+            stripe_email: "<%= stripe_email %>",
+            team_id: "<%= team ? team.id : nil %>"
+          };
+
+          if (data.stripe_token) {
+
+            var team = {
+              id: <%= team ? "'#{team._id}'" : 'null' %>,
+              name: <%= team ? "'#{team.name}'" : 'null' %>
+            };
+
+            $.ajax({
+              type: 'POST',
+              url: '/api/credit_cards',
+              data: data,
+              success: function(data) {
+                SlackStrava.message('Successfully updated team <b>' + team.name + '</b> credit card.<br><br>Thank you for your support!');
+                $('form').remove();
+              },
+              error: SlackStrava.error
+            });
+          }
+        });
+      </script>
+    </p>
+  </body>
+</html>

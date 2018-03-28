@@ -1,0 +1,29 @@
+<html>
+ <head>
+  <title>Strava in Slack</title>
+  <%= partial 'public/partials/_head.html.erb' %>
+  <script src="/scripts/register.js"></script>
+</head>
+ <body style="text-align: center">
+  <p style="margin: 50px;">
+    <a href="/"><img src='img/icon.png' width="120px"></a>
+  </p>
+  <p>
+    <h3>Strava Integration in Slack</h3>
+  </p>
+  <p id='messages' />
+  <p id='register'>
+    <a href="https://slack.com/oauth/authorize?scope=bot&client_id=<%= ENV['SLACK_CLIENT_ID'] %>"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
+  </p>
+  <p>
+    <small>
+      Free 7 day trial, no credit card required. Subscribe for $3.99/mo after that.
+    </small>
+  </p>
+  <p>
+    <img src='img/strava.gif'>
+  </p>
+  <%= partial 'public/partials/_footer.html.erb' %>
+ </body>
+</html>
+
