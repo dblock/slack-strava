@@ -20,7 +20,7 @@ describe User do
       end.to raise_error SlackStrava::Error, "I don't know who <@nobody> is!"
     end
   end
-  context '#find_create_or_update_by_slack_id!', vcr: { cassette_name: 'user_info' } do
+  context '#find_create_or_update_by_slack_id!', vcr: { cassette_name: 'slack/user_info' } do
     let!(:team) { Fabricate(:team) }
     let(:client) { SlackRubyBot::Client.new }
     before do

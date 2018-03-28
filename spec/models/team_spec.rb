@@ -5,7 +5,7 @@ describe Team do
     before do
       ENV['SLACK_API_TOKEN'] = 'token'
     end
-    context 'team', vcr: { cassette_name: 'team_info' } do
+    context 'team', vcr: { cassette_name: 'slack/team_info' } do
       it 'creates a team' do
         expect { Team.find_or_create_from_env! }.to change(Team, :count).by(1)
         team = Team.first

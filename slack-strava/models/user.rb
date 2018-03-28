@@ -4,6 +4,10 @@ class User
 
   field :user_id, type: String
   field :user_name, type: String
+  field :access_token, type: String
+  field :token_type, type: String
+
+  embeds_one :athlete
 
   belongs_to :team, index: true
   validates_presence_of :team
@@ -33,5 +37,23 @@ class User
 
   def to_s
     user_name
+  end
+
+  def connect!(code)
+    response = Strava::Api::V3::Auth.retrieve_access(ENV['STRAVA_CLIENT_ID'], ENV['STRAVA_CLIENT_SECRET'], code)
+    if response.success?
+      create_athlete(athlete_id: response['athlete']['id'])
+      update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
+      Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
+      dm!(text: 'Your Strava account has been successfully connected.')
+    else
+      raise "Strava returned #{response.code}: #{response.body}"
+    end
+  end
+
+  def dm!(message)
+    client = Slack::Web::Client.new(token: team.token)
+    im = client.im_open(user: user_id)
+    client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
   end
 end

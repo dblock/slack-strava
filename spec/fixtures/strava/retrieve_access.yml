@@ -1,0 +1,48 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://www.strava.com/oauth/token
+    body:
+      encoding: UTF-8
+      string: client_id=&client_secret=&code=code
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Thu, 29 Mar 2018 16:40:55 GMT
+      Etag:
+      - W/"663b7e4906a00b9f86a4cedf49a13da3"
+      Status:
+      - 200 OK
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN,DENY
+      X-Request-Id:
+      - 065ea4e3-ae75-426d-b316-551e667c3934
+      X-Xss-Protection:
+      - 1; mode=block
+      Content-Length:
+      - '362'
+      Connection:
+      - keep-alive
+    body:
+      encoding: ASCII-8BIT
+      string: '{"access_token":"token","token_type":"Bearer","athlete":{"id":12345,"username":"username","resource_state":2,"firstname":"Hussein","lastname":"Bolt","city":"","state":"","country":"","sex":"M","premium":false,"created_at":"2017-11-28T19:05:35Z","updated_at":"2018-03-18T16:05:05Z","badge_type_id":0,"profile_medium":"https://dgalywyr863hv.cloudfront.net/pictures/athletes/12345/7677115/1/medium.jpg","profile":"https://dgalywyr863hv.cloudfront.net/pictures/athletes/12345/7677115/1/large.jpg","friend":null,"follower":null,"email":"hussein@example.org"}}'
+    http_version:
+  recorded_at: Thu, 29 Mar 2018 16:40:55 GMT
+recorded_with: VCR 4.0.0

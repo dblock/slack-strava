@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <title>Strava in Slack: Connect to Strava</title>
+    <%= partial 'public/partials/_head.html' %>
+    <%
+      user = User.where(id: request['state']).first
+    %>
+  </head>
+  <body style='text-align: center'>
+    <p style='margin: 50px;'>
+      <a href='/'><img src='img/icon.png' width='120px'></a>
+    </p>
+    <p>
+      <h3>Strava in Slack: Connect to Strava</h3>
+    </p>
+    <p id='messages' />
+    <p id='connect'>
+      <p>
+        <div class='small'>
+          Questions? Contact dblock[at]dblock[dot]org or DM <a href='https://twitter.com/playplayio'>@playplayio</a>.
+        </div>
+      </p>
+      <script>
+        $(document).ready(function() {
+          <% user = User.where(id: request['state']).first %>
+
+          var data = {
+            code: "<%= request['code'] %>"
+          };
+
+          var user = {
+            id: '<%= user && user.id %>',
+            name: '<%= user && user.user_name %>'
+          }
+
+          if (user.id && data.code) {
+            SlackStrava.message('Connecting <b>' + user.name + '</b> to Strava ...');
+            $.ajax({
+              type: 'PUT',
+              url: '/api/users/' + user.id,
+              data: data,
+              success: function(data) {
+                SlackStrava.message('Successfully connected <b>' + data.user_name + '</b> to Strava.');
+              },
+              error: SlackStrava.error
+            });
+          } else {
+            SlackStrava.message('Missing or invalid parameters.');
+          }
+        });
+      </script>
+    </p>
+  </body>
+</html>

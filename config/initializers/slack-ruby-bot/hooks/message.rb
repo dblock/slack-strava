@@ -5,7 +5,8 @@ module SlackRubyBot
       def command_classes
         [
           SlackStrava::Commands::Help,
-          SlackStrava::Commands::Subscription
+          SlackStrava::Commands::Subscription,
+          SlackStrava::Commands::Connect
         ]
       end
     end

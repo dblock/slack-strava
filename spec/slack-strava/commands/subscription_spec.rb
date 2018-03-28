@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'user_info' } do
+describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_info' } do
   let(:app) { SlackStrava::Server.new(team: team) }
   let(:client) { app.send(:client) }
   context 'team' do
