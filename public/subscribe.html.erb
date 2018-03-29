@@ -15,7 +15,7 @@
     <p id='messages' />
     <p id='subscribe'>
       <button id='subscribeButton' class='stripe-button-el'>
-          <span style='display: block; min-height: 30px;'>Pay $3.99 with Card</span>
+          <span style='display: block; min-height: 30px;'>Pay $29.99 with Card</span>
       </button>
       <p>
         <img src='/img/stripe.png' width='119' height='26'></img>
@@ -35,7 +35,7 @@
             SlackStrava.message('Team <b>' + team.name + '</b> is already subscribed, thank you for your support.');
             $('#subscribeButton').remove();
           } else if (team.id && team.name) {
-            SlackStrava.message('Subscribe team <b>' + team.name + '</b> for $3.99 a month.');
+            SlackStrava.message('Subscribe team <b>' + team.name + '</b> for $29.99/yr.');
           } else {
             $('#subscribeButton').remove();
             SlackStrava.message('Missing or invalid team ID.');
@@ -68,7 +68,7 @@
             var amount = 199;
             handler.open({
               name: 'Slack Strava',
-              description: 'Monthly Subscription',
+              description: 'Yearly Subscription',
               amount: amount
             });
             e.preventDefault();

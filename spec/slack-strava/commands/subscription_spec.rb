@@ -7,7 +7,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     let!(:team) { Fabricate(:team) }
     it 'is a subscription feature' do
       expect(message: "#{SlackRubyBot.config.user} subscription", user: 'user').to respond_with_slack_message(
-        "Your trial subscription has expired. Subscribe your team for $3.99 a month at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id}."
+        "Your trial subscription has expired. Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id}."
       )
     end
   end
@@ -15,7 +15,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     let!(:team) { Fabricate(:team, subscribed: true, stripe_customer_id: nil) }
     it 'errors' do
       expect(message: "#{SlackRubyBot.config.user} subscription", user: 'user').to respond_with_slack_message(
-        "Not a subscriber. Subscribe your team for $3.99 a month at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id}."
+        "Not a subscriber. Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id}."
       )
     end
   end
