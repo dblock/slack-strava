@@ -1,7 +1,7 @@
 module SlackStrava
   class Server < SlackRubyBotServer::Server
     CHANNEL_JOINED_MESSAGE = <<~EOS.freeze
-      Thanks for installing Strava! Type `@strava help` for more commands.
+      Welcome to Strava on Slack! Ask users to DM `connect` to `@strava` to enable notifications of their activities in this channel.
     EOS
 
     on :channel_joined do |client, data|

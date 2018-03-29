@@ -53,4 +53,6 @@ describe User do
       end
     end
   end
+  pending 'brag!'
+  pending 'new_strava_activities'
 end

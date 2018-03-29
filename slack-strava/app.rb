@@ -1,5 +1,7 @@
 module SlackStrava
   class App < SlackRubyBotServer::App
+    include Celluloid
+
     def prepare!
       super
       deactivate_asleep_teams!
@@ -7,9 +9,38 @@ module SlackStrava
 
     def after_start!
       check_subscribed_teams!
+      once_and_every 60 do
+        brag!
+      end
     end
 
     private
+
+    def once_and_every(tt)
+      yield
+      every tt do
+        yield
+      end
+    end
+
+    def brag!
+      Team.active.each do |team|
+        begin
+          logger.info "Checking #{team} ..."
+          team.users.each do |user|
+            begin
+              user.brag!
+            rescue StandardError => e
+              backtrace = e.backtrace.join("\n")
+              logger.warn "Error in cron for team #{team}, user #{user}, #{e.message}, #{backtrace}."
+            end
+          end
+        rescue StandardError => e
+          backtrace = e.backtrace.join("\n")
+          logger.warn "Error in cron for team #{team}, #{e.message}, #{backtrace}."
+        end
+      end
+    end
 
     def deactivate_asleep_teams!
       Team.active.each do |team|

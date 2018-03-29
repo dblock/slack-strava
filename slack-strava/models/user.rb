@@ -6,6 +6,7 @@ class User
   field :user_name, type: String
   field :access_token, type: String
   field :token_type, type: String
+  field :activities_at, type: DateTime
 
   embeds_one :athlete
 
@@ -36,7 +37,7 @@ class User
   end
 
   def to_s
-    user_name
+    "user_id=#{user_id}, user_name=#{user_name}"
   end
 
   def connect!(code)
@@ -55,5 +56,41 @@ class User
     client = Slack::Web::Client.new(token: team.token)
     im = client.im_open(user: user_id)
     client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
+  end
+
+  # brag about one activity
+  def brag!
+    activity = new_strava_activities.first
+    return unless activity
+    Api::Middleware.logger.info "Bragging about #{self}, #{activity}"
+    team.brag!(attachments: [
+                 fallback: "#{activity.name} via #{slack_mention}, #{activity.distance_in_miles_s} #{activity.time_in_hours_s} #{activity.pace_per_mile_s}",
+                 title: activity.name,
+                 author_name: user_name,
+                 image_url: activity.image_url,
+                 fields: [
+                   { title: 'Distance', value: activity.distance_in_miles_s, short: true },
+                   { title: 'Time', value: activity.time_in_hours_s, short: true },
+                   { title: 'Pace', value: activity.pace_per_mile_s, short: true },
+                   { title: 'Start', value: activity.start_date_local_s, short: true }
+                 ]
+               ])
+    update_attributes!(activities_at: activity.start_date)
+  end
+
+  def new_strava_activities
+    raise 'Missing access_token' unless access_token
+    client = Strava::Api::V3::Client.new(access_token: access_token)
+    since = activities_at || created_at
+    page = 1
+    page_size = 10
+    result = []
+    loop do
+      activities = client.list_athlete_activities(page: page, per_page: page_size, after: since.to_i)
+      result.concat(activities.map { |activity| Activity.new(activity) })
+      break if activities.size < page_size
+      page += 1
+    end
+    result
   end
 end

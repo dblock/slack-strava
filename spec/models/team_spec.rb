@@ -72,4 +72,5 @@ describe Team do
       end
     end
   end
+  pending '#brag!'
 end

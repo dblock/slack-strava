@@ -7,6 +7,8 @@ class Team
 
   scope :api, -> { where(api: true) }
 
+  has_many :users
+
   after_update :inform_subscribed_changed!
 
   def asleep?(dt = 2.weeks)
@@ -22,6 +24,14 @@ class Team
     channel = channels.first
     logger.info "Sending '#{message}' to #{self} on ##{channel['name']}."
     client.chat_postMessage(text: message, channel: channel['id'], as_user: true)
+  end
+
+  def brag!(message)
+    client = Slack::Web::Client.new(token: token)
+    channels = client.channels_list['channels'].select { |channel| channel['is_member'] }
+    channels.each do |channel|
+      client.chat_postMessage(message.merge(channel: channel['id'], as_user: true))
+    end
   end
 
   def subscription_expired?

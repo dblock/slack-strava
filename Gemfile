@@ -3,6 +3,7 @@ source 'http://rubygems.org'
 ruby '2.3.1'
 
 gem 'giphy'
+gem 'hashie'
 gem 'mongoid', '~> 5.1.4'
 gem 'mongoid-scroll'
 gem 'newrelic_rpm'

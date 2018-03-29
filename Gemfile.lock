@@ -298,6 +298,7 @@ DEPENDENCIES
   faker
   foreman
   giphy
+  hashie
   hyperclient
   mongoid (~> 5.1.4)
   mongoid-scroll
