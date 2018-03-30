@@ -17,6 +17,6 @@ class Map
   end
 
   def proxy_image_url
-    "#{SlackStrava::Service.url}/api/maps/#{id}.jpg"
+    "#{SlackStrava::Service.url}/api/maps/#{id}.png"
   end
 end
