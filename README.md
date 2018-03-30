@@ -7,7 +7,7 @@ Integrate Strava into Slack.
 
 ## Install
 
-[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](http://strava.playplay.io)
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://strava.playplay.io)
 
 Invite *@strava* to a channel with `/invite @strava`.
 
