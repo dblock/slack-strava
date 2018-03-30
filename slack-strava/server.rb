@@ -1,12 +1,9 @@
 module SlackStrava
   class Server < SlackRubyBotServer::Server
-    CHANNEL_JOINED_MESSAGE = <<~EOS.freeze
-      Welcome to Strava on Slack! Ask users to DM `connect` to `@strava` to enable notifications of their activities in this channel.
-    EOS
-
     on :channel_joined do |client, data|
+      message = "Welcome to Strava on Slack! Please DM \"*connect*\" to <@#{client.self.id}> to publish your activities in this channel."
       logger.info "#{client.owner.name}: joined ##{data.channel['name']}."
-      client.say(channel: data.channel['id'], text: CHANNEL_JOINED_MESSAGE)
+      client.say(channel: data.channel['id'], text: message)
     end
   end
 end
