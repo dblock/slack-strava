@@ -9,17 +9,21 @@ Integrate Strava into Slack.
 
 [![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://strava.playplay.io)
 
-Invite *@strava* to a channel with `/invite @strava`.
+Invite *@strava* to a channel with `/invite @strava`. New activities for connected accounts will be posted to any channel that @strava is a member of.
+
+![](public/img/notify.png)
 
 ## Usage
 
-TODO
+### Connect
+
+DM `connect`. Follow the prompts to connect your Strava account.
+
+![](public/img/connect.png)
 
 ### Subscription
 
-#### subscription
-
-Provides subscription info and a link to update the credit card on file.
+DM `subscription`, provides subscription info and a link to update the credit card on file.
 
 ### Copyright & License
 
