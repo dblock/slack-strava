@@ -46,6 +46,10 @@ class Activity
     "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_in_miles_s}, time=#{time_in_hours_s}, pace=#{pace_per_mile_s}"
   end
 
+  def strava_url
+    "https://www.strava.com/activities/#{strava_id}"
+  end
+
   def self.create_from_strava!(user, h)
     activity = Activity.where(strava_id: h['id'], user_id: user.id).first
     activity ||= Activity.new(strava_id: h['id'], user_id: user.id)

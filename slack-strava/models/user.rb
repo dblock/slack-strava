@@ -74,18 +74,21 @@ class User
   def brag_activity!(activity)
     return if activity.bragged_at
     Api::Middleware.logger.info "Bragging about #{self}, #{activity}"
-    channels = team.brag!(text: activity.name, attachments: [
-                            fallback: "#{activity.name} via #{slack_mention}, #{activity.distance_in_miles_s} #{activity.time_in_hours_s} #{activity.pace_per_mile_s}",
-                            author_name: user_name,
-                            image_url: activity.map.proxy_image_url,
-                            fields: [
-                              { title: 'Distance', value: activity.distance_in_miles_s, short: true },
-                              { title: 'Time', value: activity.time_in_hours_s, short: true },
-                              { title: 'Pace', value: activity.pace_per_mile_s, short: true },
-                              { title: 'Start', value: activity.start_date_local_s, short: true }
-                            ],
-                            unfurl_media: true
-                          ])
+    channels = team.brag!(
+      attachments: [
+        fallback: "#{activity.name} via #{slack_mention}, #{activity.distance_in_miles_s} #{activity.time_in_hours_s} #{activity.pace_per_mile_s}",
+        title: "#{activity.name} via <@#{user_name}>",
+        title_link: activity.strava_url,
+        image_url: activity.map.proxy_image_url,
+        fields: [
+          { title: 'Distance', value: activity.distance_in_miles_s, short: true },
+          { title: 'Time', value: activity.time_in_hours_s, short: true },
+          { title: 'Pace', value: activity.pace_per_mile_s, short: true },
+          { title: 'Start', value: activity.start_date_local_s, short: true }
+        ],
+        unfurl_media: true
+      ]
+    )
     activity.update_attributes!(bragged_at: Time.now.utc)
     update_attributes!(activities_at: activity.start_date) unless activities_at && activities_at > activity.start_date
     channels
