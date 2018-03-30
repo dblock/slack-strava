@@ -13,6 +13,8 @@ class User
   belongs_to :team, index: true
   validates_presence_of :team
 
+  has_many :activities, dependent: :destroy
+
   index({ user_id: 1, team_id: 1 }, unique: true)
   index(user_name: 1, team_id: 1)
 
@@ -47,6 +49,11 @@ class User
       update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
       Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
       dm!(text: 'Your Strava account has been successfully connected.')
+      activity = sync_strava_activities.first
+      if activity
+        channels = brag_activity!(activity)
+        dm!(text: "I've posted \"#{activity.name}\" to #{channels.and}")
+      end
     else
       raise "Strava returned #{response.code}: #{response.body}"
     end
@@ -58,39 +65,47 @@ class User
     client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
   end
 
-  # brag about one activity
   def brag!
-    activity = new_strava_activities.first
+    activity = new_strava_activities.last
     return unless activity
-    Api::Middleware.logger.info "Bragging about #{self}, #{activity}"
-    team.brag!(attachments: [
-                 fallback: "#{activity.name} via #{slack_mention}, #{activity.distance_in_miles_s} #{activity.time_in_hours_s} #{activity.pace_per_mile_s}",
-                 title: activity.name,
-                 author_name: user_name,
-                 image_url: activity.image_url,
-                 fields: [
-                   { title: 'Distance', value: activity.distance_in_miles_s, short: true },
-                   { title: 'Time', value: activity.time_in_hours_s, short: true },
-                   { title: 'Pace', value: activity.pace_per_mile_s, short: true },
-                   { title: 'Start', value: activity.start_date_local_s, short: true }
-                 ]
-               ])
-    update_attributes!(activities_at: activity.start_date)
+    brag_activity!(activity)
   end
 
-  def new_strava_activities
+  def brag_activity!(activity)
+    return if activity.bragged_at
+    Api::Middleware.logger.info "Bragging about #{self}, #{activity}"
+    channels = team.brag!(text: activity.name, attachments: [
+                            fallback: "#{activity.name} via #{slack_mention}, #{activity.distance_in_miles_s} #{activity.time_in_hours_s} #{activity.pace_per_mile_s}",
+                            author_name: user_name,
+                            image_url: activity.map.proxy_image_url,
+                            fields: [
+                              { title: 'Distance', value: activity.distance_in_miles_s, short: true },
+                              { title: 'Time', value: activity.time_in_hours_s, short: true },
+                              { title: 'Pace', value: activity.pace_per_mile_s, short: true },
+                              { title: 'Start', value: activity.start_date_local_s, short: true }
+                            ]
+                          ])
+    activity.update_attributes!(bragged_at: Time.now.utc)
+    update_attributes!(activities_at: activity.start_date) unless activities_at && activities_at > activity.start_date
+    channels
+  end
+
+  def sync_strava_activities(options = {})
     raise 'Missing access_token' unless access_token
     client = Strava::Api::V3::Client.new(access_token: access_token)
-    since = activities_at || created_at
     page = 1
     page_size = 10
     result = []
     loop do
-      activities = client.list_athlete_activities(page: page, per_page: page_size, after: since.to_i)
-      result.concat(activities.map { |activity| Activity.new(activity) })
+      activities = client.list_athlete_activities(options.merge(page: page, per_page: page_size))
+      result.concat(activities.map { |activity| Activity.create_from_strava!(self, activity) })
       break if activities.size < page_size
       page += 1
     end
     result
+  end
+
+  def new_strava_activities
+    sync_strava_activities(after: activities_at || created_at)
   end
 end

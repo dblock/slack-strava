@@ -26,12 +26,14 @@ class Team
     client.chat_postMessage(text: message, channel: channel['id'], as_user: true)
   end
 
+  # returns channels that were sent to
   def brag!(message)
     client = Slack::Web::Client.new(token: token)
     channels = client.channels_list['channels'].select { |channel| channel['is_member'] }
     channels.each do |channel|
       client.chat_postMessage(message.merge(channel: channel['id'], as_user: true))
     end
+    channels.map { |channel| "<##{channel['id']}|#{channel['name']}>" }
   end
 
   def subscription_expired?

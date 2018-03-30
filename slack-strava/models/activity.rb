@@ -1,27 +1,65 @@
-class Activity < Hashie::Trash
-  include Hashie::Extensions::IgnoreUndeclared
+class Activity
+  include Mongoid::Document
+  include Mongoid::Timestamps
 
-  property 'name'
-  property 'start_date', transform_with: ->(v) { DateTime.parse(v) }
-  property 'start_date_local', transform_with: ->(v) { DateTime.parse(v) }
-  property 'start_date_local_s', from: 'start_date_local', with: ->(v) { DateTime.parse(v).strftime('%F %T') }
-  property 'distance_in_miles', from: 'distance', with: ->(v) { v * 0.00062137 }
-  property 'distance_in_miles_s', from: 'distance', with: ->(v) { format('%.2fmi', v * 0.00062137) }
-  property 'time_in_hours_s', from: 'moving_time', with: ->(v) { format('%dh%02dm%02ds', v / 3600 % 24, v / 60 % 60, v % 60) }
-  property 'average_speed_mph_s', from: 'average_speed', with: ->(v) { format('%.2fmph', (v * 2.23694)) }
-  property 'pace_per_mile_s', from: 'average_speed', with: ->(v) { Time.at((60 * 60) / (v * 2.23694)).utc.strftime('%M:%S min/mi') }
-  property 'summary_polyline', from: 'map', with: ->(v) { v['summary_polyline'] }
-  property 'decoded_summary_polyline', from: 'map', with: ->(v) { Polylines::Decoder.decode_polyline(v['summary_polyline']) }
-  property 'image_url', from: 'map', with: ->(v) {
-    summary_polyline = v['summary_polyline']
-    decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
-    google_maps_api_key = ENV['GOOGLE_STATIC_MAPS_API_KEY']
-    start_latlng = decoded_summary_polyline[0]
-    end_latlng = decoded_summary_polyline[-1]
-    "https://maps.googleapis.com/maps/api/staticmap?maptype=roadmap&path=enc:#{summary_polyline}&key=#{google_maps_api_key}&size=800x800&markers=color:yellow|label:S|#{start_latlng[0]},#{start_latlng[1]}&markers=color:green|label:F|#{end_latlng[0]},#{end_latlng[1]}"
-  }
+  belongs_to :user
+
+  field :strava_id, type: String
+  field :name, type: String
+  field :start_date, type: DateTime
+  field :start_date_local, type: DateTime
+  field :distance, type: Float
+  field :moving_time, type: Float
+  field :average_speed, type: Float
+  field :bragged_at, type: DateTime
+
+  index(strava_id: 1)
+  index(user_id: 1)
+
+  embeds_one :map
+
+  def start_date_local_s
+    start_date_local.strftime('%F %T')
+  end
+
+  def distance_in_miles
+    distance * 0.00062137
+  end
+
+  def distance_in_miles_s
+    format '%.2fmi', distance_in_miles
+  end
+
+  def time_in_hours_s
+    format '%dh%02dm%02ds', moving_time / 3600 % 24, moving_time / 60 % 60, moving_time % 60
+  end
+
+  def average_speed_mph_s
+    format '%.2fmph', average_speed * 2.23694
+  end
+
+  def pace_per_mile_s
+    Time.at((60 * 60) / (average_speed * 2.23694)).utc.strftime('%M:%S min/mi')
+  end
 
   def to_s
     "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_in_miles_s}, time=#{time_in_hours_s}, pace=#{pace_per_mile_s}"
+  end
+
+  def self.create_from_strava!(user, h)
+    activity = Activity.where(strava_id: h['id'], user_id: user.id).first
+    activity ||= Activity.new(strava_id: h['id'], user_id: user.id)
+    activity.name = h['name']
+    activity.start_date = DateTime.parse(h['start_date'])
+    activity.start_date_local = DateTime.parse(h['start_date_local'])
+    activity.distance = h['distance']
+    activity.moving_time = h['moving_time']
+    activity.average_speed = h['average_speed']
+    activity.map = Map.new(
+      strava_id: h['map']['id'],
+      summary_polyline: h['map']['summary_polyline']
+    )
+    activity.save!
+    activity
   end
 end
