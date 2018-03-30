@@ -52,7 +52,7 @@ class User
       activity = sync_strava_activities.first
       if activity
         channels = brag_activity!(activity)
-        dm!(text: "I've posted \"#{activity.name}\" to #{channels.and}")
+        dm!(text: "I've posted \"#{activity.name}\" to #{channels.and}") if channels && channels.any?
       end
     else
       raise "Strava returned #{response.code}: #{response.body}"
@@ -83,7 +83,8 @@ class User
                               { title: 'Time', value: activity.time_in_hours_s, short: true },
                               { title: 'Pace', value: activity.pace_per_mile_s, short: true },
                               { title: 'Start', value: activity.start_date_local_s, short: true }
-                            ]
+                            ],
+                            unfurl_media: true
                           ])
     activity.update_attributes!(bragged_at: Time.now.utc)
     update_attributes!(activities_at: activity.start_date) unless activities_at && activities_at > activity.start_date
