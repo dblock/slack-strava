@@ -40,7 +40,7 @@
               url: '/api/users/' + user.id,
               data: data,
               success: function(data) {
-                SlackStrava.message('Successfully connected <b>' + data.user_name + '</b> to Strava.');
+                SlackStrava.message('Successfully connected <b>' + data.user_name + '</b> to Strava. You can now return to Slack.');
               },
               error: SlackStrava.error
             });

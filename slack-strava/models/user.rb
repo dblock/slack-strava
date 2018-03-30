@@ -48,11 +48,12 @@ class User
       create_athlete(athlete_id: response['athlete']['id'])
       update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
       Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
-      dm!(text: 'Your Strava account has been successfully connected.')
       activity = sync_strava_activities.first
-      if activity
-        channels = brag_activity!(activity)
-        dm!(text: "I've posted \"#{activity.name}\" to #{channels.and}") if channels && channels.any?
+      channels = brag_activity!(activity) if activity
+      if activity && channels && channels.any?
+        dm!(text: "Your Strava account has been successfully connected. I've posted \"#{activity.name}\" to #{channels.and}.")
+      else
+        dm!(text: 'Your Strava account has been successfully connected.')
       end
     else
       raise "Strava returned #{response.code}: #{response.body}"
