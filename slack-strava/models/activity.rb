@@ -12,6 +12,7 @@ class Activity
   field :moving_time, type: Float
   field :average_speed, type: Float
   field :bragged_at, type: DateTime
+  field :type, type: String
 
   index(strava_id: 1)
   index(user_id: 1)
@@ -46,7 +47,14 @@ class Activity
   end
 
   def time_in_hours_s
-    format '%dh%02dm%02ds', moving_time / 3600 % 24, moving_time / 60 % 60, moving_time % 60
+    hours = moving_time / 3600 % 24
+    minutes = moving_time / 60 % 60
+    seconds = moving_time % 60
+    [
+      hours.to_i > 0 ? format('%dh', hours) : nil,
+      minutes.to_i > 0 ? format('%dm', minutes) : nil,
+      seconds.to_i > 0 ? format('%ds', seconds) : nil
+    ].compact.join
   end
 
   def pace_per_mile_s
@@ -80,12 +88,17 @@ class Activity
         title_link: strava_url,
         image_url: map.proxy_image_url,
         fields: [
+          { title: 'Type', value: type, short: true },
           { title: 'Distance', value: distance_s, short: true },
           { title: 'Time', value: time_in_hours_s, short: true },
           { title: 'Pace', value: pace_s, short: true }
         ]
       ]
     }
+  end
+
+  def brag!
+    user.team.brag!(to_slack)
   end
 
   def self.create_from_strava!(user, h)
@@ -97,6 +110,7 @@ class Activity
     activity.distance = h['distance']
     activity.moving_time = h['moving_time']
     activity.average_speed = h['average_speed']
+    activity.type = h['type']
     activity.map = Map.new(
       strava_id: h['map']['id'],
       summary_polyline: h['map']['summary_polyline']
