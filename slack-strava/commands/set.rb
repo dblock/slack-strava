@@ -13,7 +13,7 @@ module SlackStrava
           when 'units' then
             changed = v && client.owner.units != v
             client.owner.update_attributes!(units: v) unless v.nil?
-            client.say(channel: data.channel, text: "Activities for team #{client.owner.name}#{changed ? ' now' : ''} display *#{client.owner.units_s}*.", gif: 'units')
+            client.say(channel: data.channel, text: "Activities for team #{client.owner.name}#{changed ? ' now' : ''} display *#{client.owner.units_s}*.")
             logger.info "SET: #{client.owner} - units set to #{client.owner.units}"
           else
             raise "Invalid setting #{k}, you can _set units km|mi_."
