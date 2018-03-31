@@ -15,12 +15,10 @@ describe SlackStrava::Commands::Connect do
       let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://strava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
       it 'connects a user', vcr: { cassette_name: 'slack/user_info' } do
         expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
-        expect(client.web_client).to receive(:chat_postMessage).with(
-          channel: 'channel',
-          as_user: true,
+        expect(user).to receive(:dm!).with(
           text: 'Please connect your Strava account.',
           attachments: [{
-            fallback: "Connect your Strava account at #{url}",
+            fallback: "Connect your Strava account at #{url}.",
             actions: [{
               type: 'button',
               text: 'Click Here',

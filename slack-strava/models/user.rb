@@ -18,6 +18,15 @@ class User
   index({ user_id: 1, team_id: 1 }, unique: true)
   index(user_name: 1, team_id: 1)
 
+  def connected_to_strava?
+    !access_token.nil?
+  end
+
+  def connect_to_strava_url
+    redirect_uri = "#{SlackStrava::Service.url}/connect"
+    "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=view_private&state=#{id}"
+  end
+
   def slack_mention
     "<@#{user_id}>"
   end
