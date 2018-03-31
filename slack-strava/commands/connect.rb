@@ -3,7 +3,7 @@ module SlackStrava
     class Connect < SlackRubyBot::Commands::Base
       include SlackStrava::Commands::Mixins::Subscribe
 
-      def self.call(client, data, _match)
+      subscribe_command 'connect' do |client, data, _match|
         logger.info "CONNECT: #{client.owner}, user=#{data.user}"
         user = ::User.find_create_or_update_by_slack_id!(client, data.user)
         redirect_uri = "#{SlackStrava::Service.url}/connect"

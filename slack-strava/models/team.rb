@@ -1,15 +1,29 @@
 class Team
   field :api, type: Boolean, default: false
 
+  field :units, type: String, default: 'mi'
+  validates_inclusion_of :units, in: %w[mi km]
+
   field :stripe_customer_id, type: String
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
 
   scope :api, -> { where(api: true) }
 
-  has_many :users
+  has_many :users, dependent: :destroy
 
   after_update :inform_subscribed_changed!
+
+  def units_s
+    case units
+    when 'mi'
+      'miles'
+    when 'km'
+      'kilometers'
+    else
+      raise ArgumentError
+    end
+  end
 
   def asleep?(dt = 2.weeks)
     return false unless subscription_expired?

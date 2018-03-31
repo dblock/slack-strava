@@ -3,8 +3,8 @@ Fabricator(:activity) do
   name { Faker::Internet.user_name }
   start_date { DateTime.parse('2018-02-20T18:02:13Z') }
   start_date_local { DateTime.parse('2018-02-20T10:02:13Z') }
-  distance 28_099
-  moving_time 4207
-  average_speed 6.679
+  distance 22_539.6
+  moving_time 7586.0
+  average_speed 2.971
   map { Fabricate(:map) }
 end

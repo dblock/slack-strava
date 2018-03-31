@@ -5,9 +5,16 @@ module SlackStrava
         ```
         I am your friendly Strava bot.
 
+        DM
+        -------
+        connect             - connect your Strava account
+
+        Settings
+        --------
+        set units mi/km     - use miles or kilometers
+
         General
         -------
-
         help                - get this helpful message
         subscription        - show subscription info
         ```

@@ -30,24 +30,62 @@ class Activity
     format '%.2fmi', distance_in_miles
   end
 
+  def distance_in_kilometers
+    distance / 1000
+  end
+
+  def distance_in_kilometers_s
+    format '%.2fkm', distance_in_kilometers
+  end
+
+  def distance_s
+    case user.team.units
+    when 'km' then distance_in_kilometers_s
+    when 'mi' then distance_in_miles_s
+    end
+  end
+
   def time_in_hours_s
     format '%dh%02dm%02ds', moving_time / 3600 % 24, moving_time / 60 % 60, moving_time % 60
   end
 
-  def average_speed_mph_s
-    format '%.2fmph', average_speed * 2.23694
+  def pace_per_mile_s
+    convert_meters_per_second_to_pace average_speed, :mi
   end
 
-  def pace_per_mile_s
-    Time.at((60 * 60) / (average_speed * 2.23694)).utc.strftime('%M:%S min/mi')
+  def pace_per_kilometer_s
+    convert_meters_per_second_to_pace average_speed, :km
+  end
+
+  def pace_s
+    case user.team.units
+    when 'km' then pace_per_kilometer_s
+    when 'mi' then pace_per_mile_s
+    end
   end
 
   def to_s
-    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_in_miles_s}, time=#{time_in_hours_s}, pace=#{pace_per_mile_s}"
+    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_s}, time=#{time_in_hours_s}, pace=#{pace_s}"
   end
 
   def strava_url
     "https://www.strava.com/activities/#{strava_id}"
+  end
+
+  def to_slack
+    {
+      attachments: [
+        fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{time_in_hours_s} #{pace_s}",
+        title: "#{name} via <@#{user.user_name}>",
+        title_link: strava_url,
+        image_url: map.proxy_image_url,
+        fields: [
+          { title: 'Distance', value: distance_s, short: true },
+          { title: 'Time', value: time_in_hours_s, short: true },
+          { title: 'Pace', value: pace_s, short: true }
+        ]
+      ]
+    }
   end
 
   def self.create_from_strava!(user, h)
@@ -65,5 +103,17 @@ class Activity
     )
     activity.save!
     activity
+  end
+
+  private
+
+  # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
+  # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby
+  def convert_meters_per_second_to_pace(speed, unit = :mi)
+    return if speed == 0
+    total_seconds = unit == :mi ? (1609.344 / speed) : (1000 / speed)
+    minutes, seconds = total_seconds.divmod(60)
+    seconds = seconds.round < 10 ? "0#{seconds.round}" : seconds.round.to_s
+    "#{minutes}m#{seconds}s/#{unit}"
   end
 end

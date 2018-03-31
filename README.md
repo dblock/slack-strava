@@ -29,6 +29,10 @@ DM `connect`. Follow the prompts to connect your Strava account.
 
 DM `subscription`, provides subscription info and a link to update the credit card on file.
 
+### Help
+
+DM `help` for other commands and settings.
+
 ### Copyright & License
 
 Copyright [Daniel Doubrovkine](http://code.dblock.org), 2018
