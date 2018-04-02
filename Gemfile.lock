@@ -110,7 +110,7 @@ GEM
       multipart-post
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    httparty (0.16.1)
+    httparty (0.16.2)
       multi_xml (>= 0.5.2)
     hyperclient (0.9.0)
       faraday (>= 0.9.0)
@@ -225,7 +225,7 @@ GEM
     selenium-webdriver (3.11.0)
       childprocess (~> 0.5)
       rubyzip (~> 1.2)
-    slack-ruby-bot (0.10.5)
+    slack-ruby-bot (0.11.0)
       hashie
       slack-ruby-client (>= 0.6.0)
     slack-ruby-bot-server (0.6.1)
@@ -298,6 +298,7 @@ DEPENDENCIES
   faker
   foreman
   giphy
+  grape
   hashie
   hyperclient
   mongoid (~> 5.1.4)
