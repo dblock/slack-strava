@@ -3,7 +3,7 @@ module SlackStrava
     class Help < SlackRubyBot::Commands::Base
       HELP = <<~EOS.freeze
         ```
-        I am your friendly Strava bot.
+        I am your friendly bot powered by Strava.
 
         DM
         -------

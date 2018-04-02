@@ -1,6 +1,6 @@
 module SlackStrava
   INFO = <<~EOS.freeze
-    Slack Strava #{SlackStrava::VERSION}
+    Slack bot, powered by Strava #{SlackStrava::VERSION}
 
     © 2018 Daniel Doubrovkine & Contributors, MIT License
     https://twitter.com/dblockdotorg
