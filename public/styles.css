@@ -1,0 +1,17 @@
+body {
+  text-align: center;
+  margin: 20px;
+}
+
+.icon img {
+  width: 200px;
+}
+
+.image {
+  max-width: 400px;
+  margin: auto;
+}
+
+.image img {
+  width: 100%;
+}

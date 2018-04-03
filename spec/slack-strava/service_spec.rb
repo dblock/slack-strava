@@ -9,7 +9,7 @@ describe SlackStrava::Service do
       ENV['RACK_ENV'] = @rack_env
     end
     it 'defaults to playplay.io in production' do
-      expect(SlackStrava::Service.url).to eq 'https://strava.playplay.io'
+      expect(SlackStrava::Service.url).to eq 'https://slava.playplay.io'
     end
     context 'in development' do
       before do

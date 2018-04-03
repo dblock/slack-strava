@@ -9,14 +9,14 @@ describe SlackStrava::Server do
   context '#channel_joined' do
     it 'sends a welcome message' do
       allow(client).to receive(:self).and_return(Hashie::Mash.new(id: 'U12345'))
-      message = 'Welcome to Strava on Slack! Please DM "*connect*" to <@U12345> to publish your activities in this channel.'
+      message = 'Welcome to Slava! Please DM "*connect*" to <@U12345> to publish your activities in this channel.'
       expect(client).to receive(:say).with(channel: 'C12345', text: message)
       client.send(:callback, Hashie::Mash.new('channel' => { 'id' => 'C12345' }), :channel_joined)
     end
   end
   context '#member_joined_channel' do
     let(:user) { Fabricate(:user, team: team) }
-    let(:connect_url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://strava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
+    let(:connect_url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
     it 'offers to connect account', vcr: { cassette_name: 'slack/user_info' } do
       allow(client).to receive(:self).and_return(Hashie::Mash.new(id: 'U12345'))
       allow(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)

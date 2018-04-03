@@ -1,16 +1,16 @@
 <html>
   <head>
-    <title>Powered by Strava: Subscribe</title>
+    <title>Slava: Subscribe</title>
     <%= partial 'public/partials/_head.html.erb' %>
     <script src='https://checkout.stripe.com/checkout.js'></script>
     <link rel='stylesheet' href='https://checkout.stripe.com/v3/checkout/button.css'></link>
   </head>
-  <body style='text-align: center'>
-    <p style='margin: 50px;'>
-      <a href='/'><img src='img/icon.png' width='120px'></a>
+  <body>
+    <p class='icon'>
+      <a href='/'><img src='img/icon.png'></a>
     </p>
     <p>
-      <h3>Powered by Strava: Subscribe</h3>
+      <h3>Slava: Subscribe</h3>
     </p>
     <p id='messages' />
     <p id='subscribe'>
@@ -67,7 +67,7 @@
           $('#subscribeButton').on('click', function(e) {
             var amount = 199;
             handler.open({
-              name: 'Powered by Strava',
+              name: 'Slava',
               description: 'Yearly Subscription',
               amount: amount
             });

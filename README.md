@@ -1,5 +1,5 @@
-Powered by Strava
-=================
+Slava
+=====
 
 [![Build Status](https://travis-ci.org/dblock/slack-strava.svg?branch=master)](https://travis-ci.org/dblock/slack-strava)
 
@@ -7,13 +7,13 @@ Integrate Strava into Slack.
 
 ## Install
 
-[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://strava.playplay.io)
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slava.playplay.io)
 
-Invite *@strava* to a channel with `/invite @strava`.
+Invite *@slava* to a channel with `/invite @slava`.
 
 ![](public/img/joined.png)
 
-New activities for connected accounts will be posted to any channel that @strava is a member of.
+New activities for connected accounts will be posted to any channel that @slava is a member of.
 
 ![](public/img/notify.png)
 

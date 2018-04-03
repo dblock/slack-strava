@@ -12,7 +12,7 @@ describe SlackStrava::Commands::Connect do
     context 'subscribed team' do
       let(:team) { Fabricate(:team, subscribed: true) }
       let(:user) { Fabricate(:user, team: team) }
-      let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://strava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
+      let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
       it 'connects a user', vcr: { cassette_name: 'slack/user_info' } do
         expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
         expect(user).to receive(:dm!).with(

@@ -1,15 +1,15 @@
 <html>
  <head>
-  <title>Powered by Strava</title>
+  <title>Slava: Powered by Strava</title>
   <%= partial 'public/partials/_head.html.erb' %>
   <script src="/scripts/register.js"></script>
 </head>
- <body style="text-align: center">
-  <p style="margin: 50px;">
-    <a href="/"><img src='img/icon.png' width="200px"></a>
+ <body>
+  <p class='icon'>
+    <a href="/"><img src='img/icon.png'></a>
   </p>
   <p>
-    <h1>Strava Integration in Slack</h1>
+    <h1>Slava = Strava Integration in Slack</h1>
   </p>
   <p>
     <small>
@@ -22,9 +22,9 @@
     <a href="https://slack.com/oauth/authorize?scope=bot&client_id=<%= ENV['SLACK_CLIENT_ID'] %>"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
   </p>
   <p>&nbsp;</p>
-  <p>
-    <img src='img/notify.png'>
-  </p>
+  <div style='max-width: 500px; margin: auto;'>
+    <img src='img/notify.png' style='width: 100%'>
+  </div>
   <p>
     <small>
       Free 7 day trial, no credit card required. Subscribe for $29.99/yr after that.

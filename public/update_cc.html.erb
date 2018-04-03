@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Powered by Strava: Update Credit Card</title>
+    <title>Slava: Update Credit Card</title>
     <%= partial 'public/partials/_head.html' %>
     <%
       team = Team.where(team_id: request['team_id']).first
@@ -9,12 +9,12 @@
       stripe_email = request['stripeEmail']
     %>
   </head>
-  <body style='text-align: center'>
-    <p style='margin: 50px;'>
-      <a href='/'><img src='img/icon.png' width='120px'></a>
+  <body>
+    <p class='icon'>
+      <a href='/'><img src='img/icon.png'></a>
     </p>
     <p>
-      <h3>Powered by Strava: Update Credit Card Info</h3>
+      <h3>Slava: Update Credit Card Info</h3>
     </p>
     <p id='messages' />
     <p id='update_cc'>
@@ -23,7 +23,7 @@
           src="https://checkout.stripe.com/checkout.js" class="stripe-button"
           data-key="<%= ENV['STRIPE_API_PUBLISHABLE_KEY'] %>"
           data-image='/img/icon.png'
-          data-name='Powered by Strava'
+          data-name='Slava'
           data-panel-label="Update Credit Card"
           data-label="Update Credit Card"
           data-allow-remember-me=false

@@ -1,8 +1,8 @@
 {
-	"name": "Powered by Strava",
+	"name": "Slava",
 	"description": "Strava integration in Slack.",
 	"respository": "https://github.com/dblock/slack-strava",
-	"keywords": ["slack", "bots", "stock strava"],
+	"keywords": ["slack", "bots", "strava"],
 	"addons": [
 		"mongolab"
 	]
