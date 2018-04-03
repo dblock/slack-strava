@@ -2,6 +2,8 @@ class Map
   include Mongoid::Document
   include Mongoid::Timestamps
 
+  embedded_in :activity
+
   field :strava_id, type: String
   field :summary_polyline, type: String
   field :decoded_summary_polyline, type: Array
@@ -35,7 +37,11 @@ class Map
     "#{SlackStrava::Service.url}/api/maps/#{id}.png"
   end
 
+  def png_size
+    return png.data.size if png && png.data
+  end
+
   def to_s
-    "proxy=#{proxy_image_url}, png=#{png.data ? png.data.size : 'n/a'} byte(s)"
+    "proxy=#{proxy_image_url}, png=#{png_size} byte(s)"
   end
 end
