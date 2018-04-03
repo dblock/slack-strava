@@ -3,35 +3,11 @@ Slava
 
 [![Build Status](https://travis-ci.org/dblock/slack-strava.svg?branch=master)](https://travis-ci.org/dblock/slack-strava)
 
-Integrate Strava into Slack.
+Integrate Strava into Slack. Hosted at [slava.playplay.io](https://slava.playplay.io/).
 
 ## Install
 
 [![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slava.playplay.io)
-
-Invite *@slava* to a channel with `/invite @slava`.
-
-![](public/img/joined.png)
-
-New activities for connected accounts will be posted to any channel that @slava is a member of.
-
-![](public/img/notify.png)
-
-## Usage
-
-### Connect
-
-DM `connect`. Follow the prompts to connect your Strava account.
-
-![](public/img/connect.png)
-
-### Subscription
-
-DM `subscription`, provides subscription info and a link to update the credit card on file.
-
-### Help
-
-DM `help` for other commands and settings.
 
 ### Copyright & License
 
