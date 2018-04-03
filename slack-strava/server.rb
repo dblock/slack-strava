@@ -8,7 +8,9 @@ module SlackStrava
 
     on :member_joined_channel do |client, data|
       user = ::User.find_create_or_update_by_slack_id!(client, data.user)
-      if user.connected_to_strava?
+      if user.is_bot
+        logger.info "#{client.owner.name}: #{user.user_name} (@#{data.user}) joined ##{data.channel}, bot"
+      elsif user.connected_to_strava?
         logger.info "#{client.owner.name}: #{user.user_name} (@#{data.user}) joined ##{data.channel}, already connected to Strava"
       else
         logger.info "#{client.owner.name}: #{user.user_name} (@#{data.user}) joined ##{data.channel}, connecting to Strava"

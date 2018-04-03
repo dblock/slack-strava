@@ -7,6 +7,7 @@ class User
   field :access_token, type: String
   field :token_type, type: String
   field :activities_at, type: DateTime
+  field :is_bot, type: Boolean
 
   embeds_one :athlete
 
@@ -44,8 +45,8 @@ class User
   def self.find_create_or_update_by_slack_id!(client, slack_id)
     instance = User.where(team: client.owner, user_id: slack_id).first
     instance_info = Hashie::Mash.new(client.web_client.users_info(user: slack_id)).user
-    instance.update_attributes!(user_name: instance_info.name) if instance && instance.user_name != instance_info.name
-    instance ||= User.create!(team: client.owner, user_id: slack_id, user_name: instance_info.name)
+    instance.update_attributes!(user_name: instance_info.name, is_bot: instance_info.is_bot) if instance && (instance.user_name != instance_info.name || instance.is_bot != instance_info.is_bot)
+    instance ||= User.create!(team: client.owner, user_id: slack_id, user_name: instance_info.name, is_bot: instance_info.is_bot)
     instance
   end
 
