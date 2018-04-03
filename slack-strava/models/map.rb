@@ -13,7 +13,7 @@ class Map
   end
 
   def update_png
-    return unless summary_polyline_changed?
+    return unless summary_polyline_changed? || png.nil?
     body = HTTParty.get(image_url).body
     self.png = BSON::Binary.new(body)
   end
