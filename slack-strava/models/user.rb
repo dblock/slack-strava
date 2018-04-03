@@ -59,7 +59,7 @@ class User
     create_athlete(athlete_id: response['athlete']['id'])
     update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
     Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
-    activity = sync_strava_activities.first
+    activity = sync_last_strava_activity
     channels = brag_activity!(activity) if activity
     if activity && channels && channels.any?
       dm!(text: "Your Strava account has been successfully connected. I've posted \"#{activity.name}\" to #{channels.and}.")
@@ -87,6 +87,14 @@ class User
     activity.update_attributes!(bragged_at: Time.now.utc)
     update_attributes!(activities_at: activity.start_date) unless activities_at && activities_at > activity.start_date
     channels
+  end
+
+  def sync_last_strava_activity
+    raise 'Missing access_token' unless access_token
+    client = Strava::Api::V3::Client.new(access_token: access_token)
+    activities = client.list_athlete_activities(per_page: 1)
+    return unless activities.any?
+    Activity.create_from_strava!(self, activities.first)
   end
 
   def sync_strava_activities(options = {})
