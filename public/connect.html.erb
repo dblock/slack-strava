@@ -34,7 +34,7 @@
           }
 
           if (user.id && data.code) {
-            SlackStrava.message('Connecting <b>' + user.name + '</b> to Strava ...');
+            SlackStrava.message('Connecting <b>' + user.name + '</b> to Strava. This will take a minute.');
             $.ajax({
               type: 'PUT',
               url: '/api/users/' + user.id,

@@ -30,6 +30,6 @@ class Map
   end
 
   def to_s
-    "proxy=#{proxy_image_url}, png=#{png.size} byte(s)"
+    "proxy=#{proxy_image_url}, png=#{png.data ? png.data.size : 'n/a'} byte(s)"
   end
 end
