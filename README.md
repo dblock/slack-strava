@@ -1,5 +1,5 @@
-Slack Strava
-============
+Powered by Strava
+=================
 
 [![Build Status](https://travis-ci.org/dblock/slack-strava.svg?branch=master)](https://travis-ci.org/dblock/slack-strava)
 
