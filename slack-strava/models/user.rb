@@ -18,6 +18,8 @@ class User
   index({ user_id: 1, team_id: 1 }, unique: true)
   index(user_name: 1, team_id: 1)
 
+  scope :connected_to_strava, -> { where(:access_token.ne => nil) }
+
   def connected_to_strava?
     !access_token.nil?
   end

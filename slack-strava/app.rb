@@ -27,7 +27,7 @@ module SlackStrava
       Team.active.each do |team|
         begin
           logger.info "Checking #{team} ..."
-          team.users.each do |user|
+          team.users.connected_to_strava.each do |user|
             begin
               user.brag!
             rescue StandardError => e
