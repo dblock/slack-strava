@@ -59,8 +59,8 @@ class User
     create_athlete(athlete_id: response['athlete']['id'])
     update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
     Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
-    activity = sync_last_strava_activity
-    channels = brag_activity!(activity) if activity
+    sync_last_strava_activity!
+    activity, channels = brag!
     if activity && channels && channels.any?
       dm!(text: "Your Strava account has been successfully connected. I've posted \"#{activity.name}\" to #{channels.and}.")
     else
@@ -75,21 +75,12 @@ class User
   end
 
   def brag!
-    activity = new_strava_activities.last
+    activity = activities.unbragged.asc(:start_date).first
     return unless activity
-    brag_activity!(activity)
+    [activity, activity.brag!]
   end
 
-  def brag_activity!(activity)
-    return if activity.bragged_at
-    Api::Middleware.logger.info "Bragging about #{self}, #{activity}"
-    channels = team.brag!(activity.to_slack)
-    activity.update_attributes!(bragged_at: Time.now.utc)
-    update_attributes!(activities_at: activity.start_date) unless activities_at && activities_at > activity.start_date
-    channels
-  end
-
-  def sync_last_strava_activity
+  def sync_last_strava_activity!
     raise 'Missing access_token' unless access_token
     client = Strava::Api::V3::Client.new(access_token: access_token)
     activities = client.list_athlete_activities(per_page: 1)
@@ -97,22 +88,26 @@ class User
     Activity.create_from_strava!(self, activities.first)
   end
 
-  def sync_strava_activities(options = {})
+  def sync_new_strava_activities!
+    dt = DateTime.now.utc
+    sync_strava_activities!(after: activities_at || created_at)
+    update_attributes!(activities_at: dt)
+  end
+
+  private
+
+  def sync_strava_activities!(options = {})
     raise 'Missing access_token' unless access_token
     client = Strava::Api::V3::Client.new(access_token: access_token)
     page = 1
     page_size = 10
-    result = []
     loop do
       activities = client.list_athlete_activities(options.merge(page: page, per_page: page_size))
-      result.concat(activities.map { |activity| Activity.create_from_strava!(self, activity) })
+      activities.each do |activity|
+        Activity.create_from_strava!(self, activity)
+      end
       break if activities.size < page_size
       page += 1
     end
-    result
-  end
-
-  def new_strava_activities
-    sync_strava_activities(after: activities_at || created_at)
   end
 end

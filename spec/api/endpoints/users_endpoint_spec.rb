@@ -10,7 +10,7 @@ describe Api::Endpoints::UsersEndpoint do
         text: 'Your Strava account has been successfully connected.'
       )
 
-      expect_any_instance_of(User).to receive(:sync_last_strava_activity).and_return(nil)
+      expect_any_instance_of(User).to receive(:sync_last_strava_activity!).and_return(nil)
 
       client.user(id: user.id)._put(code: 'code')
 

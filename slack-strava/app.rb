@@ -29,6 +29,7 @@ module SlackStrava
           logger.info "Checking #{team} ..."
           team.users.connected_to_strava.each do |user|
             begin
+              user.sync_new_strava_activities!
               user.brag!
             rescue StandardError => e
               backtrace = e.backtrace.join("\n")

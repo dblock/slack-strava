@@ -19,6 +19,8 @@ class Activity
 
   embeds_one :map
 
+  scope :unbragged, -> { where(bragged_at: nil) }
+
   def start_date_local_s
     start_date_local.strftime('%F %T')
   end
@@ -98,7 +100,11 @@ class Activity
   end
 
   def brag!
-    user.team.brag!(to_slack)
+    return if bragged_at
+    Api::Middleware.logger.info "Bragging about #{user}, #{self}"
+    channels = user.team.brag!(to_slack)
+    update_attributes!(bragged_at: Time.now.utc)
+    channels
   end
 
   def self.create_from_strava!(user, h)
