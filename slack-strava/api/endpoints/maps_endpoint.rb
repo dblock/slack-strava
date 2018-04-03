@@ -14,7 +14,7 @@ module Api
           error!('Not Found', 404) unless activity
           error!('Map Not Found', 404) unless activity.map
           error!('Map Data Not Found', 404) unless activity.map.png
-          Api::Middleware.logger.info "Found activity ID #{params[:id]} with URL #{activity.map.image_url}."
+          Api::Middleware.logger.info "Found activity ID #{params[:id]} with URL #{activity.map.proxy_image_url}."
           content_type 'image/png'
           png = activity.map.png.data
           Api::Middleware.logger.info "Returning #{png.size} byte(s) of PNG for activity ID #{params[:id]}."
