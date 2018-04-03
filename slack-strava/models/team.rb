@@ -45,7 +45,9 @@ class Team
     client = Slack::Web::Client.new(token: token)
     channels = client.channels_list['channels'].select { |channel| channel['is_member'] }
     channels.each do |channel|
-      client.chat_postMessage(message.merge(channel: channel['id'], as_user: true))
+      message_with_channel = message.merge(channel: channel['id'], as_user: true)
+      logger.info "Posting '#{message_with_channel.to_json}' to #{self} on ##{channel['name']}."
+      client.chat_postMessage(message_with_channel)
     end
     channels.map { |channel| "<##{channel['id']}|#{channel['name']}>" }
   end
