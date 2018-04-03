@@ -116,6 +116,7 @@ class Activity
       summary_polyline: h['map']['summary_polyline']
     )
     activity.save!
+    activity.map.save!
     activity
   end
 
