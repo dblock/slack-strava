@@ -4,21 +4,27 @@ class Map
 
   field :strava_id, type: String
   field :summary_polyline, type: String
+  field :decoded_summary_polyline, type: Array
   field :png, type: BSON::Binary
 
+  before_save :update_decoded_summary_polyline
   before_save :update_png
 
-  def decoded_summary_polyline
-    Polylines::Decoder.decode_polyline summary_polyline
+  def update_decoded_summary_polyline
+    return unless summary_polyline_changed? || decoded_summary_polyline.nil?
+    self.decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
   end
 
   def update_png
     return unless summary_polyline_changed? || png.nil?
-    body = HTTParty.get(image_url).body
+    url = image_url
+    return unless url
+    body = HTTParty.get(url).body
     self.png = BSON::Binary.new(body)
   end
 
   def image_url
+    return unless decoded_summary_polyline
     google_maps_api_key = ENV['GOOGLE_STATIC_MAPS_API_KEY']
     start_latlng = decoded_summary_polyline[0]
     end_latlng = decoded_summary_polyline[-1]
