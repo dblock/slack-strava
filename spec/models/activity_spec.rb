@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe Activity do
+  before do
+    expect(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
+  end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:user) { Fabricate(:user, team: team) }

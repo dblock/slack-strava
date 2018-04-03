@@ -73,7 +73,7 @@ class Activity
   end
 
   def to_s
-    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_s}, time=#{time_in_hours_s}, pace=#{pace_s}"
+    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_s}, time=#{time_in_hours_s}, pace=#{pace_s}, map=#{map}"
   end
 
   def strava_url

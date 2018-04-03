@@ -2,11 +2,20 @@ class Map
   include Mongoid::Document
   include Mongoid::Timestamps
 
-  field :strava_id
-  field :summary_polyline
+  field :strava_id, type: String
+  field :summary_polyline, type: String
+  field :png, type: BSON::Binary
+
+  before_save :update_png
 
   def decoded_summary_polyline
     Polylines::Decoder.decode_polyline summary_polyline
+  end
+
+  def update_png
+    return unless summary_polyline_changed?
+    body = HTTParty.get(image_url).body
+    self.png = BSON::Binary.new(body)
   end
 
   def image_url
@@ -18,5 +27,9 @@ class Map
 
   def proxy_image_url
     "#{SlackStrava::Service.url}/api/maps/#{id}.png"
+  end
+
+  def to_s
+    "proxy=#{proxy_image_url}, png=#{png.size} byte(s)"
   end
 end

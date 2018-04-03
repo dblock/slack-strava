@@ -53,19 +53,16 @@ class User
 
   def connect!(code)
     response = Strava::Api::V3::Auth.retrieve_access(ENV['STRAVA_CLIENT_ID'], ENV['STRAVA_CLIENT_SECRET'], code)
-    if response.success?
-      create_athlete(athlete_id: response['athlete']['id'])
-      update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
-      Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
-      activity = sync_strava_activities.first
-      channels = brag_activity!(activity) if activity
-      if activity && channels && channels.any?
-        dm!(text: "Your Strava account has been successfully connected. I've posted \"#{activity.name}\" to #{channels.and}.")
-      else
-        dm!(text: 'Your Strava account has been successfully connected.')
-      end
+    raise "Strava returned #{response.code}: #{response.body}" unless response.success?
+    create_athlete(athlete_id: response['athlete']['id'])
+    update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
+    Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
+    activity = sync_strava_activities.first
+    channels = brag_activity!(activity) if activity
+    if activity && channels && channels.any?
+      dm!(text: "Your Strava account has been successfully connected. I've posted \"#{activity.name}\" to #{channels.and}.")
     else
-      raise "Strava returned #{response.code}: #{response.body}"
+      dm!(text: 'Your Strava account has been successfully connected.')
     end
   end
 

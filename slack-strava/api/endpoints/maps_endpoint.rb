@@ -12,9 +12,11 @@ module Api
           Api::Middleware.logger.info "Getting map ID #{params[:id]}."
           activity = Activity.where('map._id' => BSON::ObjectId(params[:id])).first
           error!('Not Found', 404) unless activity
+          error!('Map Not Found', 404) unless activity.map
+          error!('Map Data Not Found', 404) unless activity.map.png
           Api::Middleware.logger.info "Found activity ID #{params[:id]} with URL #{activity.map.image_url}."
           content_type 'image/png'
-          png = HTTParty.get(activity.map.image_url).body
+          png = activity.map.png.data
           Api::Middleware.logger.info "Returning #{png.size} byte(s) of PNG for activity ID #{params[:id]}."
           body png
         end
