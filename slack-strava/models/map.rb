@@ -11,7 +11,7 @@ class Map
   before_save :update_png
 
   def update_decoded_summary_polyline
-    return unless summary_polyline_changed? || decoded_summary_polyline.nil?
+    return unless summary_polyline && (summary_polyline_changed? || decoded_summary_polyline.nil?)
     self.decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
   end
 
