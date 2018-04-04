@@ -73,6 +73,7 @@ class User
   def brag!
     activity = activities.unbragged.asc(:start_date).first
     return unless activity
+    update_attributes!(activities_at: activity.start_date)
     [activity, activity.brag!]
   end
 
@@ -85,9 +86,7 @@ class User
   end
 
   def sync_new_strava_activities!
-    dt = DateTime.now.utc
     sync_strava_activities!(after: activities_at || created_at)
-    update_attributes!(activities_at: dt)
   end
 
   private

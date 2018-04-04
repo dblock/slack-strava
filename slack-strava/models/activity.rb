@@ -20,6 +20,7 @@ class Activity
   embeds_one :map
 
   scope :unbragged, -> { where(bragged_at: nil) }
+  scope :bragged, -> { where(:bragged_at.ne => nil) }
 
   def start_date_local_s
     start_date_local.strftime('%F %T')

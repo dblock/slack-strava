@@ -74,15 +74,28 @@ describe User do
           user.sync_new_strava_activities!
         end.to change(user.activities, :count).by(3)
       end
-      it 'updates activities since activities_at' do
+      it 'sets activities_at to nil without any bragged activity' do
         user.sync_new_strava_activities!
-        expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at)
-        user.sync_new_strava_activities!
+        expect(user.activities_at).to be nil
+      end
+      context 'with bragged activities' do
+        before do
+          user.sync_new_strava_activities!
+          expect_any_instance_of(Team).to receive(:brag!)
+          user.brag!
+        end
+        it 'sets activities_at to the most recent bragged activity' do
+          expect(user.activities_at).to eq user.activities.bragged.max(:start_date)
+        end
+        it 'updates activities since activities_at' do
+          expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at)
+          user.sync_new_strava_activities!
+        end
       end
     end
     context 'old created_at' do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
-      it 'retrieves muliple pages of activities', vcr: { cassette_name: 'strava/sync_new_strava_activities_many' } do
+      it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/sync_new_strava_activities_many' } do
         expect do
           user.sync_new_strava_activities!
         end.to change(user.activities, :count).by(14)
@@ -96,8 +109,7 @@ describe User do
     end
     it 'brags the last unbragged activity' do
       activity = Fabricate(:activity, user: user)
-      expect(user).to receive_message_chain(:activities, :unbragged, :asc).and_return [activity]
-      expect(activity).to receive(:brag!).and_return(['channel'])
+      expect_any_instance_of(Activity).to receive(:brag!).and_return(['channel'])
       returned_activity, channels = user.brag!
       expect(channels).to eq(['channel'])
       expect(returned_activity).to eq activity

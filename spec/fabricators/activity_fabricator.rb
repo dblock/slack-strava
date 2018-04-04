@@ -7,5 +7,8 @@ Fabricator(:activity) do
   distance 22_539.6
   moving_time 7586.0
   average_speed 2.971
-  map { |a| Fabricate(:map, activity: a) }
+  map { |actiity| Fabricate.build(:map, activity: actiity) }
+  after_create do
+    map.save!
+  end
 end
