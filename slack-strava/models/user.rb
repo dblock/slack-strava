@@ -57,7 +57,7 @@ class User
   def connect!(code)
     response = Strava::Api::V3::Auth.retrieve_access(ENV['STRAVA_CLIENT_ID'], ENV['STRAVA_CLIENT_SECRET'], code)
     raise "Strava returned #{response.code}: #{response.body}" unless response.success?
-    create_athlete(athlete_id: response['athlete']['id'])
+    create_athlete(Athlete.attrs_from_strava(response['athlete']))
     update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
     Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
     sync_last_strava_activity!

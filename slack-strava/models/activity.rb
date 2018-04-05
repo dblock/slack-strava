@@ -86,16 +86,7 @@ class Activity
   def to_slack
     {
       attachments: [
-        fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{time_in_hours_s} #{pace_s}",
-        title: "#{name} via <@#{user.user_name}>",
-        title_link: strava_url,
-        image_url: map.proxy_image_url,
-        fields: [
-          { title: 'Type', value: type, short: true },
-          { title: 'Distance', value: distance_s, short: true },
-          { title: 'Time', value: time_in_hours_s, short: true },
-          { title: 'Pace', value: pace_s, short: true }
-        ]
+        to_slack_attachment
       ]
     }
   end
@@ -108,26 +99,46 @@ class Activity
     channels
   end
 
-  def self.create_from_strava!(user, h)
-    activity = Activity.where(strava_id: h['id'], user_id: user.id).first
-    activity ||= Activity.new(strava_id: h['id'], user_id: user.id)
-    activity.name = h['name']
-    activity.start_date = DateTime.parse(h['start_date'])
-    activity.start_date_local = DateTime.parse(h['start_date_local'])
-    activity.distance = h['distance']
-    activity.moving_time = h['moving_time']
-    activity.average_speed = h['average_speed']
-    activity.type = h['type']
-    activity.map = Map.new(
-      strava_id: h['map']['id'],
-      summary_polyline: h['map']['summary_polyline']
-    )
+  def self.attrs_from_strava(response)
+    {
+      name: response['name'],
+      start_date: DateTime.parse(response['start_date']),
+      start_date_local: DateTime.parse(response['start_date_local']),
+      distance: response['distance'],
+      moving_time: response['moving_time'],
+      average_speed: response['average_speed'],
+      type: response['type']
+    }
+  end
+
+  def self.create_from_strava!(user, response)
+    activity = Activity.where(strava_id: response['id'], user_id: user.id).first
+    activity ||= Activity.new(strava_id: response['id'], user_id: user.id)
+    activity.assign_attributes(attrs_from_strava(response))
+    activity.build_map(Map.attrs_from_strava(response['map']))
+    activity.map.update!
     activity.save!
-    activity.map.save!
     activity
   end
 
   private
+
+  def to_slack_attachment
+    result = {
+      fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{time_in_hours_s} #{pace_s}",
+      title: "#{name} via <@#{user.user_name}>",
+      title_link: strava_url,
+      image_url: map.proxy_image_url,
+      fields: [
+        { title: 'Type', value: type, short: true },
+        { title: 'Distance', value: distance_s, short: true },
+        { title: 'Time', value: time_in_hours_s, short: true },
+        { title: 'Pace', value: pace_s, short: true }
+      ]
+    }
+    result.merge!(user.athlete.to_slack) if user.athlete
+    result
+  end
 
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
   # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby

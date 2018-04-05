@@ -12,17 +12,16 @@ class Map
   before_save :update_decoded_summary_polyline
   before_save :update_png
 
-  def update_decoded_summary_polyline
-    return unless summary_polyline && (summary_polyline_changed? || decoded_summary_polyline.nil?)
-    self.decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
+  def self.attrs_from_strava(response)
+    {
+      id: response['id'],
+      summary_polyline: response['summary_polyline']
+    }
   end
 
-  def update_png
-    return unless summary_polyline_changed? || png.nil?
-    url = image_url
-    return unless url
-    body = HTTParty.get(url).body
-    self.png = BSON::Binary.new(body)
+  def update!
+    update_decoded_summary_polyline!
+    update_png!
   end
 
   def image_url
@@ -43,5 +42,28 @@ class Map
 
   def to_s
     "proxy=#{proxy_image_url}, png=#{png_size} byte(s)"
+  end
+
+  private
+
+  def update_decoded_summary_polyline
+    return unless summary_polyline && (summary_polyline_changed? || decoded_summary_polyline.nil?)
+    update_decoded_summary_polyline!
+  end
+
+  def update_decoded_summary_polyline!
+    self.decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
+  end
+
+  def update_png!
+    url = image_url
+    return unless url
+    body = HTTParty.get(url).body
+    self.png = BSON::Binary.new(body)
+  end
+
+  def update_png
+    return unless summary_polyline_changed? || png.nil?
+    update_png!
   end
 end
