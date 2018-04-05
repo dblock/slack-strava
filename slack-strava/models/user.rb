@@ -35,7 +35,7 @@ class User
   end
 
   def self.find_by_slack_mention!(team, user_name)
-    query = user_name =~ /^<@(.*)>$/ ? { user_id: Regexp.last_match[1] } : { user_name: Regexp.new("^#{user_name}$", 'i') }
+    query = user_name =~ /^<@(.*)>$/ ? { user_id: ::Regexp.last_match[1] } : { user_name: ::Regexp.new("^#{user_name}$", 'i') }
     user = User.where(query.merge(team: team)).first
     raise SlackStrava::Error, "I don't know who #{user_name} is!" unless user
     user

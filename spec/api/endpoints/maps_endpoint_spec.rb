@@ -12,7 +12,8 @@ describe Api::Endpoints::MapsEndpoint do
       end
     end
     context 'with an activity' do
-      let(:activity) { Fabricate(:activity) }
+      let(:user) { Fabricate(:user) }
+      let(:activity) { Fabricate(:activity, user: user) }
       it 'returns map', vcr: { cassette_name: 'strava/map' } do
         get "/api/maps/#{activity.map.id}.png"
         expect(last_response.status).to eq 200
