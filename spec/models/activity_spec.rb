@@ -18,7 +18,7 @@ describe Activity do
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
-              { title: 'Type', value: 'Run', short: true },
+              { title: 'Type', value: 'Run 🏃', short: true },
               { title: 'Distance', value: '14.01mi', short: true },
               { title: 'Moving Time', value: '2h6m26s', short: true },
               { title: 'Elapsed Time', value: '2h8m6s', short: true },
@@ -46,7 +46,7 @@ describe Activity do
               text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
-                { title: 'Type', value: 'Run', short: true },
+                { title: 'Type', value: 'Run 🏃', short: true },
                 { title: 'Distance', value: '14.01mi', short: true },
                 { title: 'Moving Time', value: '2h6m26s', short: true },
                 { title: 'Elapsed Time', value: '2h8m6s', short: true },
@@ -73,7 +73,7 @@ describe Activity do
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
-              { title: 'Type', value: 'Run', short: true },
+              { title: 'Type', value: 'Run 🏃', short: true },
               { title: 'Distance', value: '22.54km', short: true },
               { title: 'Moving Time', value: '2h6m26s', short: true },
               { title: 'Elapsed Time', value: '2h8m6s', short: true },

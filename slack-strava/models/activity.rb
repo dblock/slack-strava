@@ -164,6 +164,47 @@ class Activity
     ].compact.join
   end
 
+  def emoji
+    case type
+    when 'Run' then '🏃'
+    when 'Ride' then '🚴'
+    when 'Swim' then '🏊'
+    when 'Walk' then '🚶'
+    # when 'Hike' then ''
+    when 'Alpine Ski' then '⛷️'
+    when 'Backcountry Ski' then '🎿️'
+    # when 'Canoe' then ''
+    # when 'Crossfit' then ''
+    when 'E-Bike Ride' then '🚴'
+    # when 'Elliptical' then ''
+    # when 'Handcycle' then ''
+    when 'Ice Skate' then '⛸️'
+    # when 'Inline Skate' then ''
+    # when 'Kayak' then ''
+    # when 'Kitesurf Session' then ''
+    # when 'Nordic Ski' then ''
+    when 'Rock Climb' then '🧗'
+    when 'Roller Ski' then ''
+    when 'Row' then '🚣'
+    when 'Snowboard' then '🏂'
+    # when 'Snowshoe' then ''
+    # when 'Stair Stepper' then ''
+    # when 'Stand Up Paddle' then ''
+    when 'Surf' then '🏄'
+    when 'Virtual Ride' then '🚴'
+    when 'Virtual Run' then '🏃'
+    when 'Weight Training' then '🏋️'
+    # when 'Windsurf Session' then ''
+    when 'Wheelchair' then '♿'
+      # when 'Workout' then ''
+      # when 'Yoga'' then ''
+    end
+  end
+
+  def type_with_emoji
+    [type, emoji].compact.join(' ')
+  end
+
   def to_slack_attachment
     result = {
       fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}",
@@ -172,7 +213,7 @@ class Activity
       text: "<@#{user.user_name}> on #{start_date_local_s}",
       image_url: map.proxy_image_url,
       fields: [
-        { title: 'Type', value: type, short: true },
+        { title: 'Type', value: type_with_emoji, short: true },
         { title: 'Distance', value: distance_s, short: true },
         { title: 'Moving Time', value: moving_time_in_hours_s, short: true },
         { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true },
