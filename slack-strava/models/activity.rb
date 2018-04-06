@@ -10,8 +10,10 @@ class Activity
   field :start_date_local, type: DateTime
   field :distance, type: Float
   field :moving_time, type: Float
+  field :elapsed_time, type: Float
   field :average_speed, type: Float
   field :bragged_at, type: DateTime
+  field :total_elevation_gain, type: Float
   field :type, type: String
 
   index(strava_id: 1)
@@ -23,6 +25,7 @@ class Activity
   scope :bragged, -> { where(:bragged_at.ne => nil) }
 
   def start_date_local_s
+    return unless start_date_local
     start_date_local.strftime('%F %T')
   end
 
@@ -31,6 +34,7 @@ class Activity
   end
 
   def distance_in_miles_s
+    return unless distance
     format '%.2fmi', distance_in_miles
   end
 
@@ -39,6 +43,7 @@ class Activity
   end
 
   def distance_in_kilometers_s
+    return unless distance
     format '%.2fkm', distance_in_kilometers
   end
 
@@ -49,15 +54,12 @@ class Activity
     end
   end
 
-  def time_in_hours_s
-    hours = moving_time / 3600 % 24
-    minutes = moving_time / 60 % 60
-    seconds = moving_time % 60
-    [
-      hours.to_i > 0 ? format('%dh', hours) : nil,
-      minutes.to_i > 0 ? format('%dm', minutes) : nil,
-      seconds.to_i > 0 ? format('%ds', seconds) : nil
-    ].compact.join
+  def moving_time_in_hours_s
+    time_in_hours_s moving_time
+  end
+
+  def elapsed_time_in_hours_s
+    time_in_hours_s elapsed_time
   end
 
   def pace_per_mile_s
@@ -68,6 +70,29 @@ class Activity
     convert_meters_per_second_to_pace average_speed, :km
   end
 
+  def total_elevation_gain_in_feet
+    total_elevation_gain_in_meters * 3.28084
+  end
+
+  def total_elevation_gain_in_meters
+    total_elevation_gain
+  end
+
+  def total_elevation_gain_in_meters_s
+    format '%.1fm', total_elevation_gain_in_meters
+  end
+
+  def total_elevation_gain_in_feet_s
+    format '%.1fft', total_elevation_gain_in_feet
+  end
+
+  def total_elevation_gain_s
+    case user.team.units
+    when 'km' then total_elevation_gain_in_meters_s
+    when 'mi' then total_elevation_gain_in_feet_s
+    end
+  end
+
   def pace_s
     case user.team.units
     when 'km' then pace_per_kilometer_s
@@ -76,7 +101,7 @@ class Activity
   end
 
   def to_s
-    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_s}, time=#{time_in_hours_s}, pace=#{pace_s}, #{map}"
+    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
   end
 
   def strava_url
@@ -106,8 +131,10 @@ class Activity
       start_date_local: DateTime.parse(response['start_date_local']),
       distance: response['distance'],
       moving_time: response['moving_time'],
+      elapsed_time: response['elapsed_time'],
       average_speed: response['average_speed'],
-      type: response['type']
+      type: response['type'],
+      total_elevation_gain: response['total_elevation_gain']
     }
   end
 
@@ -123,17 +150,31 @@ class Activity
 
   private
 
+  def time_in_hours_s(time)
+    return unless time
+    hours = time / 3600 % 24
+    minutes = time / 60 % 60
+    seconds = time % 60
+    [
+      hours.to_i > 0 ? format('%dh', hours) : nil,
+      minutes.to_i > 0 ? format('%dm', minutes) : nil,
+      seconds.to_i > 0 ? format('%ds', seconds) : nil
+    ].compact.join
+  end
+
   def to_slack_attachment
     result = {
-      fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{time_in_hours_s} #{pace_s}",
+      fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}",
       title: "#{name} via <@#{user.user_name}>",
       title_link: strava_url,
       image_url: map.proxy_image_url,
       fields: [
         { title: 'Type', value: type, short: true },
         { title: 'Distance', value: distance_s, short: true },
-        { title: 'Time', value: time_in_hours_s, short: true },
-        { title: 'Pace', value: pace_s, short: true }
+        { title: 'Moving Time', value: moving_time_in_hours_s, short: true },
+        { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true },
+        { title: 'Pace', value: pace_s, short: true },
+        { title: 'Elevation', value: total_elevation_gain_s, short: true }
       ]
     }
     result.merge!(user.athlete.to_slack) if user.athlete
@@ -143,7 +184,7 @@ class Activity
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
   # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby
   def convert_meters_per_second_to_pace(speed, unit = :mi)
-    return if speed == 0
+    return unless speed && speed > 0
     total_seconds = unit == :mi ? (1609.344 / speed) : (1000 / speed)
     minutes, seconds = total_seconds.divmod(60)
     seconds = seconds.round < 10 ? "0#{seconds.round}" : seconds.round.to_s
