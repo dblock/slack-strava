@@ -13,8 +13,9 @@ describe Activity do
         attachments: [
           {
             fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 2h6m26s 9m02s/mi",
-            title: "#{activity.name} via <@#{activity.user.user_name}>",
+            title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run', short: true },
@@ -40,8 +41,9 @@ describe Activity do
           attachments: [
             {
               fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 2h6m26s 9m02s/mi",
-              title: "#{activity.name} via <@#{activity.user.user_name}>",
+              title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run', short: true },
@@ -66,8 +68,9 @@ describe Activity do
         attachments: [
           {
             fallback: "#{activity.name} via #{activity.user.slack_mention}, 22.54km 2h6m26s 5m37s/km",
-            title: "#{activity.name} via <@#{activity.user.user_name}>",
+            title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run', short: true },

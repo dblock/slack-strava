@@ -26,7 +26,7 @@ class Activity
 
   def start_date_local_s
     return unless start_date_local
-    start_date_local.strftime('%F %T')
+    start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')
   end
 
   def distance_in_miles
@@ -79,10 +79,12 @@ class Activity
   end
 
   def total_elevation_gain_in_meters_s
+    return unless total_elevation_gain
     format '%.1fm', total_elevation_gain_in_meters
   end
 
   def total_elevation_gain_in_feet_s
+    return unless total_elevation_gain
     format '%.1fft', total_elevation_gain_in_feet
   end
 
@@ -101,7 +103,7 @@ class Activity
   end
 
   def to_s
-    "name=#{name}, start_date=#{start_date_local_s}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
+    "name=#{name}, start_date=#{start_date}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
   end
 
   def strava_url
@@ -165,8 +167,9 @@ class Activity
   def to_slack_attachment
     result = {
       fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}",
-      title: "#{name} via <@#{user.user_name}>",
+      title: name,
       title_link: strava_url,
+      text: "<@#{user.user_name}> on #{start_date_local_s}",
       image_url: map.proxy_image_url,
       fields: [
         { title: 'Type', value: type, short: true },

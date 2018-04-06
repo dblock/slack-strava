@@ -1,5 +1,17 @@
 Style/FrozenStringLiteralComment:
   Enabled: false
 
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
 inherit_from: .rubocop_todo.yml
 
