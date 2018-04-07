@@ -1,6 +1,6 @@
 {
 	"name": "Slava",
-	"description": "Strava integration in Slack.",
+	"description": "Strava integration with Slack.",
 	"respository": "https://github.com/dblock/slack-strava",
 	"keywords": ["slack", "bots", "strava"],
 	"addons": [
