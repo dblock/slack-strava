@@ -96,13 +96,13 @@ describe Activity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 2050.0yd 37m 1m48s/100yd",
+            fallback: "#{activity.name} via #{activity.user.slack_mention}, 2050yd 37m 1m48s/100yd",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
             fields: [
               { title: 'Type', value: 'Swim 🏊', short: true },
-              { title: 'Distance', value: '2050.0yd', short: true },
+              { title: 'Distance', value: '2050yd', short: true },
               { title: 'Time', value: '37m', short: true },
               { title: 'Pace', value: '1m48s/100yd', short: true }
             ],

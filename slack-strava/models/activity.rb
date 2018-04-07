@@ -34,8 +34,8 @@ class Activity
   end
 
   def distance_in_miles_s
-    return unless distance
-    format '%.2fmi', distance_in_miles
+    return unless distance && distance.positive?
+    format('%gmi', format('%.2f', distance_in_miles))
   end
 
   def distance_in_yards
@@ -43,8 +43,8 @@ class Activity
   end
 
   def distance_in_yards_s
-    return unless distance
-    format '%.1fyd', distance_in_yards
+    return unless distance && distance.positive?
+    format('%gyd', format('%.1f', distance_in_yards))
   end
 
   def distance_in_kilometers
@@ -52,8 +52,8 @@ class Activity
   end
 
   def distance_in_kilometers_s
-    return unless distance
-    format '%.2fkm', distance_in_kilometers
+    return unless distance && distance.positive?
+    format('%gkm', format('%.2f', distance_in_kilometers))
   end
 
   def distance_s
@@ -96,13 +96,13 @@ class Activity
   end
 
   def total_elevation_gain_in_meters_s
-    return unless total_elevation_gain
-    format '%.1fm', total_elevation_gain_in_meters
+    return unless total_elevation_gain && total_elevation_gain.positive?
+    format('%gm', format('%.1f', total_elevation_gain_in_meters))
   end
 
   def total_elevation_gain_in_feet_s
-    return unless total_elevation_gain
-    format '%.1fft', total_elevation_gain_in_feet
+    return unless total_elevation_gain && total_elevation_gain.positive?
+    format('%gft', format('%.1f', total_elevation_gain_in_feet))
   end
 
   def total_elevation_gain_s
@@ -243,7 +243,7 @@ class Activity
       { title: 'Type', value: type_with_emoji, short: true }
     ]
 
-    fields << { title: 'Distance', value: distance_s, short: true } if distance
+    fields << { title: 'Distance', value: distance_s, short: true } if distance && distance.positive?
 
     if elapsed_time && moving_time
       if elapsed_time == moving_time
@@ -259,7 +259,7 @@ class Activity
     end
 
     fields << { title: 'Pace', value: pace_s, short: true } if average_speed
-    fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain
+    fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain && total_elevation_gain.positive?
 
     fields
   end
