@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Activity do
   before do
-    expect(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
+    allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
   end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
@@ -79,6 +79,32 @@ describe Activity do
               { title: 'Elapsed Time', value: '2h8m6s', short: true },
               { title: 'Pace', value: '5m37s/km', short: true },
               { title: 'Elevation', value: '144.9m', short: true }
+            ],
+            author_name: user.athlete.name,
+            author_link: user.athlete.strava_url,
+            author_icon: user.athlete.profile_medium
+          }
+        ]
+      )
+    end
+  end
+  context 'swim activity in yards' do
+    let(:team) { Fabricate(:team) }
+    let(:user) { Fabricate(:user, team: team) }
+    let(:activity) { Fabricate(:swim_activity, user: user) }
+    it 'to_slack' do
+      expect(activity.to_slack).to eq(
+        attachments: [
+          {
+            fallback: "#{activity.name} via #{activity.user.slack_mention}, 2050.0yd 37m 1m48s/100yd",
+            title: activity.name,
+            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            fields: [
+              { title: 'Type', value: 'Swim 🏊', short: true },
+              { title: 'Distance', value: '2050.0yd', short: true },
+              { title: 'Time', value: '37m', short: true },
+              { title: 'Pace', value: '1m48s/100yd', short: true }
             ],
             author_name: user.athlete.name,
             author_link: user.athlete.strava_url,

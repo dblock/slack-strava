@@ -82,6 +82,7 @@ class User
     client = Strava::Api::V3::Client.new(access_token: access_token)
     activities = client.list_athlete_activities(per_page: 1)
     return unless activities.any?
+    Api::Middleware.logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
     Activity.create_from_strava!(self, activities.first)
   end
 

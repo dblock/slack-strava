@@ -38,6 +38,15 @@ class Activity
     format '%.2fmi', distance_in_miles
   end
 
+  def distance_in_yards
+    distance * 1.09361
+  end
+
+  def distance_in_yards_s
+    return unless distance
+    format '%.1fyd', distance_in_yards
+  end
+
   def distance_in_kilometers
     distance / 1000
   end
@@ -48,9 +57,13 @@ class Activity
   end
 
   def distance_s
-    case user.team.units
-    when 'km' then distance_in_kilometers_s
-    when 'mi' then distance_in_miles_s
+    if type == 'Swim'
+      distance_in_yards_s
+    else
+      case user.team.units
+      when 'km' then distance_in_kilometers_s
+      when 'mi' then distance_in_miles_s
+      end
     end
   end
 
@@ -64,6 +77,10 @@ class Activity
 
   def pace_per_mile_s
     convert_meters_per_second_to_pace average_speed, :mi
+  end
+
+  def pace_per_100_yards_s
+    convert_meters_per_second_to_pace average_speed, :"100yd"
   end
 
   def pace_per_kilometer_s
@@ -96,9 +113,13 @@ class Activity
   end
 
   def pace_s
-    case user.team.units
-    when 'km' then pace_per_kilometer_s
-    when 'mi' then pace_per_mile_s
+    if type == 'Swim'
+      pace_per_100_yards_s
+    else
+      case user.team.units
+      when 'km' then pace_per_kilometer_s
+      when 'mi' then pace_per_mile_s
+      end
     end
   end
 
@@ -206,30 +227,52 @@ class Activity
   end
 
   def to_slack_attachment
-    result = {
-      fallback: "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}",
-      title: name,
-      title_link: strava_url,
-      text: "<@#{user.user_name}> on #{start_date_local_s}",
-      image_url: map.proxy_image_url,
-      fields: [
-        { title: 'Type', value: type_with_emoji, short: true },
-        { title: 'Distance', value: distance_s, short: true },
-        { title: 'Moving Time', value: moving_time_in_hours_s, short: true },
-        { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true },
-        { title: 'Pace', value: pace_s, short: true },
-        { title: 'Elevation', value: total_elevation_gain_s, short: true }
-      ]
-    }
+    result = {}
+    result[:fallback] = "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
+    result[:title] = name
+    result[:title_link] = strava_url
+    result[:text] = "<@#{user.user_name}> on #{start_date_local_s}"
+    result[:image_url] = map.proxy_image_url if map
+    result[:fields] = slack_fields
     result.merge!(user.athlete.to_slack) if user.athlete
     result
+  end
+
+  def slack_fields
+    fields = [
+      { title: 'Type', value: type_with_emoji, short: true }
+    ]
+
+    fields << { title: 'Distance', value: distance_s, short: true } if distance
+
+    if elapsed_time && moving_time
+      if elapsed_time == moving_time
+        fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
+      else
+        fields << { title: 'Moving Time', value: moving_time_in_hours_s, short: true }
+        fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true }
+      end
+    elsif moving_time
+      fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
+    elsif elapsed_time
+      fields << { title: 'Time', value: elapsed_time_in_hours_s, short: true }
+    end
+
+    fields << { title: 'Pace', value: pace_s, short: true } if average_speed
+    fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain
+
+    fields
   end
 
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
   # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby
   def convert_meters_per_second_to_pace(speed, unit = :mi)
     return unless speed && speed > 0
-    total_seconds = unit == :mi ? (1609.344 / speed) : (1000 / speed)
+    total_seconds = case unit
+                    when :mi then 1609.344 / speed
+                    when :km then 1000 / speed
+                    when :"100yd" then 91.44 / speed
+    end
     minutes, seconds = total_seconds.divmod(60)
     seconds = seconds.round < 10 ? "0#{seconds.round}" : seconds.round.to_s
     "#{minutes}m#{seconds}s/#{unit}"
