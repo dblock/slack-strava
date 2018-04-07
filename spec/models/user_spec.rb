@@ -13,9 +13,9 @@ describe User do
       expect(User.find_by_slack_mention!(user.team, user.user_name.capitalize)).to eq user
     end
     it 'requires a known user' do
-      expect do
+      expect {
         User.find_by_slack_mention!(user.team, '<@nobody>')
-      end.to raise_error SlackStrava::Error, "I don't know who <@nobody> is!"
+      }.to raise_error SlackStrava::Error, "I don't know who <@nobody> is!"
     end
   end
   context '#find_create_or_update_by_slack_id!', vcr: { cassette_name: 'slack/user_info' } do
@@ -26,25 +26,25 @@ describe User do
     end
     context 'without a user' do
       it 'creates a user' do
-        expect do
+        expect {
           user = User.find_create_or_update_by_slack_id!(client, 'U42')
           expect(user).to_not be_nil
           expect(user.user_id).to eq 'U42'
           expect(user.user_name).to eq 'username'
-        end.to change(User, :count).by(1)
+        }.to change(User, :count).by(1)
       end
     end
     context 'with a user' do
       let!(:user) { Fabricate(:user, team: team) }
       it 'creates another user' do
-        expect do
+        expect {
           User.find_create_or_update_by_slack_id!(client, 'U42')
-        end.to change(User, :count).by(1)
+        }.to change(User, :count).by(1)
       end
       it 'updates the username of the existing user' do
-        expect do
+        expect {
           User.find_create_or_update_by_slack_id!(client, user.user_id)
-        end.to_not change(User, :count)
+        }.to_not change(User, :count)
         expect(user.reload.user_name).to eq 'username'
       end
     end
@@ -52,27 +52,27 @@ describe User do
   context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/sync_last_strava_activity' } do
     let!(:user) { Fabricate(:user, access_token: 'token', token_type: 'Bearer') }
     it 'retrieves the last activity' do
-      expect do
+      expect {
         user.sync_last_strava_activity!
-      end.to change(user.activities, :count).by(1)
+      }.to change(user.activities, :count).by(1)
       activity = user.activities.last
       expect(activity.strava_id).to eq '1484119264'
       expect(activity.name).to eq 'Reservoir Dogs'
       expect(activity.map.png.data.size).to eq 69_234
     end
     it 'only saves the last activity once' do
-      expect do
+      expect {
         2.times { user.sync_last_strava_activity! }
-      end.to change(user.activities, :count).by(1)
+      }.to change(user.activities, :count).by(1)
     end
   end
   context 'sync_new_strava_activities!' do
     context 'recent created_at', vcr: { cassette_name: 'strava/sync_new_strava_activities' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
       it 'retrieves new activities since created_at' do
-        expect do
+        expect {
           user.sync_new_strava_activities!
-        end.to change(user.activities, :count).by(3)
+        }.to change(user.activities, :count).by(3)
       end
       it 'sets activities_at to nil without any bragged activity' do
         user.sync_new_strava_activities!
@@ -96,9 +96,9 @@ describe User do
     context 'old created_at' do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
       it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/sync_new_strava_activities_many' } do
-        expect do
+        expect {
           user.sync_new_strava_activities!
-        end.to change(user.activities, :count).by(14)
+        }.to change(user.activities, :count).by(14)
       end
     end
   end

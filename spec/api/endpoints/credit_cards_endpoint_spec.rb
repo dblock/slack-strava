@@ -14,12 +14,12 @@ describe Api::Endpoints::CreditCardsEndpoint do
     context 'premium team without a stripe customer id' do
       let!(:team) { Fabricate(:team, subscribed: true, stripe_customer_id: nil) }
       it 'fails to update credit_card' do
-        expect do
+        expect {
           client.credit_cards._post(
             team_id: team._id,
             stripe_token: 'token'
           )
-        end.to raise_error Faraday::ClientError do |e|
+        }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])
           expect(json['error']).to eq 'Not a Subscriber'
         end

@@ -179,9 +179,9 @@ class Activity
     minutes = time / 60 % 60
     seconds = time % 60
     [
-      hours.to_i > 0 ? format('%dh', hours) : nil,
-      minutes.to_i > 0 ? format('%dm', minutes) : nil,
-      seconds.to_i > 0 ? format('%ds', seconds) : nil
+      hours.to_i.positive? ? format('%dh', hours) : nil,
+      minutes.to_i.positive? ? format('%dm', minutes) : nil,
+      seconds.to_i.positive? ? format('%ds', seconds) : nil
     ].compact.join
   end
 
@@ -267,12 +267,12 @@ class Activity
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
   # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby
   def convert_meters_per_second_to_pace(speed, unit = :mi)
-    return unless speed && speed > 0
+    return unless speed && speed.positive?
     total_seconds = case unit
                     when :mi then 1609.344 / speed
                     when :km then 1000 / speed
                     when :"100yd" then 91.44 / speed
-    end
+                    end
     minutes, seconds = total_seconds.divmod(60)
     seconds = seconds.round < 10 ? "0#{seconds.round}" : seconds.round.to_s
     "#{minutes}m#{seconds}s/#{unit}"

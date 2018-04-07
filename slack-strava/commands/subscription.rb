@@ -4,7 +4,6 @@ module SlackStrava
       include SlackStrava::Commands::Mixins::Subscribe
 
       subscribe_command 'subscription' do |client, data, _match|
-        user = ::User.find_create_or_update_by_slack_id!(client, data.user)
         if client.owner.stripe_customer_id
           customer = Stripe::Customer.retrieve(client.owner.stripe_customer_id)
           customer_info = "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}."

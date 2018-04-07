@@ -14,14 +14,14 @@ describe Api::Endpoints::SubscriptionsEndpoint do
     context 'subscribed team' do
       let!(:team) { Fabricate(:team, subscribed: true, stripe_customer_id: 'customer_id') }
       it 'fails to create a subscription' do
-        expect do
+        expect {
           client.subscriptions._post(
             team_id: team.team_id,
             stripe_token: 'token',
             stripe_token_type: 'card',
             stripe_email: 'foo@bar.com'
           )
-        end.to raise_error Faraday::ClientError do |e|
+        }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])
           expect(json['error']).to eq 'Already Subscribed'
         end
@@ -30,14 +30,14 @@ describe Api::Endpoints::SubscriptionsEndpoint do
     context 'non-subscribed team with a customer_id' do
       let!(:team) { Fabricate(:team, stripe_customer_id: 'customer_id') }
       it 'fails to create a subscription' do
-        expect do
+        expect {
           client.subscriptions._post(
             team_id: team.team_id,
             stripe_token: 'token',
             stripe_token_type: 'card',
             stripe_email: 'foo@bar.com'
           )
-        end.to raise_error Faraday::ClientError do |e|
+        }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])
           expect(json['error']).to eq 'Customer Already Registered'
         end

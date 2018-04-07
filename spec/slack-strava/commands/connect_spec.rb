@@ -24,7 +24,8 @@ describe SlackStrava::Commands::Connect do
               text: 'Click Here',
               url: url
             }]
-          }])
+          }]
+        )
         message_hook.call(client, Hashie::Mash.new(channel: 'channel', user: SlackRubyBot.config.user, text: "#{SlackRubyBot.config.user} connect"))
       end
     end

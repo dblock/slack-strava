@@ -1,17 +1,19 @@
 Style/FrozenStringLiteralComment:
   Enabled: false
 
-Metrics/AbcSize:
+Metrics:
   Enabled: false
 
-Metrics/BlockLength:
+Style/Documentation:
   Enabled: false
 
-Metrics/ClassLength:
-  Enabled: false
+Style/MultilineBlockChain:
+  Exclude:
+    - 'spec/**/*'
 
-Metrics/CyclomaticComplexity:
-  Enabled: false
+Style/BlockDelimiters:
+  EnforcedStyle: braces_for_chaining
+  FunctionalMethods:
+    - expect
 
 inherit_from: .rubocop_todo.yml
-

@@ -8,7 +8,7 @@ module Api
     end
 
     def self.instance
-      @instance ||= Rack::Builder.new do
+      @instance ||= Rack::Builder.new {
         use Rack::Cors do
           allow do
             origins '*'
@@ -26,7 +26,7 @@ module Api
         use Rack::ServerPages
 
         run Api::Middleware.new
-      end.to_app
+      }.to_app
     end
 
     def call(env)
