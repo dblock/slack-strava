@@ -58,6 +58,8 @@ describe User do
       activity = user.activities.last
       expect(activity.strava_id).to eq '1484119264'
       expect(activity.name).to eq 'Reservoir Dogs'
+      expect(activity.map.id).to be_a BSON::ObjectId
+      expect(activity.map.strava_id).to_not be nil
       expect(activity.map.png.data.size).to eq 69_234
     end
     it 'only saves the last activity once' do
