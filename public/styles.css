@@ -7,6 +7,10 @@ body {
   width: 200px;
 }
 
+.logo img {
+  width: 120px;
+}
+
 .image {
   max-width: 600px;
   margin: auto;
