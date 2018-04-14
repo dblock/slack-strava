@@ -50,6 +50,10 @@ class User
     instance
   end
 
+  def inform!(text)
+    team.inform!(text, user_id)
+  end
+
   def to_s
     "user_id=#{user_id}, user_name=#{user_name}"
   end

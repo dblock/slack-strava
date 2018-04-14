@@ -35,15 +35,26 @@ class Team
   end
 
   # returns channels that were sent to
-  def inform!(message)
+  def inform!(message, user_id = nil)
     client = Slack::Web::Client.new(token: token)
-    channels = client.channels_list['channels'].select { |channel| channel['is_member'] }
+    channels = client
+               .channels_list(exclude_archived: true, exclude_members: true)['channels']
+               .select { |channel| channel['is_member'] }
     channels.each do |channel|
+      next if user_id && !user_in_channel?(user_id, channel['id'])
       message_with_channel = message.merge(channel: channel['id'], as_user: true)
       logger.info "Posting '#{message_with_channel.to_json}' to #{self} on ##{channel['name']}."
       client.chat_postMessage(message_with_channel)
     end
     channels.map { |channel| "<##{channel['id']}|#{channel['name']}>" }
+  end
+
+  def user_in_channel?(user_id, channel_id)
+    client = Slack::Web::Client.new(token: token)
+    client.conversations_members(channel: channel_id) do |response|
+      return true if response.members.include?(user_id)
+    end
+    false
   end
 
   def subscription_expired!

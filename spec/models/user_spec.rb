@@ -117,4 +117,11 @@ describe User do
       expect(returned_activity).to eq activity
     end
   end
+  context 'inform!' do
+    let!(:user) { Fabricate(:user) }
+    it 'calls team#inform! with user_id' do
+      expect(user.team).to receive(:inform!).with('whatever', user.user_id)
+      user.inform!('whatever')
+    end
+  end
 end
