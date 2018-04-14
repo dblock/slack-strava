@@ -60,7 +60,7 @@ class Team
   def subscription_expired!
     return unless subscription_expired?
     return if subscription_expired_at
-    inform!(subscribe_text)
+    inform!(text: subscribe_text)
     update_attributes!(subscription_expired_at: Time.now.utc)
   end
 
@@ -95,7 +95,7 @@ EOS
 
   def inform_subscribed_changed!
     return unless subscribed? && subscribed_changed?
-    inform! SUBSCRIBED_TEXT
+    inform!(text: SUBSCRIBED_TEXT)
   end
 
   def update_subscription_expired_at

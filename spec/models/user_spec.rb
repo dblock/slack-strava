@@ -120,8 +120,8 @@ describe User do
   context 'inform!' do
     let!(:user) { Fabricate(:user) }
     it 'calls team#inform! with user_id' do
-      expect(user.team).to receive(:inform!).with('whatever', user.user_id)
-      user.inform!('whatever')
+      expect(user.team).to receive(:inform!).with({ text: 'whatever' }, user.user_id)
+      user.inform!(text: 'whatever')
     end
   end
 end

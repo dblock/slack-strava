@@ -78,7 +78,7 @@ describe Team do
   context '#subscription_expired!' do
     let(:team) { Fabricate(:team, created_at: 2.weeks.ago) }
     before do
-      expect(team).to receive(:inform!).with(team.subscribe_text)
+      expect(team).to receive(:inform!).with(text: team.subscribe_text)
       team.subscription_expired!
     end
     it 'sets subscription_expired_at' do
@@ -86,7 +86,7 @@ describe Team do
     end
     context '(re)subscribed' do
       before do
-        expect(team).to receive(:inform!).with(Team::SUBSCRIBED_TEXT)
+        expect(team).to receive(:inform!).with(text: Team::SUBSCRIBED_TEXT)
         team.update_attributes!(subscribed: true)
       end
       it 'resets subscription_expired_at' do

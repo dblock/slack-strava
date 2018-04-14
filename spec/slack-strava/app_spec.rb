@@ -23,7 +23,7 @@ describe SlackStrava::App do
     let!(:subscribed_team_a_month_ago) { Fabricate(:team, created_at: 1.month.ago, subscribed: true) }
     it 'destroys teams inactive for two weeks' do
       expect_any_instance_of(Team).to receive(:inform!).with(
-        "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
+        text: "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
       ).once
       subject.send(:deactivate_asleep_teams!)
       expect(active_team.reload.active).to be true
@@ -45,13 +45,13 @@ describe SlackStrava::App do
       it 'notifies past due subscription' do
         customer.subscriptions.data.first['status'] = 'past_due'
         expect(Stripe::Customer).to receive(:retrieve).and_return(customer)
-        expect_any_instance_of(Team).to receive(:inform!).with("Your subscription to StripeMock Default Plan ID ($29.99) is past due. #{team.update_cc_text}")
+        expect_any_instance_of(Team).to receive(:inform!).with(text: "Your subscription to StripeMock Default Plan ID ($29.99) is past due. #{team.update_cc_text}")
         subject.send(:check_subscribed_teams!)
       end
       it 'notifies past due subscription' do
         customer.subscriptions.data.first['status'] = 'canceled'
         expect(Stripe::Customer).to receive(:retrieve).and_return(customer)
-        expect_any_instance_of(Team).to receive(:inform!).with('Your subscription to StripeMock Default Plan ID ($29.99) was canceled and your team has been downgraded. Thank you for being a customer!')
+        expect_any_instance_of(Team).to receive(:inform!).with(text: 'Your subscription to StripeMock Default Plan ID ($29.99) was canceled and your team has been downgraded. Thank you for being a customer!')
         subject.send(:check_subscribed_teams!)
         expect(team.reload.subscribed?).to be false
       end
