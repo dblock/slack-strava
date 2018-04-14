@@ -85,7 +85,7 @@ class Team
   end
 
   def subscribe_team_text
-    "Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id}. All proceeds donated to NYC TeamForKids charity."
+    "Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
   end
 
   SUBSCRIBED_TEXT = <<~EOS.freeze
