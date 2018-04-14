@@ -58,6 +58,9 @@ describe Team do
       it 'is not asleep' do
         expect(team.asleep?).to be false
       end
+      it 'resets subscription_expired_at' do
+        expect(team.subscription_expired_at).to be nil
+      end
     end
     context 'team created over two weeks ago' do
       let(:team) { Fabricate(:team, created_at: 2.weeks.ago - 1.day) }
@@ -72,5 +75,24 @@ describe Team do
       end
     end
   end
-  pending '#brag!'
+  context '#subscription_expired!' do
+    let(:team) { Fabricate(:team, created_at: 2.weeks.ago) }
+    before do
+      expect(team).to receive(:inform!).with(team.subscribe_text)
+      team.subscription_expired!
+    end
+    it 'sets subscription_expired_at' do
+      expect(team.subscription_expired_at).to_not be nil
+    end
+    context '(re)subscribed' do
+      before do
+        expect(team).to receive(:inform!).with(Team::SUBSCRIBED_TEXT)
+        team.update_attributes!(subscribed: true)
+      end
+      it 'resets subscription_expired_at' do
+        expect(team.subscription_expired_at).to be nil
+      end
+    end
+  end
+  pending '#inform!'
 end

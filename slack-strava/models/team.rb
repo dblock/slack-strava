@@ -7,11 +7,14 @@ class Team
   field :stripe_customer_id, type: String
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
+  field :subscription_expired_at, type: DateTime
 
   scope :api, -> { where(api: true) }
+  scope :striped, -> { where(subscribed: true, :stripe_customer_id.ne => nil) }
 
   has_many :users, dependent: :destroy
 
+  before_validation :update_subscription_expired_at
   after_update :inform_subscribed_changed!
 
   def units_s
@@ -31,17 +34,8 @@ class Team
     created_at <= time_limit
   end
 
-  def inform!(message)
-    client = Slack::Web::Client.new(token: token)
-    channels = client.channels_list['channels'].select { |channel| channel['is_member'] }
-    return unless channels.any?
-    channel = channels.first
-    logger.info "Sending '#{message}' to #{self} on ##{channel['name']}."
-    client.chat_postMessage(text: message, channel: channel['id'], as_user: true)
-  end
-
   # returns channels that were sent to
-  def brag!(message)
+  def inform!(message)
     client = Slack::Web::Client.new(token: token)
     channels = client.channels_list['channels'].select { |channel| channel['is_member'] }
     channels.each do |channel|
@@ -50,6 +44,13 @@ class Team
       client.chat_postMessage(message_with_channel)
     end
     channels.map { |channel| "<##{channel['id']}|#{channel['name']}>" }
+  end
+
+  def subscription_expired!
+    return unless subscription_expired?
+    return if subscription_expired_at
+    inform!(subscribe_text)
+    update_attributes!(subscription_expired_at: Time.now.utc)
   end
 
   def subscription_expired?
@@ -84,5 +85,9 @@ EOS
   def inform_subscribed_changed!
     return unless subscribed? && subscribed_changed?
     inform! SUBSCRIBED_TEXT
+  end
+
+  def update_subscription_expired_at
+    self.subscription_expired_at = nil if subscribed || subscribed_at
   end
 end

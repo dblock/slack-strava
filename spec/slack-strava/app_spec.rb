@@ -23,7 +23,7 @@ describe SlackStrava::App do
     let!(:subscribed_team_a_month_ago) { Fabricate(:team, created_at: 1.month.ago, subscribed: true) }
     it 'destroys teams inactive for two weeks' do
       expect_any_instance_of(Team).to receive(:inform!).with(
-        "This integration hasn't been used for 2 weeks, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
+        "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
       ).once
       subject.send(:deactivate_asleep_teams!)
       expect(active_team.reload.active).to be true

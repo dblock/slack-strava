@@ -8,7 +8,12 @@ module SlackStrava
     end
 
     def after_start!
-      check_subscribed_teams!
+      once_and_every 60 * 60 * 24 do
+        check_subscribed_teams!
+      end
+      once_and_every 60 * 60 do
+        expire_subscriptions!
+      end
       once_and_every 60 do
         brag!
       end
@@ -23,10 +28,23 @@ module SlackStrava
       end
     end
 
-    def brag!
+    def expire_subscriptions!
+      logger.info "Checking subscriptions for #{Team.active.count} team(s)."
       Team.active.each do |team|
         begin
-          logger.info "Checking #{team} ..."
+          next unless team.subscription_expired?
+          team.subscription_expired!
+        rescue StandardError => e
+          backtrace = e.backtrace.join("\n")
+          logger.warn "Error in expire subscriptions cron for team #{team}, #{e.message}, #{backtrace}."
+        end
+      end
+    end
+
+    def brag!
+      logger.info "Checking activities for #{Team.active.count} team(s)."
+      Team.active.each do |team|
+        begin
           team.users.connected_to_strava.each do |user|
             begin
               user.sync_new_strava_activities!
@@ -48,7 +66,7 @@ module SlackStrava
         next unless team.asleep?
         begin
           team.deactivate!
-          team.inform! "This integration hasn't been used for 2 weeks, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
+          team.inform! "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
         rescue StandardError => e
           logger.warn "Error informing team #{team}, #{e.message}."
         end
@@ -56,7 +74,8 @@ module SlackStrava
     end
 
     def check_subscribed_teams!
-      Team.where(subscribed: true, :stripe_customer_id.ne => nil).each do |team|
+      logger.info "Checking Stripe subscriptions for #{Team.striped.count} team(s)."
+      Team.striped.each do |team|
         customer = Stripe::Customer.retrieve(team.stripe_customer_id)
         customer.subscriptions.each do |subscription|
           subscription_name = "#{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)})"

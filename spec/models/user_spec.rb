@@ -83,7 +83,7 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          expect_any_instance_of(Team).to receive(:brag!)
+          expect_any_instance_of(Team).to receive(:inform!)
           user.brag!
         end
         it 'sets activities_at to the most recent bragged activity' do
