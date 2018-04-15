@@ -8,6 +8,8 @@ class Team
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
   field :subscription_expired_at, type: DateTime
+  field :bot_user_id, type: String
+  field :activated_user_id, type: String
 
   scope :api, -> { where(api: true) }
   scope :striped, -> { where(subscribed: true, :stripe_customer_id.ne => nil) }
@@ -16,6 +18,7 @@ class Team
 
   before_validation :update_subscription_expired_at
   after_update :inform_subscribed_changed!
+  after_save :inform_activated!
 
   def units_s
     case units
@@ -77,6 +80,13 @@ class Team
     "Update your credit card info at #{SlackStrava::Service.url}/update_cc?team_id=#{team_id}."
   end
 
+  def subscribed_text
+    <<~EOS.freeze
+      Your team has been subscribed. All proceeds go to NYC TeamForKids charity. Thank you!
+      Follow https://twitter.com/playplayio for news and updates.
+EOS
+  end
+
   private
 
   def trial_expired_text
@@ -88,14 +98,29 @@ class Team
     "Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
   end
 
-  SUBSCRIBED_TEXT = <<~EOS.freeze
-    Your team has been subscribed. All proceeds go to NYC TeamForKids charity. Thank you!
-    Follow https://twitter.com/playplayio for news and updates.
-EOS
-
   def inform_subscribed_changed!
     return unless subscribed? && subscribed_changed?
-    inform!(text: SUBSCRIBED_TEXT)
+    inform!(text: subscribed_text)
+  end
+
+  def activated_text
+    <<~EOS
+      Welcome to Slava!
+      Invite <@#{bot_user_id}> to a channel to publish activities to it.
+      Type \"*connect*\" to connect your Strava account."
+EOS
+  end
+
+  def inform_activated!
+    return unless active? && activated_user_id && bot_user_id
+    return unless active_changed? || activated_user_id_changed?
+    client = Slack::Web::Client.new(token: token)
+    im = client.im_open(user: activated_user_id)
+    client.chat_postMessage(
+      text: activated_text,
+      channel: im['channel']['id'],
+      as_user: true
+    )
   end
 
   def update_subscription_expired_at

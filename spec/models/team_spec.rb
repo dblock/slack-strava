@@ -86,7 +86,7 @@ describe Team do
     end
     context '(re)subscribed' do
       before do
-        expect(team).to receive(:inform!).with(text: Team::SUBSCRIBED_TEXT)
+        expect(team).to receive(:inform!).with(text: team.subscribed_text)
         team.update_attributes!(subscribed: true)
       end
       it 'resets subscription_expired_at' do
@@ -94,5 +94,19 @@ describe Team do
       end
     end
   end
-  pending '#inform!'
+  context '#inform!' do
+    let(:team) { Fabricate(:team) }
+    it 'sends message to all channels', vcr: { cassette_name: 'slack/channels_list' } do
+      expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).exactly(3).times
+      team.inform!(message: 'message')
+    end
+    it 'sends message to all channels a user is a member of', vcr: { cassette_name: 'slack/channels_list_conversations_members' } do
+      expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+        message: 'message',
+        channel: 'C0HNSS6H5',
+        as_user: true
+      )
+      team.inform!({ message: 'message' }, 'U0HLFUZLJ')
+    end
+  end
 end
