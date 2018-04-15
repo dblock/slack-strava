@@ -21,6 +21,12 @@ module SlackStrava
 
     private
 
+    def log_info_without_repeat(message)
+      return if message == @log_message
+      @log_message = message
+      logger.info message
+    end
+
     def once_and_every(tt)
       yield
       every tt do
@@ -29,7 +35,7 @@ module SlackStrava
     end
 
     def expire_subscriptions!
-      logger.info "Checking subscriptions for #{Team.active.count} team(s)."
+      log_info_without_repeat "Checking subscriptions for #{Team.active.count} team(s)."
       Team.active.each do |team|
         begin
           next unless team.subscription_expired?
@@ -42,7 +48,7 @@ module SlackStrava
     end
 
     def brag!
-      logger.info "Checking activities for #{Team.active.count} team(s)."
+      log_info_without_repeat "Checking activities for #{Team.active.count} team(s)."
       Team.active.each do |team|
         begin
           team.users.connected_to_strava.each do |user|
@@ -62,6 +68,7 @@ module SlackStrava
     end
 
     def deactivate_asleep_teams!
+      log_info_without_repeat "Checking inactivity for #{Team.active.count} team(s)."
       Team.active.each do |team|
         next unless team.asleep?
         begin
