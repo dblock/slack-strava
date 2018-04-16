@@ -50,8 +50,18 @@ class User
     instance
   end
 
-  def inform!(text)
-    team.inform!(text, user_id)
+  def inform!(message)
+    team.slack_channels.map do |channel|
+      next if user_id && !user_in_channel?(channel['id'])
+      message_with_channel = message.merge(channel: channel['id'], as_user: true)
+      Api::Middleware.logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
+      rc = team.slack_client.chat_postMessage(message_with_channel)
+
+      {
+        ts: rc['ts'],
+        channel: channel
+      }
+    end
   end
 
   def to_s
@@ -69,22 +79,28 @@ class User
   end
 
   def dm!(message)
-    client = Slack::Web::Client.new(token: team.token)
-    im = client.im_open(user: user_id)
-    client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
+    im = team.slack_client.im_open(user: user_id)
+    team.slack_client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
   end
 
   def brag!
     activity = activities.unbragged.asc(:start_date).first
     return unless activity
     update_attributes!(activities_at: activity.start_date)
-    [activity, activity.brag!]
+    results = activity.brag!
+    return unless results
+    results.map do |result|
+      result.merge(activity: activity)
+    end
+  end
+
+  def strava_client
+    raise 'Missing access_token' unless access_token
+    @strava_client ||= Strava::Api::V3::Client.new(access_token: access_token)
   end
 
   def sync_last_strava_activity!
-    raise 'Missing access_token' unless access_token
-    client = Strava::Api::V3::Client.new(access_token: access_token)
-    activities = client.list_athlete_activities(per_page: 1)
+    activities = strava_client.list_athlete_activities(per_page: 1)
     return unless activities.any?
     Api::Middleware.logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
     Activity.create_from_strava!(self, activities.first)
@@ -96,13 +112,19 @@ class User
 
   private
 
+  def user_in_channel?(channel_id)
+    team.slack_client.conversations_members(channel: channel_id) do |response|
+      return true if response.members.include?(user_id)
+    end
+    false
+  end
+
   def sync_strava_activities!(options = {})
     raise 'Missing access_token' unless access_token
-    client = Strava::Api::V3::Client.new(access_token: access_token)
     page = 1
     page_size = 10
     loop do
-      activities = client.list_athlete_activities(options.merge(page: page, per_page: page_size))
+      activities = strava_client.list_athlete_activities(options.merge(page: page, per_page: page_size))
       activities.each do |activity|
         Activity.create_from_strava!(self, activity)
       end

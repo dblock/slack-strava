@@ -83,7 +83,7 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          expect_any_instance_of(Team).to receive(:inform!)
+          expect(user).to receive(:inform!)
           user.brag!
         end
         it 'sets activities_at to the most recent bragged activity' do
@@ -111,17 +111,31 @@ describe User do
     end
     it 'brags the last unbragged activity' do
       activity = Fabricate(:activity, user: user)
-      expect_any_instance_of(Activity).to receive(:brag!).and_return(['channel'])
-      returned_activity, channels = user.brag!
-      expect(channels).to eq(['channel'])
-      expect(returned_activity).to eq activity
+      expect_any_instance_of(Activity).to receive(:brag!).and_return(
+        [
+          ts: '1503435956.000247',
+          channel: {
+            id: 'C1',
+            name: 'channel'
+          }
+        ]
+      )
+      results = user.brag!
+      expect(results.size).to eq(1)
+      expect(results.first[:ts]).to eq '1503435956.000247'
+      expect(results.first[:channel]).to eq(id: 'C1', name: 'channel')
+      expect(results.first[:activity]).to eq activity
     end
   end
-  context 'inform!' do
-    let!(:user) { Fabricate(:user) }
-    it 'calls team#inform! with user_id' do
-      expect(user.team).to receive(:inform!).with({ text: 'whatever' }, user.user_id)
-      user.inform!(text: 'whatever')
+  context '#inform!' do
+    let(:user) { Fabricate(:user, user_id: 'U0HLFUZLJ') }
+    it 'sends message to all channels a user is a member of', vcr: { cassette_name: 'slack/channels_list_conversations_members' } do
+      expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+        message: 'message',
+        channel: 'C0HNSS6H5',
+        as_user: true
+      ).and_return(ts: '1503435956.000247')
+      user.inform!(message: 'message')
     end
   end
 end

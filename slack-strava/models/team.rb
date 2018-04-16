@@ -37,27 +37,31 @@ class Team
     created_at <= time_limit
   end
 
-  # returns channels that were sent to
-  def inform!(message, user_id = nil)
-    client = Slack::Web::Client.new(token: token)
-    channels = client
-               .channels_list(exclude_archived: true, exclude_members: true)['channels']
-               .select { |channel| channel['is_member'] }
-    channels.each do |channel|
-      next if user_id && !user_in_channel?(user_id, channel['id'])
-      message_with_channel = message.merge(channel: channel['id'], as_user: true)
-      logger.info "Posting '#{message_with_channel.to_json}' to #{self} on ##{channel['name']}."
-      client.chat_postMessage(message_with_channel)
-    end
-    channels.map { |channel| "<##{channel['id']}|#{channel['name']}>" }
+  def slack_client
+    @slack_client ||= Slack::Web::Client.new(token: token)
   end
 
-  def user_in_channel?(user_id, channel_id)
-    client = Slack::Web::Client.new(token: token)
-    client.conversations_members(channel: channel_id) do |response|
-      return true if response.members.include?(user_id)
+  def slack_channels
+    slack_client.channels_list(
+      exclude_archived: true,
+      exclude_members: true
+    )['channels'].select do |channel|
+      channel['is_member']
     end
-    false
+  end
+
+  # returns channels that were sent to
+  def inform!(message)
+    slack_channels.map do |channel|
+      message_with_channel = message.merge(channel: channel['id'], as_user: true)
+      logger.info "Posting '#{message_with_channel.to_json}' to #{self} on ##{channel['name']}."
+      rc = slack_client.chat_postMessage(message_with_channel)
+
+      {
+        ts: rc['ts'],
+        channel: channel
+      }
+    end
   end
 
   def subscription_expired!
@@ -114,9 +118,8 @@ EOS
   def inform_activated!
     return unless active? && activated_user_id && bot_user_id
     return unless active_changed? || activated_user_id_changed?
-    client = Slack::Web::Client.new(token: token)
-    im = client.im_open(user: activated_user_id)
-    client.chat_postMessage(
+    im = slack_client.im_open(user: activated_user_id)
+    slack_client.chat_postMessage(
       text: activated_text,
       channel: im['channel']['id'],
       as_user: true
