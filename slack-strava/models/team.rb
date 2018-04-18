@@ -95,7 +95,7 @@ EOS
 
   def trial_expired_text
     return unless subscription_expired?
-    'Your trial subscription has expired.'
+    'Your trial subscription has expired and we will no longer send your Strava activities to Slack.'
   end
 
   def subscribe_team_text
