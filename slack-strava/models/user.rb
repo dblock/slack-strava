@@ -78,6 +78,20 @@ class User
     dm!(text: 'Your Strava account has been successfully connected.')
   end
 
+  def dm_connect!(message = 'Please connect your Strava account')
+    url = connect_to_strava_url
+    dm!(
+      text: "#{message}.", attachments: [
+        fallback: "#{message} at #{url}.",
+        actions: [
+          type: 'button',
+          text: 'Click Here',
+          url: url
+        ]
+      ]
+    )
+  end
+
   def dm!(message)
     im = team.slack_client.im_open(user: user_id)
     team.slack_client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
@@ -104,6 +118,8 @@ class User
     return unless activities.any?
     Api::Middleware.logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
     Activity.create_from_strava!(self, activities.first)
+  rescue Strava::Api::V3::ClientError => e
+    handle_strava_error e
   end
 
   def sync_new_strava_activities!
@@ -131,5 +147,17 @@ class User
       break if activities.size < page_size
       page += 1
     end
+  rescue Strava::Api::V3::ClientError => e
+    handle_strava_error e
+  end
+
+  def handle_strava_error(e)
+    Api::Middleware.logger.error e
+    case e.message
+    when '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]} [HTTP 401]' then
+      dm_connect! 'There was an authorization problem. Please reconnect your Strava account'
+      update_attributes!(access_token: nil)
+    end
+    raise e
   end
 end

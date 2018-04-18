@@ -67,6 +67,14 @@ describe User do
         2.times { user.sync_last_strava_activity! }
       }.to change(user.activities, :count).by(1)
     end
+    it 'disconnects user on auth failure' do
+      allow(user.strava_client).to receive(:list_athlete_activities).and_raise(
+        Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]}')
+      )
+      expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
+      expect { user.sync_last_strava_activity! }.to raise_error Strava::Api::V3::ClientError
+      expect(user.access_token).to be nil
+    end
   end
   context 'sync_new_strava_activities!' do
     context 'recent created_at', vcr: { cassette_name: 'strava/sync_new_strava_activities' } do
@@ -136,6 +144,38 @@ describe User do
         as_user: true
       ).and_return(ts: '1503435956.000247')
       user.inform!(message: 'message')
+    end
+  end
+  context '#dm_connect!' do
+    let(:user) { Fabricate(:user) }
+    let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
+    it 'uses the default message' do
+      expect(user).to receive(:dm!).with(
+        text: 'Please connect your Strava account.',
+        attachments: [{
+          fallback: "Please connect your Strava account at #{url}.",
+          actions: [{
+            type: 'button',
+            text: 'Click Here',
+            url: url
+          }]
+        }]
+      )
+      user.dm_connect!
+    end
+    it 'uses a custom message' do
+      expect(user).to receive(:dm!).with(
+        text: 'Please reconnect your account.',
+        attachments: [{
+          fallback: "Please reconnect your account at #{url}.",
+          actions: [{
+            type: 'button',
+            text: 'Click Here',
+            url: url
+          }]
+        }]
+      )
+      user.dm_connect!('Please reconnect your account')
     end
   end
 end

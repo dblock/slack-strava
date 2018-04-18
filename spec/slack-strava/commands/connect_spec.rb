@@ -18,7 +18,7 @@ describe SlackStrava::Commands::Connect do
         expect(user).to receive(:dm!).with(
           text: 'Please connect your Strava account.',
           attachments: [{
-            fallback: "Connect your Strava account at #{url}.",
+            fallback: "Please connect your Strava account at #{url}.",
             actions: [{
               type: 'button',
               text: 'Click Here',
