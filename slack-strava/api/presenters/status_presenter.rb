@@ -11,6 +11,8 @@ module Api
 
       property :teams_count
       property :active_teams_count
+      property :total_distance_in_miles_s
+      property :connected_users_count
       property :ping
 
       def ping
@@ -25,6 +27,20 @@ module Api
 
       def active_teams_count
         Team.active.count
+      end
+
+      def connected_users_count
+        User.connected_to_strava.count
+      end
+
+      def total_distance_in_miles
+        Activity.sum(:distance) * 0.00062137
+      end
+
+      def total_distance_in_miles_s
+        distance = total_distance_in_miles
+        return unless distance && distance.positive?
+        format('%g miles', format('%.2f', distance))
       end
 
       def base_url(opts)
