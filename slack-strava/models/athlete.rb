@@ -47,9 +47,7 @@ class Athlete
   end
 
   def sync!
-    raise 'Missing access_token' unless user.access_token
-    client = Strava::Api::V3::Client.new(access_token: user.access_token)
-    info = client.retrieve_current_athlete
+    info = user.strava_client.retrieve_current_athlete
     update_attributes!(Athlete.attrs_from_strava(info))
     self
   end
