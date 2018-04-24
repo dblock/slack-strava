@@ -51,7 +51,7 @@ class User
   end
 
   def inform!(message)
-    team.slack_channels.map do |channel|
+    team.slack_channels.map { |channel|
       next if user_id && !user_in_channel?(channel['id'])
       message_with_channel = message.merge(channel: channel['id'], as_user: true)
       Api::Middleware.logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
@@ -61,7 +61,7 @@ class User
         ts: rc['ts'],
         channel: channel
       }
-    end
+    }.compact
   end
 
   def to_s

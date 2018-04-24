@@ -143,7 +143,7 @@ describe User do
         channel: 'C0HNSS6H5',
         as_user: true
       ).and_return(ts: '1503435956.000247')
-      user.inform!(message: 'message')
+      expect(user.inform!(message: 'message').count).to eq(1)
     end
   end
   context '#dm_connect!' do
