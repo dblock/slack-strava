@@ -4,6 +4,9 @@ class Team
   field :units, type: String, default: 'mi'
   validates_inclusion_of :units, in: %w[mi km]
 
+  field :maps, type: String, default: 'full'
+  validates_inclusion_of :maps, in: %w[off full thumb]
+
   field :stripe_customer_id, type: String
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
@@ -26,6 +29,19 @@ class Team
       'miles'
     when 'km'
       'kilometers'
+    else
+      raise ArgumentError
+    end
+  end
+
+  def maps_s
+    case maps
+    when 'off'
+      'not displayed'
+    when 'full'
+      'displayed in full'
+    when 'thumb'
+      'displayed as thumbnails'
     else
       raise ArgumentError
     end

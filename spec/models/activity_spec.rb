@@ -114,4 +114,26 @@ describe Activity do
       )
     end
   end
+  context 'maps' do
+    context 'without maps' do
+      let(:team) { Fabricate(:team, maps: 'off') }
+      let(:user) { Fabricate(:user, team: team) }
+      let(:activity) { Fabricate(:activity, user: user) }
+      let(:attachment) { activity.to_slack[:attachments].first }
+      it 'to_slack' do
+        expect(attachment.keys).to_not include :image_url
+        expect(attachment.keys).to_not include :thumb_url
+      end
+    end
+    context 'with thumbnail' do
+      let(:team) { Fabricate(:team, maps: 'thumb') }
+      let(:user) { Fabricate(:user, team: team) }
+      let(:activity) { Fabricate(:activity, user: user) }
+      let(:attachment) { activity.to_slack[:attachments].first }
+      it 'to_slack' do
+        expect(attachment.keys).to_not include :image_url
+        expect(attachment[:thumb_url]).to eq "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+      end
+    end
+  end
 end

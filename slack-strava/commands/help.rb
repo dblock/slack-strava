@@ -7,16 +7,17 @@ module SlackStrava
 
         DM
         -------
-        connect             - connect your Strava account
+        connect                  - connect your Strava account
 
         Settings
         --------
-        set units mi/km     - use miles or kilometers
+        set units mi|km          - use miles or kilometers
+        set maps off|full|thumb  - change the way maps are displayed
 
         General
         -------
-        help                - get this helpful message
-        subscription        - show subscription info
+        help                     - get this helpful message
+        subscription             - show subscription info
         ```
 EOS
       def self.call(client, data, _match)

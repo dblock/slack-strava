@@ -232,7 +232,13 @@ class Activity
     result[:title] = name
     result[:title_link] = strava_url
     result[:text] = "<@#{user.user_name}> on #{start_date_local_s}"
-    result[:image_url] = map.proxy_image_url if map
+    if map
+      if user.team.maps == 'full'
+        result[:image_url] = map.proxy_image_url
+      elsif user.team.maps == 'thumb'
+        result[:thumb_url] = map.proxy_image_url
+      end
+    end
     result[:fields] = slack_fields
     result.merge!(user.athlete.to_slack) if user.athlete
     result
