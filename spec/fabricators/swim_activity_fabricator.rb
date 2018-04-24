@@ -1,4 +1,4 @@
-Fabricator(:swim_activity, class_name: 'Activity') do
+Fabricator(:swim_activity, class_name: :user_activity) do
   strava_id { Fabricate.sequence(:user_id) { |i| "12345677892806#{i}" } }
   type 'Swim'
   name { Faker::Internet.user_name }

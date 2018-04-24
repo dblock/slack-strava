@@ -49,7 +49,7 @@ describe User do
       end
     end
   end
-  context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/sync_last_strava_activity' } do
+  context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/user_sync_last_strava_activity' } do
     let!(:user) { Fabricate(:user, access_token: 'token', token_type: 'Bearer') }
     it 'retrieves the last activity' do
       expect {
@@ -77,7 +77,7 @@ describe User do
     end
   end
   context 'sync_new_strava_activities!' do
-    context 'recent created_at', vcr: { cassette_name: 'strava/sync_new_strava_activities' } do
+    context 'recent created_at', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
       it 'retrieves new activities since created_at' do
         expect {
@@ -91,7 +91,7 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          expect(user).to receive(:inform!)
+          allow_any_instance_of(User).to receive(:inform!)
           user.brag!
         end
         it 'sets activities_at to the most recent bragged activity' do
@@ -105,7 +105,7 @@ describe User do
     end
     context 'old created_at' do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
-      it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/sync_new_strava_activities_many' } do
+      it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_many' } do
         expect {
           user.sync_new_strava_activities!
         }.to change(user.activities, :count).by(14)
@@ -118,8 +118,8 @@ describe User do
       expect(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
     end
     it 'brags the last unbragged activity' do
-      activity = Fabricate(:activity, user: user)
-      expect_any_instance_of(Activity).to receive(:brag!).and_return(
+      activity = Fabricate(:user_activity, user: user)
+      expect_any_instance_of(UserActivity).to receive(:brag!).and_return(
         [
           ts: '1503435956.000247',
           channel: {

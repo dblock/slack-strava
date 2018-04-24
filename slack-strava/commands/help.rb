@@ -10,6 +10,10 @@ module SlackStrava
         connect                  - connect your Strava account
         disconnect               - disconnect your Strava account
 
+        Clubs
+        --------
+        clubs                    - connect/disconnect clubs in this channel
+
         Settings
         --------
         set units mi|km          - use miles or kilometers

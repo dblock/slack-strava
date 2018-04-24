@@ -18,6 +18,7 @@ class Team
   scope :striped, -> { where(subscribed: true, :stripe_customer_id.ne => nil) }
 
   has_many :users, dependent: :destroy
+  has_many :clubs, dependent: :destroy
 
   before_validation :update_subscription_expired_at
   after_update :inform_subscribed_changed!

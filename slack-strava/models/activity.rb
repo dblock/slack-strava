@@ -2,12 +2,8 @@ class Activity
   include Mongoid::Document
   include Mongoid::Timestamps
 
-  belongs_to :user
-
   field :strava_id, type: String
   field :name, type: String
-  field :start_date, type: DateTime
-  field :start_date_local, type: DateTime
   field :distance, type: Float
   field :moving_time, type: Float
   field :elapsed_time, type: Float
@@ -17,17 +13,9 @@ class Activity
   field :type, type: String
 
   index(strava_id: 1)
-  index(user_id: 1)
-
-  embeds_one :map
 
   scope :unbragged, -> { where(bragged_at: nil) }
   scope :bragged, -> { where(:bragged_at.ne => nil) }
-
-  def start_date_local_s
-    return unless start_date_local
-    start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')
-  end
 
   def distance_in_miles
     distance * 0.00062137
@@ -60,7 +48,7 @@ class Activity
     if type == 'Swim'
       distance_in_yards_s
     else
-      case user.team.units
+      case team.units
       when 'km' then distance_in_kilometers_s
       when 'mi' then distance_in_miles_s
       end
@@ -106,7 +94,7 @@ class Activity
   end
 
   def total_elevation_gain_s
-    case user.team.units
+    case team.units
     when 'km' then total_elevation_gain_in_meters_s
     when 'mi' then total_elevation_gain_in_feet_s
     end
@@ -116,7 +104,7 @@ class Activity
     if type == 'Swim'
       pace_per_100_yards_s
     else
-      case user.team.units
+      case team.units
       when 'km' then pace_per_kilometer_s
       when 'mi' then pace_per_mile_s
       end
@@ -124,7 +112,7 @@ class Activity
   end
 
   def to_s
-    "name=#{name}, start_date=#{start_date}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
+    "name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}"
   end
 
   def strava_url
@@ -139,19 +127,10 @@ class Activity
     }
   end
 
-  def brag!
-    return if bragged_at
-    Api::Middleware.logger.info "Bragging about #{user}, #{self}"
-    channels = user.inform!(to_slack)
-    update_attributes!(bragged_at: Time.now.utc)
-    channels
-  end
-
   def self.attrs_from_strava(response)
     {
+      strava_id: response['id'],
       name: response['name'],
-      start_date: DateTime.parse(response['start_date']),
-      start_date_local: DateTime.parse(response['start_date_local']),
       distance: response['distance'],
       moving_time: response['moving_time'],
       elapsed_time: response['elapsed_time'],
@@ -159,16 +138,6 @@ class Activity
       type: response['type'],
       total_elevation_gain: response['total_elevation_gain']
     }
-  end
-
-  def self.create_from_strava!(user, response)
-    activity = Activity.where(strava_id: response['id'], user_id: user.id).first
-    activity ||= Activity.new(strava_id: response['id'], user_id: user.id)
-    activity.assign_attributes(attrs_from_strava(response))
-    activity.build_map(Map.attrs_from_strava(response['map']))
-    activity.map.update!
-    activity.save!
-    activity
   end
 
   private
@@ -224,24 +193,6 @@ class Activity
 
   def type_with_emoji
     [type, emoji].compact.join(' ')
-  end
-
-  def to_slack_attachment
-    result = {}
-    result[:fallback] = "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
-    result[:title] = name
-    result[:title_link] = strava_url
-    result[:text] = "<@#{user.user_name}> on #{start_date_local_s}"
-    if map
-      if user.team.maps == 'full'
-        result[:image_url] = map.proxy_image_url
-      elsif user.team.maps == 'thumb'
-        result[:thumb_url] = map.proxy_image_url
-      end
-    end
-    result[:fields] = slack_fields
-    result.merge!(user.athlete.to_slack) if user.athlete
-    result
   end
 
   def slack_fields

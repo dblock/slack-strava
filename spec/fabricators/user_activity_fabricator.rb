@@ -1,4 +1,4 @@
-Fabricator(:activity) do
+Fabricator(:user_activity) do
   strava_id { Fabricate.sequence(:user_id) { |i| "12345677892806#{i}" } }
   type 'Run'
   name { Faker::Internet.user_name }
@@ -9,7 +9,7 @@ Fabricator(:activity) do
   elapsed_time 7686
   average_speed 2.971
   total_elevation_gain 144.9
-  map { |activity| Fabricate.build(:map, activity: activity) }
+  map { Fabricate.build(:map) }
   after_create do
     map.save!
   end

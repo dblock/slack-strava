@@ -2,7 +2,7 @@ class Map
   include Mongoid::Document
   include Mongoid::Timestamps
 
-  embedded_in :activity
+  embedded_in :user_activity
 
   field :strava_id, type: String
   field :summary_polyline, type: String

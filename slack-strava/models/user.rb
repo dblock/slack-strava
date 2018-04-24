@@ -14,7 +14,7 @@ class User
   belongs_to :team, index: true
   validates_presence_of :team
 
-  has_many :activities, dependent: :destroy
+  has_many :activities, class_name: 'UserActivity', dependent: :destroy
 
   index({ user_id: 1, team_id: 1 }, unique: true)
   index(user_name: 1, team_id: 1)
@@ -38,6 +38,12 @@ class User
     query = user_name =~ /^<@(.*)>$/ ? { user_id: ::Regexp.last_match[1] } : { user_name: ::Regexp.new("^#{user_name}$", 'i') }
     user = User.where(query.merge(team: team)).first
     raise SlackStrava::Error, "I don't know who #{user_name} is!" unless user
+    user
+  end
+
+  def self.find_create_or_update_by_team_and_slack_id!(team_id, user_id)
+    team = Team.where(team_id: team_id).first || raise("Cannot find team ID #{team_id}")
+    user = User.where(team: team, user_id: user_id).first || User.create!(team: team, user_id: user_id)
     user
   end
 
@@ -127,7 +133,7 @@ class User
     activities = strava_client.list_athlete_activities(per_page: 1)
     return unless activities.any?
     Api::Middleware.logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
-    Activity.create_from_strava!(self, activities.first)
+    UserActivity.create_from_strava!(self, activities.first)
   rescue Strava::Api::V3::ClientError => e
     handle_strava_error e
   end
@@ -146,16 +152,8 @@ class User
   end
 
   def sync_strava_activities!(options = {})
-    raise 'Missing access_token' unless access_token
-    page = 1
-    page_size = 10
-    loop do
-      activities = strava_client.list_athlete_activities(options.merge(page: page, per_page: page_size))
-      activities.each do |activity|
-        Activity.create_from_strava!(self, activity)
-      end
-      break if activities.size < page_size
-      page += 1
+    strava_client.paginate(:list_athlete_activities, options) do |activity|
+      UserActivity.create_from_strava!(self, activity)
     end
   rescue Strava::Api::V3::ClientError => e
     handle_strava_error e

@@ -5,6 +5,7 @@ module SlackStrava
     def prepare!
       super
       deactivate_asleep_teams!
+      update_activity_types!
     end
 
     def after_start!
@@ -20,6 +21,11 @@ module SlackStrava
     end
 
     private
+
+    def update_activity_types!
+      result = Activity.where(_type: nil).set(_type: 'UserActivity')
+      logger.info "update_activity_types: #{result}"
+    end
 
     def log_info_without_repeat(message)
       return if message == @log_message
@@ -58,6 +64,15 @@ module SlackStrava
             rescue StandardError => e
               backtrace = e.backtrace.join("\n")
               logger.warn "Error in cron for team #{team}, user #{user}, #{e.message}, #{backtrace}."
+            end
+          end
+          team.clubs.connected_to_strava.each do |club|
+            begin
+              club.sync_new_strava_activities!
+              club.brag!
+            rescue StandardError => e
+              backtrace = e.backtrace.join("\n")
+              logger.warn "Error in cron for team #{team}, club #{club}, #{e.message}, #{backtrace}."
             end
           end
         rescue StandardError => e

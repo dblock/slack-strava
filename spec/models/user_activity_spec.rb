@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe Activity do
+describe UserActivity do
   before do
     allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
   end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:user) { Fabricate(:user, team: team) }
-    let(:activity) { Fabricate(:activity, user: user) }
+    let(:activity) { Fabricate(:user_activity, user: user) }
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -62,7 +62,7 @@ describe Activity do
   context 'km' do
     let(:team) { Fabricate(:team, units: 'km') }
     let(:user) { Fabricate(:user, team: team) }
-    let(:activity) { Fabricate(:activity, user: user) }
+    let(:activity) { Fabricate(:user_activity, user: user) }
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -118,7 +118,7 @@ describe Activity do
     context 'without maps' do
       let(:team) { Fabricate(:team, maps: 'off') }
       let(:user) { Fabricate(:user, team: team) }
-      let(:activity) { Fabricate(:activity, user: user) }
+      let(:activity) { Fabricate(:user_activity, user: user) }
       let(:attachment) { activity.to_slack[:attachments].first }
       it 'to_slack' do
         expect(attachment.keys).to_not include :image_url
@@ -128,7 +128,7 @@ describe Activity do
     context 'with thumbnail' do
       let(:team) { Fabricate(:team, maps: 'thumb') }
       let(:user) { Fabricate(:user, team: team) }
-      let(:activity) { Fabricate(:activity, user: user) }
+      let(:activity) { Fabricate(:user_activity, user: user) }
       let(:attachment) { activity.to_slack[:attachments].first }
       it 'to_slack' do
         expect(attachment.keys).to_not include :image_url

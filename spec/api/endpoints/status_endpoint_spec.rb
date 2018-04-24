@@ -36,8 +36,8 @@ describe Api::Endpoints::StatusEndpoint do
         expect(status.connected_users_count).to eq 1
       end
       context 'with activities' do
-        let!(:activity1) { Fabricate(:activity, user: connected_user) }
-        let!(:activity2) { Fabricate(:activity, user: connected_user) }
+        let!(:activity1) { Fabricate(:user_activity, user: connected_user) }
+        let!(:activity2) { Fabricate(:user_activity, user: connected_user) }
         let(:total_distance_in_miles) { activity1.distance_in_miles + activity2.distance_in_miles }
         it 'returns a status with distance and users' do
           status = client.status
