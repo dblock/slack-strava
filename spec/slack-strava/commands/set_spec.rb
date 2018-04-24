@@ -10,6 +10,12 @@ describe SlackStrava::Commands::Set do
     end
     context 'subscribed team' do
       let(:team) { Fabricate(:team, subscribed: true) }
+      it 'shows current settings' do
+        expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
+          "Activities for team #{team.name} display *miles*.",
+          "Maps for team #{team.name} are *displayed in full*."
+        ].join("\n"))
+      end
       context 'units' do
         it 'shows current value of units' do
           expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(

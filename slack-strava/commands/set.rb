@@ -5,8 +5,12 @@ module SlackStrava
 
       subscribe_command 'set' do |client, data, match|
         if !match['expression']
-          client.say(channel: data.channel, text: 'Missing setting, eg. _set units km_.', gif: 'help')
-          logger.info "SET: #{client.owner} - failed, missing setting"
+          messages = [
+            "Activities for team #{client.owner.name} display *#{client.owner.units_s}*.",
+            "Maps for team #{client.owner.name} are *#{client.owner.maps_s}*."
+          ]
+          client.say(channel: data.channel, text: messages.join("\n"))
+          logger.info "SET: #{client.owner} - set"
         else
           k, v = match['expression'].split(/\W+/, 2)
           case k
