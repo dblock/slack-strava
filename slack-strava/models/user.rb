@@ -26,8 +26,17 @@ class User
   end
 
   def connect_to_strava_url
-    redirect_uri = "#{SlackStrava::Service.url}/connect"
-    "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=view_private&state=#{id}"
+    @connected_to_strava_url ||= begin
+      redirect_uri = "#{SlackStrava::Service.url}/connect"
+      "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=view_private&state=#{id}"
+    end
+  end
+
+  def connect_to_mapmyrun_url
+    @connect_to_mapmyrun_url ||= begin
+      redirect_uri = "#{SlackStrava::Service.url}/connect"
+      "https://api.ua.com/v7.1/oauth2/authorize?client_id=#{ENV['UA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&state=#{id}"
+    end
   end
 
   def slack_mention
@@ -78,15 +87,21 @@ class User
     dm!(text: 'Your Strava account has been successfully connected.')
   end
 
-  def dm_connect!(message = 'Please connect your Strava account')
-    url = connect_to_strava_url
+  def dm_connect!(message = 'Please connect your Strava or MapMyRun account')
     dm!(
       text: "#{message}.", attachments: [
-        fallback: "#{message} at #{url}.",
+        fallback: "#{message} at #{connect_to_strava_url} or #{connect_to_mapmyrun_url}.",
         actions: [
-          type: 'button',
-          text: 'Click Here',
-          url: url
+          {
+            type: 'button',
+            text: 'Strava',
+            url: connect_to_strava_url
+          },
+          {
+            type: 'button',
+            text: 'MapMyRun',
+            url: connect_to_mapmyrun_url
+          }
         ]
       ]
     )

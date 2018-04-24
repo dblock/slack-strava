@@ -3,11 +3,11 @@ module SlackStrava
     class Help < SlackRubyBot::Commands::Base
       HELP = <<~EOS.freeze
         ```
-        I am your friendly bot powered by Strava.
+        Slava: Strava and MapMyRun integration with Slack.
 
         DM
         -------
-        connect             - connect your Strava account
+        connect             - connect your Strava or MapMyRun account
 
         Settings
         --------
