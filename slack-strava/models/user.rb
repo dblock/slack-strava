@@ -78,6 +78,16 @@ class User
     dm!(text: 'Your Strava account has been successfully connected.')
   end
 
+  def disconnect!
+    if access_token
+      Api::Middleware.logger.info "Disconnected team=#{team_id}, user=#{user_name}, user_id=#{id}"
+      update_attributes!(token_type: nil, access_token: nil)
+      dm!(text: 'Your Strava account has been successfully disconnected.')
+    else
+      dm!(text: 'Your Strava account is not connected.')
+    end
+  end
+
   def dm_connect!(message = 'Please connect your Strava account')
     url = connect_to_strava_url
     dm!(

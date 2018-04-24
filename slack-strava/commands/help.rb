@@ -8,6 +8,7 @@ module SlackStrava
         DM
         -------
         connect                  - connect your Strava account
+        disconnect               - disconnect your Strava account
 
         Settings
         --------
