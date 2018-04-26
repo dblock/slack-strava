@@ -142,6 +142,23 @@ class User
     sync_strava_activities!(after: activities_at || created_at)
   end
 
+  def athlete_clubs_to_slack(channel_id)
+    result = { text: '', channel: channel_id, attachments: [] }
+    clubs = team.clubs.where(channel_id: channel_id).to_a
+    if connected_to_strava?
+      strava_client.paginate(:list_athlete_clubs) do |row|
+        strava_id = row['id'].to_s
+        next if clubs.detect { |club| club.strava_id == strava_id }
+        clubs << Club.new(Club.attrs_from_strava(row).merge(team: team))
+      end
+    end
+    clubs.sort_by(&:strava_id).each do |club|
+      result[:attachments].concat(club.connect_to_slack[:attachments])
+    end
+    result[:text] = 'Not connected to any clubs.' if result[:attachments].empty?
+    result
+  end
+
   private
 
   def user_in_channel?(channel_id)

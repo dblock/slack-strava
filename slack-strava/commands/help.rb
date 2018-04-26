@@ -12,7 +12,7 @@ module SlackStrava
 
         Clubs
         --------
-        clubs                    - connect/disconnect clubs in this channel
+        /slava clubs             - connect/disconnect clubs
 
         Settings
         --------

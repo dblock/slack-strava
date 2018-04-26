@@ -108,6 +108,18 @@ class Team
 EOS
   end
 
+  def clubs_to_slack
+    result = { text: '', attachments: [] }
+    if clubs.any?
+      clubs.each do |club|
+        result[:attachments].concat(club.to_slack[:attachments])
+      end
+    else
+      result[:text] = 'No clubs connected.'
+    end
+    result
+  end
+
   private
 
   def trial_expired_text
