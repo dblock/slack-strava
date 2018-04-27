@@ -36,11 +36,25 @@ module Api
 
         desc 'Respond to interactive slack buttons and actions.'
         params do
-          requires :payload, type: String
+          requires :payload, type: JSON do
+            requires :token, type: String
+            requires :callback_id, type: String
+            requires :channel, type: Hash do
+              requires :id, type: String
+            end
+            requires :user, type: Hash do
+              requires :id, type: String
+            end
+            requires :team, type: Hash do
+              requires :id, type: String
+            end
+            requires :actions, type: Array do
+              requires :value, type: String
+            end
+          end
         end
         post '/action' do
-          payload = JSON.parse(params[:payload])
-
+          payload = params['payload']
           token = payload['token']
           error!('Message token is not coming from Slack.', 401) if ENV.key?('SLACK_VERIFICATION_TOKEN') && token != ENV['SLACK_VERIFICATION_TOKEN']
 

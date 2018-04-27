@@ -36,12 +36,12 @@ describe Api::Endpoints::SlackEndpoint do
             expect_any_instance_of(Strava::Api::V3::Client).to receive(:paginate)
             expect_any_instance_of(Club).to receive(:sync_last_strava_activity!)
             post '/api/slack/action', payload: {
-              'actions': [{ 'name' => 'strava_id', 'value' => '43749' }],
-              'channel': { 'id' => 'C12345', 'name' => 'runs' },
-              'user': { 'id' => user.user_id },
-              'team': { 'id' => team.team_id },
-              'token': token,
-              'callback_id': 'club-connect-channel'
+              actions: [{ name: 'strava_id', value: '43749' }],
+              channel: { id: 'C12345', name: 'runs' },
+              user: { id: user.user_id },
+              team: { id: team.team_id },
+              token: token,
+              callback_id: 'club-connect-channel'
             }.to_json
             expect(last_response.status).to eq 201
             response = JSON.parse(last_response.body)
@@ -62,12 +62,12 @@ describe Api::Endpoints::SlackEndpoint do
               )
             )
             post '/api/slack/action', payload: {
-              'actions': [{ 'name' => 'strava_id', 'value' => club.strava_id }],
-              'channel': { 'id' => club.channel_id, 'name' => 'runs' },
-              'user': { 'id' => user.user_id },
-              'team': { 'id' => team.team_id },
-              'token': token,
-              'callback_id': 'club-disconnect-channel'
+              actions: [{ name: 'strava_id', value: club.strava_id }],
+              channel: { id: club.channel_id, name: 'runs' },
+              user: { id: user.user_id },
+              team: { id: team.team_id },
+              token: token,
+              callback_id: 'club-disconnect-channel'
             }.to_json
             expect(last_response.status).to eq 201
             response = JSON.parse(last_response.body)
@@ -78,22 +78,29 @@ describe Api::Endpoints::SlackEndpoint do
       end
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/action', payload: {
-          'token': 'invalid-token'
+          actions: [{ name: 'strava_id', value: '43749' }],
+          channel: { id: 'C1', name: 'runs' },
+          user: { id: user.user_id },
+          team: { id: team.team_id },
+          callback_id: 'invalid-callback',
+          token: 'invalid-token'
         }.to_json
         expect(last_response.status).to eq 401
-        expect(JSON.parse(last_response.body)).to eq('error' => 'Message token is not coming from Slack.')
+        response = JSON.parse(last_response.body)
+        expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
       it 'returns invalid callback id' do
         post '/api/slack/action', payload: {
-          'channel': { 'id' => 'C1', 'name' => 'runs' },
-          'user': { 'id' => user.user_id },
-          'team': { 'id' => team.team_id },
-          'callback_id': 'invalid-callback',
-          'token': token
+          actions: [{ name: 'strava_id', value: 'id' }],
+          channel: { id: 'C1', name: 'runs' },
+          user: { id: user.user_id },
+          team: { id: team.team_id },
+          callback_id: 'invalid-callback',
+          token: token
         }.to_json
         expect(last_response.status).to eq 404
         response = JSON.parse(last_response.body)
-        expect(response).to eq('error' => 'Callback invalid-callback is not supported.')
+        expect(response['error']).to eq 'Callback invalid-callback is not supported.'
       end
     end
     context 'slash commands' do
@@ -209,7 +216,8 @@ describe Api::Endpoints::SlackEndpoint do
              team_id: 'team_id',
              token: 'invalid-token'
         expect(last_response.status).to eq 401
-        expect(JSON.parse(last_response.body)).to eq('error' => 'Message token is not coming from Slack.')
+        response = JSON.parse(last_response.body)
+        expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
     end
     after do
