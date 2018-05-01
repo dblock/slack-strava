@@ -128,7 +128,7 @@ EOS
   end
 
   def subscribe_team_text
-    "Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
+    "Subscribe your team for $9.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
   end
 
   def inform_subscribed_changed!

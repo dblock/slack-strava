@@ -48,7 +48,7 @@ describe Api::Endpoints::SubscriptionsEndpoint do
       it 'creates a subscription' do
         expect(Stripe::Customer).to receive(:create).with(
           source: 'token',
-          plan: 'slack-strava-yearly',
+          plan: 'slava-yearly',
           email: 'foo@bar.com',
           metadata: {
             id: team._id,

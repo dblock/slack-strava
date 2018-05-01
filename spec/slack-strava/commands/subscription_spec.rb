@@ -7,7 +7,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     let!(:team) { Fabricate(:team) }
     it 'is a subscription feature' do
       expect(message: "#{SlackRubyBot.config.user} subscription", user: 'user').to respond_with_slack_message(
-        "Your trial subscription has expired and we will no longer send your Strava activities to Slack. Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
+        "Your trial subscription has expired and we will no longer send your Strava activities to Slack. Subscribe your team for $9.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
       )
     end
   end
@@ -15,7 +15,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     let!(:team) { Fabricate(:team, subscribed: true, stripe_customer_id: nil) }
     it 'errors' do
       expect(message: "#{SlackRubyBot.config.user} subscription", user: 'user').to respond_with_slack_message(
-        "Not a subscriber. Subscribe your team for $29.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
+        "Not a subscriber. Subscribe your team for $9.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team.team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
       )
     end
   end
@@ -23,13 +23,13 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     include_context :stripe_mock
     context 'with a plan' do
       before do
-        stripe_helper.create_plan(id: 'slack-strava-yearly', amount: 2999)
+        stripe_helper.create_plan(id: 'slava-yearly', amount: 999)
       end
       context 'a customer' do
         let!(:customer) do
           Stripe::Customer.create(
             source: stripe_helper.generate_card_token,
-            plan: 'slack-strava-yearly',
+            plan: 'slava-yearly',
             email: 'foo@bar.com'
           )
         end
@@ -38,7 +38,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
         end
         it 'displays subscription info' do
           customer_info = "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}."
-          customer_info += "\nSubscribed to StripeMock Default Plan ID ($29.99)"
+          customer_info += "\nSubscribed to StripeMock Default Plan ID ($9.99)"
           card = customer.sources.first
           customer_info += "\nOn file Visa card, #{card.name} ending with #{card.last4}, expires #{card.exp_month}/#{card.exp_year}."
           customer_info += "\n#{team.update_cc_text}"
