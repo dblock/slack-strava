@@ -1,6 +1,9 @@
 require 'spec_helper'
 
 describe User do
+  before do
+    allow_any_instance_of(Map).to receive(:update_png!)
+  end
   context '#find_by_slack_mention!' do
     let!(:user) { Fabricate(:user) }
     it 'finds by slack id' do
@@ -60,7 +63,6 @@ describe User do
       expect(activity.name).to eq 'Reservoir Dogs'
       expect(activity.map.id).to be_a BSON::ObjectId
       expect(activity.map.strava_id).to_not be nil
-      expect(activity.map.png.data.size).to eq 69_234
     end
     it 'only saves the last activity once' do
       expect {
@@ -156,9 +158,6 @@ describe User do
   end
   context 'brag!' do
     let!(:user) { Fabricate(:user) }
-    before do
-      expect(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
-    end
     it 'brags the last unbragged activity' do
       activity = Fabricate(:user_activity, user: user)
       expect_any_instance_of(UserActivity).to receive(:brag!).and_return(
