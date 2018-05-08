@@ -76,6 +76,26 @@ describe User do
       expect(user.access_token).to be nil
     end
   end
+  context 'sync_last_strava_activity! with private activities', vcr: { cassette_name: 'strava/user_sync_last_strava_activity_with_private' } do
+    let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
+    context 'by default' do
+      it 'skips private activities' do
+        expect {
+          user.sync_last_strava_activity!
+        }.to_not change(user.activities, :count)
+      end
+    end
+    context 'with private_activities set to true' do
+      before do
+        user.update_attributes!(private_activities: true)
+      end
+      it 'skips private activities' do
+        expect {
+          user.sync_last_strava_activity!
+        }.to change(user.activities, :count).by(1)
+      end
+    end
+  end
   context 'sync_new_strava_activities!' do
     context 'recent created_at', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
@@ -109,6 +129,28 @@ describe User do
         expect {
           user.sync_new_strava_activities!
         }.to change(user.activities, :count).by(14)
+      end
+    end
+    context 'with private activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_with_private' } do
+      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
+      context 'by default' do
+        it 'skips private activities' do
+          expect {
+            user.sync_new_strava_activities!
+          }.to change(user.activities, :count).by(3)
+          expect(user.activities.select(&:private).count).to eq 0
+        end
+      end
+      context 'with private_activities set to true' do
+        before do
+          user.update_attributes!(private_activities: true)
+        end
+        it 'skips private activities' do
+          expect {
+            user.sync_new_strava_activities!
+          }.to change(user.activities, :count).by(4)
+          expect(user.activities.select(&:private).count).to eq 1
+        end
       end
     end
   end

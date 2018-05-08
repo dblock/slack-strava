@@ -4,17 +4,53 @@ describe SlackStrava::Commands::Set do
   let!(:team) { Fabricate(:team) }
   let(:app) { SlackStrava::Server.new(team: team) }
   let(:client) { app.send(:client) }
+  let(:user) { Fabricate(:user, team: team) }
+  before do
+    allow(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
+  end
   context 'units' do
     it 'requires a subscription' do
       expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(team.subscribe_text)
     end
     context 'subscribed team' do
       let(:team) { Fabricate(:team, subscribed: true) }
+      it 'errors on invalid setting' do
+        expect(message: "#{SlackRubyBot.config.user} set whatever").to respond_with_slack_message(
+          'Invalid setting whatever, type `help` for instructions.'
+        )
+      end
       it 'shows current settings' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles*.",
-          "Maps for team #{team.name} are *displayed in full*."
+          "Maps for team #{team.name} are *displayed in full*.",
+          'Your private activities will not be posted.'
         ].join("\n"))
+      end
+      context 'private' do
+        it 'shows current value of private' do
+          expect(message: "#{SlackRubyBot.config.user} set private").to respond_with_slack_message(
+            'Your private activities will not be posted.'
+          )
+        end
+        it 'shows current value of private set to true' do
+          user.update_attributes!(private_activities: true)
+          expect(message: "#{SlackRubyBot.config.user} set private").to respond_with_slack_message(
+            'Your private activities will be posted.'
+          )
+        end
+        it 'sets private to false' do
+          user.update_attributes!(private_activities: true)
+          expect(message: "#{SlackRubyBot.config.user} set private false").to respond_with_slack_message(
+            'Your private activities will no longer be posted.'
+          )
+          expect(user.reload.private_activities).to be false
+        end
+        it 'sets private to true' do
+          expect(message: "#{SlackRubyBot.config.user} set private true").to respond_with_slack_message(
+            'Your private activities will now be posted.'
+          )
+          expect(user.reload.private_activities).to be true
+        end
       end
       context 'units' do
         it 'shows current value of units' do

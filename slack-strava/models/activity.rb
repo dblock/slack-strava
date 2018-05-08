@@ -10,6 +10,7 @@ class Activity
   field :average_speed, type: Float
   field :bragged_at, type: DateTime
   field :total_elevation_gain, type: Float
+  field :private, type: Boolean
   field :type, type: String
 
   index(strava_id: 1)
@@ -136,7 +137,8 @@ class Activity
       elapsed_time: response['elapsed_time'],
       average_speed: response['average_speed'],
       type: response['type'],
-      total_elevation_gain: response['total_elevation_gain']
+      total_elevation_gain: response['total_elevation_gain'],
+      private: response['private']
     }
   end
 

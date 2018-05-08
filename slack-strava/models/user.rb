@@ -8,6 +8,7 @@ class User
   field :token_type, type: String
   field :activities_at, type: DateTime
   field :is_bot, type: Boolean
+  field :private_activities, type: Boolean, default: false
 
   embeds_one :athlete
 
@@ -133,6 +134,7 @@ class User
     activities = strava_client.list_athlete_activities(per_page: 1)
     return unless activities.any?
     Api::Middleware.logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
+    return if activities.first['private'] && !private_activities?
     UserActivity.create_from_strava!(self, activities.first)
   rescue Strava::Api::V3::ClientError => e
     handle_strava_error e
@@ -170,6 +172,7 @@ class User
 
   def sync_strava_activities!(options = {})
     strava_client.paginate(:list_athlete_activities, options) do |activity|
+      next if activity['private'] && !private_activities?
       UserActivity.create_from_strava!(self, activity)
     end
   rescue Strava::Api::V3::ClientError => e

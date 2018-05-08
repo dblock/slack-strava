@@ -18,6 +18,7 @@ module SlackStrava
         --------
         set units mi|km          - use miles or kilometers
         set maps off|full|thumb  - change the way maps are displayed
+        set private true|false   - sync private activities (default is false)
 
         General
         -------
