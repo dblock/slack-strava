@@ -110,6 +110,13 @@ describe User do
         user.sync_new_strava_activities!
         expect(user.activities_at).to be nil
       end
+      context 'with unbragged activities' do
+        let!(:activity) { Fabricate(:user_activity, user: user, start_date: DateTime.new(2018, 4, 1)) }
+        it 'syncs activities since the first one' do
+          expect(user).to receive(:sync_strava_activities!).with(after: activity.start_date)
+          user.sync_new_strava_activities!
+        end
+      end
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!

@@ -141,7 +141,7 @@ class User
   end
 
   def sync_new_strava_activities!
-    sync_strava_activities!(after: activities_at || created_at)
+    sync_strava_activities!(after: activities_at || latest_activity_start_date || created_at)
   end
 
   def athlete_clubs_to_slack(channel_id)
@@ -162,6 +162,10 @@ class User
   end
 
   private
+
+  def latest_activity_start_date
+    activities.desc(:start_date).first&.start_date
+  end
 
   def user_in_channel?(channel_id)
     team.slack_client.conversations_members(channel: channel_id) do |response|

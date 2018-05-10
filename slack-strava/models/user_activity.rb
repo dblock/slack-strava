@@ -5,7 +5,7 @@ class UserActivity < Activity
   belongs_to :user, inverse_of: :activities
   embeds_one :map
 
-  index(user_id: 1)
+  index(user_id: 1, start_date: 1)
 
   def team
     user.team
