@@ -16,10 +16,21 @@ class ClubActivity < Activity
     Api::Middleware.logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
     rc = club.team.slack_client.chat_postMessage(message_with_channel)
     update_attributes!(bragged_at: Time.now.utc)
-    {
-      ts: rc['ts'],
-      channel: club.channel_id
-    }
+    if rc
+      {
+        ts: rc['ts'],
+        channel: club.channel_id
+      }
+    end
+  rescue Slack::Web::Api::Errors::SlackError => e
+    case e.message
+    when 'not_in_channel' then
+      Api::Middleware.logger.error "Bragging to #{club} failed, removed from channel, destroying."
+      club.destroy
+      nil
+    else
+      raise e
+    end
   end
 
   def self.attrs_from_strava(response)

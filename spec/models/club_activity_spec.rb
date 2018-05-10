@@ -1,6 +1,30 @@
 require 'spec_helper'
 
 describe ClubActivity do
+  context 'brag!' do
+    let(:team) { Fabricate(:team) }
+    let(:club) { Fabricate(:club, team: team) }
+    let!(:activity) { Fabricate(:club_activity, club: club) }
+    it 'sends a message to the subscribed channel' do
+      expect(club.team.slack_client).to receive(:chat_postMessage).with(
+        activity.to_slack.merge(
+          channel: club.channel_id,
+          as_user: true
+        )
+      ).and_return('ts' => 1)
+      expect(activity.brag!).to eq(ts: 1, channel: club.channel_id)
+    end
+    it 'destroys the activity if the bot left the channel' do
+      expect {
+        expect {
+          expect(club.team.slack_client).to receive(:chat_postMessage) {
+            raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
+          }
+          expect(activity.brag!).to be nil
+        }.to change(Club, :count).by(-1)
+      }.to change(ClubActivity, :count).by(-1)
+    end
+  end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:club) { Fabricate(:club, team: team) }
