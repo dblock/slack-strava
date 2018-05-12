@@ -109,13 +109,21 @@ EOS
   end
 
   def clubs_to_slack
-    result = { text: '', attachments: [] }
+    result = {
+      text: "To connect a club, invite #{bot_mention} to a channel and use `/slava clubs`.",
+      attachments: []
+    }
+
     if clubs.any?
       clubs.each do |club|
-        result[:attachments].concat(club.to_slack[:attachments])
+        attachments = club.to_slack[:attachments]
+        attachments.each do |a|
+          a[:text] = [a[:text], club.channel_mention].compact.join("\n")
+        end
+        result[:attachments].concat(attachments)
       end
     else
-      result[:text] = 'No clubs connected.'
+      result[:text] = 'No clubs connected. ' + result[:text]
     end
     result
   end
@@ -136,10 +144,14 @@ EOS
     inform!(text: subscribed_text)
   end
 
+  def bot_mention
+    "<@#{bot_user_id || 'slava'}>"
+  end
+
   def activated_text
     <<~EOS
       Welcome to Slava!
-      Invite <@#{bot_user_id}> to a channel to publish activities to it.
+      Invite #{bot_mention} to a channel to publish activities to it.
       Type \"*connect*\" to connect your Strava account."
 EOS
   end

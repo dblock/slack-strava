@@ -119,7 +119,9 @@ describe Api::Endpoints::SlackEndpoint do
           expect(last_response.status).to eq 201
           expect(JSON.parse(last_response.body)).to eq(
             JSON.parse(club.connect_to_slack.merge(
-              text: '', user: user.user_id, channel: 'channel'
+              text: '',
+              user: user.user_id,
+              channel: 'channel'
             ).to_json)
           )
         end
@@ -182,7 +184,7 @@ describe Api::Endpoints::SlackEndpoint do
             expect(JSON.parse(last_response.body)).to eq(
               'attachments' => [],
               'channel' => 'D1234',
-              'text' => 'No clubs connected.',
+              'text' => 'No clubs connected. To connect a club, invite <@slava> to a channel and use `/slava clubs`.',
               'user' => user.user_id
             )
           end
@@ -198,9 +200,15 @@ describe Api::Endpoints::SlackEndpoint do
                    token: token
 
               expect(last_response.status).to eq 201
+              club_with_channel_id = club.to_slack
+              club_with_channel_id[:attachments].each do |attachment|
+                attachment[:text] += "\n#{club.channel_mention}"
+              end
               expect(JSON.parse(last_response.body)).to eq(
-                JSON.parse(club.to_slack.merge(
-                  text: '', user: user.user_id, channel: 'D1234'
+                JSON.parse(club_with_channel_id.merge(
+                  text: 'To connect a club, invite <@slava> to a channel and use `/slava clubs`.',
+                  user: user.user_id,
+                  channel: 'D1234'
                 ).to_json)
               )
             end

@@ -69,6 +69,10 @@ class Club
     [city, state, country].compact.join(', ')
   end
 
+  def channel_mention
+    "<##{channel_id}>"
+  end
+
   def to_slack
     {
       attachments: [{
