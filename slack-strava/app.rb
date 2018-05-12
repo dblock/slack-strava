@@ -15,7 +15,7 @@ module SlackStrava
       once_and_every 60 * 60 do
         expire_subscriptions!
       end
-      once_and_every 60 do
+      once_and_every 10 * 60 do
         brag!
       end
     end
