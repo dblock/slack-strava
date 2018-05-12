@@ -67,6 +67,13 @@ class Team
     end
   end
 
+  def bot_in_channel?(channel_id)
+    slack_client.conversations_members(channel: channel_id) do |response|
+      return true if response.members.include?(bot_user_id)
+    end
+    false
+  end
+
   # returns channels that were sent to
   def inform!(message)
     slack_channels.map do |channel|

@@ -104,59 +104,83 @@ describe Api::Endpoints::SlackEndpoint do
       end
     end
     context 'slash commands' do
-      context 'disconnected user' do
-        let(:user) { Fabricate(:user, team: team) }
-        let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
-        let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
-        it 'lists clubs connected to this channel' do
-          post '/api/slack/command',
-               command: '/slava',
-               text: 'clubs',
-               channel_id: 'channel',
-               user_id: user.user_id,
-               team_id: team.team_id,
-               token: token
-          expect(last_response.status).to eq 201
-          expect(JSON.parse(last_response.body)).to eq(
-            JSON.parse(club.connect_to_slack.merge(
-              text: '',
-              user: user.user_id,
-              channel: 'channel'
-            ).to_json)
-          )
+      let(:user) { Fabricate(:user, team: team) }
+      context 'in channel' do
+        before do
+          allow_any_instance_of(Team).to receive(:bot_in_channel?).and_return(true)
         end
-      end
-      context 'connected user' do
-        let(:user) { Fabricate(:user, team: team, access_token: 'token') }
-        let(:nyrr_club) do
-          Club.new(
-            strava_id: '108605',
-            name: 'New York Road Runners',
-            url: 'nyrr',
-            city: 'New York',
-            state: 'New York',
-            country: 'United States',
-            member_count: 9131,
-            logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/108605/8433029/1/medium.jpg'
-          )
-        end
-        it 'lists clubs a user is a member of', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
-          post '/api/slack/command',
-               command: '/slava',
-               text: 'clubs',
-               channel_id: 'channel',
-               user_id: user.user_id,
-               team_id: team.team_id,
-               token: token
-          expect(last_response.status).to eq 201
-          response = JSON.parse(last_response.body)
-          expect(response['attachments'].count).to eq 5
-          expect(response['attachments'][0]['title']).to eq nyrr_club.name
-        end
-        context 'with another connected club in the channel' do
+        context 'disconnected user' do
           let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
           let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
-          it 'lists both clubs a user is a member of and the connected club', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
+          it 'lists clubs connected to this channel' do
+            post '/api/slack/command',
+                 command: '/slava',
+                 text: 'clubs',
+                 channel_id: 'channel',
+                 user_id: user.user_id,
+                 team_id: team.team_id,
+                 token: token
+            expect(last_response.status).to eq 201
+            expect(JSON.parse(last_response.body)).to eq(
+              JSON.parse(club.connect_to_slack.merge(
+                text: '',
+                user: user.user_id,
+                channel: 'channel'
+              ).to_json)
+            )
+          end
+        end
+        context 'connected user' do
+          let(:user) { Fabricate(:user, team: team, access_token: 'token') }
+          let(:nyrr_club) do
+            Club.new(
+              strava_id: '108605',
+              name: 'New York Road Runners',
+              url: 'nyrr',
+              city: 'New York',
+              state: 'New York',
+              country: 'United States',
+              member_count: 9131,
+              logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/108605/8433029/1/medium.jpg'
+            )
+          end
+          it 'lists clubs a user is a member of', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
+            post '/api/slack/command',
+                 command: '/slava',
+                 text: 'clubs',
+                 channel_id: 'channel',
+                 user_id: user.user_id,
+                 team_id: team.team_id,
+                 token: token
+            expect(last_response.status).to eq 201
+            response = JSON.parse(last_response.body)
+            expect(response['attachments'].count).to eq 5
+            expect(response['attachments'][0]['title']).to eq nyrr_club.name
+          end
+          context 'with another connected club in the channel' do
+            let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
+            let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
+            it 'lists both clubs a user is a member of and the connected club', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
+              post '/api/slack/command',
+                   command: '/slava',
+                   text: 'clubs',
+                   channel_id: 'channel',
+                   user_id: user.user_id,
+                   team_id: team.team_id,
+                   token: token
+              response = JSON.parse(last_response.body)
+              expect(response['attachments'].count).to eq 6
+              expect(response['attachments'][0]['title']).to eq nyrr_club.name
+              expect(response['attachments'][5]['title']).to eq club.name
+            end
+          end
+        end
+        context 'out of channel' do
+          before do
+            allow_any_instance_of(Team).to receive(:bot_in_channel?).and_return(false)
+          end
+          let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
+          it 'requires the bot to be a member' do
             post '/api/slack/command',
                  command: '/slava',
                  text: 'clubs',
@@ -165,9 +189,7 @@ describe Api::Endpoints::SlackEndpoint do
                  team_id: team.team_id,
                  token: token
             response = JSON.parse(last_response.body)
-            expect(response['attachments'].count).to eq 6
-            expect(response['attachments'][0]['title']).to eq nyrr_club.name
-            expect(response['attachments'][5]['title']).to eq club.name
+            expect(response['text']).to eq 'Please invite <@slava> to this channel before connecting a club.'
           end
         end
         context 'DMs' do

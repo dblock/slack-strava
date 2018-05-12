@@ -25,6 +25,8 @@ module Api
 
           result = if channel_id[0] == 'D'
                      user.team.clubs_to_slack
+                   elsif !user.team.bot_in_channel?(channel_id)
+                     { text: "Please invite #{user.team.bot_mention} to this channel before connecting a club." }
                    else
                      user.athlete_clubs_to_slack(channel_id)
                    end
