@@ -117,6 +117,24 @@ describe User do
           user.sync_new_strava_activities!
         end
       end
+      context 'sync_and_brag!' do
+        it 'syncs and brags' do
+          expect_any_instance_of(User).to receive(:inform!)
+          user.sync_and_brag!
+        end
+        it 'warns on error' do
+          expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)
+          allow(user).to receive(:sync_new_strava_activities!).and_raise 'unexpected error'
+          expect { user.sync_and_brag! }.to_not raise_error
+        end
+        context 'rate limit exceeded' do
+          let(:rate_limit_exceeded_error) { Strava::Api::V3::ClientError.new(429, '{"message":"Rate Limit Exceeded","errors":[{"resource":"Application","field":"rate limit","code":"exceeded"}]}') }
+          it 'raises an exception' do
+            allow(user).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
+            expect { user.sync_and_brag! }.to raise_error(Strava::Api::V3::ClientError, /Rate Limit Exceeded/)
+          end
+        end
+      end
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!

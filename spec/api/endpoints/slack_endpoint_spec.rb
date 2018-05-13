@@ -171,7 +171,7 @@ describe Api::Endpoints::SlackEndpoint do
               response = JSON.parse(last_response.body)
               expect(response['attachments'].count).to eq 6
               expect(response['attachments'][0]['title']).to eq nyrr_club.name
-              expect(response['attachments'][5]['title']).to eq club.name
+              expect(response['attachments'][1]['title']).to eq club.name
             end
           end
         end

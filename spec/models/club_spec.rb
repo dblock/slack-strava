@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe Club do
   let(:team) { Fabricate(:team) }
+  let!(:club) { Fabricate(:club, team: team, strava_id: '43749', access_token: 'token', token_type: 'Bearer') }
   context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/club_sync_last_strava_activity' } do
-    let!(:club) { Fabricate(:club, team: team, strava_id: '43749', access_token: 'token', token_type: 'Bearer') }
     it 'retrieves the last activity' do
       expect {
         club.sync_last_strava_activity!
@@ -31,8 +31,6 @@ describe Club do
     end
   end
   context 'brag!' do
-    let(:team) { Fabricate(:team) }
-    let!(:club) { Fabricate(:club, team: team) }
     let!(:activity) { Fabricate(:club_activity, club: club) }
     it 'brags the last unbragged activity' do
       expect_any_instance_of(ClubActivity).to receive(:brag!).and_return(
@@ -46,6 +44,24 @@ describe Club do
       expect(results[:ts]).to eq '1503435956.000247'
       expect(results[:channel]).to eq(id: 'C1', name: 'channel')
       expect(results[:activity]).to eq activity
+    end
+  end
+  context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
+    it 'syncs and brags' do
+      expect_any_instance_of(ClubActivity).to receive(:brag!)
+      club.sync_and_brag!
+    end
+    it 'warns on error' do
+      expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)
+      allow(club).to receive(:sync_new_strava_activities!).and_raise 'unexpected error'
+      expect { club.sync_and_brag! }.to_not raise_error
+    end
+    context 'rate limit exceeded' do
+      let(:rate_limit_exceeded_error) { Strava::Api::V3::ClientError.new(429, '{"message":"Rate Limit Exceeded","errors":[{"resource":"Application","field":"rate limit","code":"exceeded"}]}') }
+      it 'raises an exception' do
+        allow(club).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
+        expect { club.sync_and_brag! }.to raise_error(Strava::Api::V3::ClientError, /Rate Limit Exceeded/)
+      end
     end
   end
 end

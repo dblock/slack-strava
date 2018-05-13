@@ -1,6 +1,7 @@
 class User
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Brag
 
   field :user_id, type: String
   field :user_name, type: String

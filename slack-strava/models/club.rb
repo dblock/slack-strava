@@ -1,6 +1,7 @@
 class Club
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Brag
 
   field :strava_id, type: String
   field :name, type: String

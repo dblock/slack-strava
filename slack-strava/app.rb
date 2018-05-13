@@ -57,24 +57,8 @@ module SlackStrava
       log_info_without_repeat "Checking activities for #{Team.active.count} team(s)."
       Team.active.each do |team|
         begin
-          team.users.connected_to_strava.each do |user|
-            begin
-              user.sync_new_strava_activities!
-              user.brag!
-            rescue StandardError => e
-              backtrace = e.backtrace.join("\n")
-              logger.warn "Error in cron for team #{team}, user #{user}, #{e.message}, #{backtrace}."
-            end
-          end
-          team.clubs.connected_to_strava.each do |club|
-            begin
-              club.sync_new_strava_activities!
-              club.brag!
-            rescue StandardError => e
-              backtrace = e.backtrace.join("\n")
-              logger.warn "Error in cron for team #{team}, club #{club}, #{e.message}, #{backtrace}."
-            end
-          end
+          team.users.connected_to_strava.each(&:sync_and_brag!)
+          team.clubs.connected_to_strava.each(&:sync_and_brag!)
         rescue StandardError => e
           backtrace = e.backtrace.join("\n")
           logger.warn "Error in cron for team #{team}, #{e.message}, #{backtrace}."
