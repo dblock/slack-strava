@@ -62,7 +62,7 @@ class User
     team.slack_channels.map { |channel|
       next if user_id && !user_in_channel?(channel['id'])
       message_with_channel = message.merge(channel: channel['id'], as_user: true)
-      Api::Middleware.logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
+      logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
       rc = team.slack_client.chat_postMessage(message_with_channel)
 
       {
@@ -81,14 +81,14 @@ class User
     raise "Strava returned #{response.code}: #{response.body}" unless response.success?
     create_athlete(Athlete.attrs_from_strava(response['athlete']))
     update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
-    Api::Middleware.logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
+    logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
     sync_last_strava_activity!
     dm!(text: 'Your Strava account has been successfully connected.')
   end
 
   def disconnect!
     if access_token
-      Api::Middleware.logger.info "Disconnected team=#{team_id}, user=#{user_name}, user_id=#{id}"
+      logger.info "Disconnected team=#{team_id}, user=#{user_name}, user_id=#{id}"
       update_attributes!(token_type: nil, access_token: nil)
       dm!(text: 'Your Strava account has been successfully disconnected.')
     else
@@ -134,7 +134,7 @@ class User
   def sync_last_strava_activity!
     activities = strava_client.list_athlete_activities(per_page: 1)
     return unless activities.any?
-    Api::Middleware.logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
+    logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
     return if activities.first['private'] && !private_activities?
     UserActivity.create_from_strava!(self, activities.first)
   rescue Strava::Api::V3::ClientError => e
@@ -185,7 +185,7 @@ class User
   end
 
   def handle_strava_error(e)
-    Api::Middleware.logger.error e
+    logger.error e
     case e.message
     when '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]} [HTTP 401]' then
       dm_connect! 'There was an authorization problem. Please reconnect your Strava account'

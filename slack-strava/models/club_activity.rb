@@ -11,9 +11,9 @@ class ClubActivity < Activity
 
   def brag!
     return if bragged_at
-    Api::Middleware.logger.info "Bragging about #{club}, #{self}"
+    logger.info "Bragging about #{club}, #{self}"
     message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)
-    Api::Middleware.logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
+    logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
     rc = club.team.slack_client.chat_postMessage(message_with_channel)
     update_attributes!(bragged_at: Time.now.utc)
     if rc
@@ -25,7 +25,7 @@ class ClubActivity < Activity
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
     when 'not_in_channel' then
-      Api::Middleware.logger.error "Bragging to #{club} failed, removed from channel, destroying."
+      logger.error "Bragging to #{club} failed, removed from channel, destroying."
       club.destroy
       nil
     else

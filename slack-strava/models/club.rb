@@ -120,14 +120,14 @@ class Club
       club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(club: self))
       break if ClubActivity.where(strava_id: club_activity.strava_id).exists?
       club_activity.save!
-      Api::Middleware.logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
+      logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
     end
   rescue Strava::Api::V3::ClientError => e
     handle_strava_error e
   end
 
   def handle_strava_error(e)
-    Api::Middleware.logger.error e
+    logger.error e
     case e.message
     when '{"message":"Authorization Error","errors":[]} [HTTP 401]' then
       update_attributes!(access_token: nil)

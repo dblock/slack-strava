@@ -18,7 +18,7 @@ class UserActivity < Activity
 
   def brag!
     return if bragged_at
-    Api::Middleware.logger.info "Bragging about #{user}, #{self}"
+    logger.info "Bragging about #{user}, #{self}"
     channels = user.inform!(to_slack)
     update_attributes!(bragged_at: Time.now.utc)
     channels
