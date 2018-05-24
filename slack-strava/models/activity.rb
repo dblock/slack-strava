@@ -36,6 +36,11 @@ class Activity
     format('%gyd', format('%.1f', distance_in_yards))
   end
 
+  def distance_in_meters_s
+    return unless distance && distance.positive?
+    format('%gm', format('%d', distance))
+  end
+
   def distance_in_kilometers
     distance / 1000
   end
@@ -47,7 +52,10 @@ class Activity
 
   def distance_s
     if type == 'Swim'
-      distance_in_yards_s
+      case team.units
+      when 'km' then distance_in_meters_s
+      when 'mi' then distance_in_yards_s
+      end
     else
       case team.units
       when 'km' then distance_in_kilometers_s
@@ -70,6 +78,10 @@ class Activity
 
   def pace_per_100_yards_s
     convert_meters_per_second_to_pace average_speed, :"100yd"
+  end
+
+  def pace_per_100_meters_s
+    convert_meters_per_second_to_pace average_speed, :"100m"
   end
 
   def pace_per_kilometer_s
@@ -103,7 +115,10 @@ class Activity
 
   def pace_s
     if type == 'Swim'
-      pace_per_100_yards_s
+      case team.units
+      when 'km' then pace_per_100_meters_s
+      when 'mi' then pace_per_100_yards_s
+      end
     else
       case team.units
       when 'km' then pace_per_kilometer_s
@@ -231,6 +246,7 @@ class Activity
                     when :mi then 1609.344 / speed
                     when :km then 1000 / speed
                     when :"100yd" then 91.44 / speed
+                    when :"100m" then 100 / speed
                     end
     minutes, seconds = total_seconds.divmod(60)
     seconds = seconds.round < 10 ? "0#{seconds.round}" : seconds.round.to_s
