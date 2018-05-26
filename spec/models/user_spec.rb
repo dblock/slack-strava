@@ -30,9 +30,9 @@ describe User do
     context 'without a user' do
       it 'creates a user' do
         expect {
-          user = User.find_create_or_update_by_slack_id!(client, 'U43')
+          user = User.find_create_or_update_by_slack_id!(client, 'whatever')
           expect(user).to_not be_nil
-          expect(user.user_id).to eq 'U43'
+          expect(user.user_id).to eq 'whatever'
           expect(user.user_name).to eq 'username'
         }.to change(User, :count).by(1)
       end
@@ -41,7 +41,7 @@ describe User do
       let!(:user) { Fabricate(:user, team: team) }
       it 'creates another user' do
         expect {
-          User.find_create_or_update_by_slack_id!(client, 'U43')
+          User.find_create_or_update_by_slack_id!(client, 'whatever')
         }.to change(User, :count).by(1)
       end
       it 'updates the username of the existing user' do
@@ -187,7 +187,7 @@ describe User do
       activity = Fabricate(:user_activity, user: user)
       expect_any_instance_of(UserActivity).to receive(:brag!).and_return(
         [
-          ts: '1503435956.000247',
+          ts: '1503425956.000247',
           channel: {
             id: 'C1',
             name: 'channel'
@@ -196,7 +196,7 @@ describe User do
       )
       results = user.brag!
       expect(results.size).to eq(1)
-      expect(results.first[:ts]).to eq '1503435956.000247'
+      expect(results.first[:ts]).to eq '1503425956.000247'
       expect(results.first[:channel]).to eq(id: 'C1', name: 'channel')
       expect(results.first[:activity]).to eq activity
     end
@@ -208,7 +208,7 @@ describe User do
         message: 'message',
         channel: 'C0HNSS6H5',
         as_user: true
-      ).and_return(ts: '1503435956.000247')
+      ).and_return(ts: '1503425956.000247')
       expect(user.inform!(message: 'message').count).to eq(1)
     end
   end
