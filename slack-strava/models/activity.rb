@@ -88,6 +88,11 @@ class Activity
     convert_meters_per_second_to_pace average_speed, :km
   end
 
+  def kilometer_per_hour_s
+    return unless average_speed && average_speed.positive?
+    format('%.1fkm/h', average_speed * 3.6)
+  end
+
   def total_elevation_gain_in_feet
     total_elevation_gain_in_meters * 3.28084
   end
@@ -114,10 +119,16 @@ class Activity
   end
 
   def pace_s
-    if type == 'Swim'
+    case type
+    when 'Swim'
       case team.units
       when 'km' then pace_per_100_meters_s
       when 'mi' then pace_per_100_yards_s
+      end
+    when 'Ride', 'EBikeRide', 'VirtualRide'
+      case team.units
+      when 'km' then kilometer_per_hour_s
+      when 'mi' then pace_per_mile_s
       end
     else
       case team.units
