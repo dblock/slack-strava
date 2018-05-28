@@ -140,6 +140,33 @@ describe UserActivity do
       )
     end
   end
+  context 'ride activities in kilometers/hour' do
+    let(:team) { Fabricate(:team, units: 'km') }
+    let(:user) { Fabricate(:user, team: team) }
+    let(:activity) { Fabricate(:ride_activity, user: user) }
+    it 'to_slack' do
+      expect(activity.to_slack).to eq(
+        attachments: [
+          {
+            fallback: "#{activity.name} via #{activity.user.slack_mention}, 28.1km 1h10m7s 24.0km/h",
+            title: activity.name,
+            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            fields: [
+              { title: 'Type', value: 'Ride 🚴', short: true },
+              { title: 'Distance', value: '28.1km', short: true },
+              { title: 'Moving Time', value: '1h10m7s', short: true },
+              { title: 'Elapsed Time', value: '1h13m30s', short: true },
+              { title: 'Pace', value: '24.0km/h', short: true }
+            ],
+            author_name: user.athlete.name,
+            author_link: user.athlete.strava_url,
+            author_icon: user.athlete.profile_medium
+          }
+        ]
+      )
+    end
+  end
   context 'maps' do
     context 'without maps' do
       let(:team) { Fabricate(:team, maps: 'off') }
