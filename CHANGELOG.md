@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2018/5/28: Ride activties pace is displayed in km/h if units is km - [@gmiossec](https://github.com/gmiossec).
 * 2018/5/24: Swim activties are displayed in meters if units is km - [@gmiossec](https://github.com/gmiossec).
 * 2018/5/12: Fix [#37](https://github.com/dblock/slack-strava/issues/37), don't list clubs from /slava clubs unless bot is a member of the channel - [@dblock](https://github.com/dblock).
 * 2018/5/11: List club channels and provide instructions for connecting clubs in /slava clubs - [@dblock](https://github.com/dblock).
