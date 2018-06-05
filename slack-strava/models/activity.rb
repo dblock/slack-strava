@@ -93,6 +93,11 @@ class Activity
     format('%.1fkm/h', average_speed * 3.6)
   end
 
+  def miles_per_hour_s
+    return unless average_speed && average_speed.positive?
+    format('%.1fmph', average_speed * 2.23694)
+  end
+
   def total_elevation_gain_in_feet
     total_elevation_gain_in_meters * 3.28084
   end
@@ -125,11 +130,6 @@ class Activity
       when 'km' then pace_per_100_meters_s
       when 'mi' then pace_per_100_yards_s
       end
-    when 'Ride', 'EBikeRide', 'VirtualRide'
-      case team.units
-      when 'km' then kilometer_per_hour_s
-      when 'mi' then pace_per_mile_s
-      end
     else
       case team.units
       when 'km' then pace_per_kilometer_s
@@ -138,8 +138,15 @@ class Activity
     end
   end
 
+  def speed_s
+    case team.units
+    when 'km' then kilometer_per_hour_s
+    when 'mi' then miles_per_hour_s
+    end
+  end
+
   def to_s
-    "name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}"
+    "name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, speed=#{speed_s}"
   end
 
   def strava_url
@@ -242,7 +249,11 @@ class Activity
       fields << { title: 'Time', value: elapsed_time_in_hours_s, short: true }
     end
 
-    fields << { title: 'Pace', value: pace_s, short: true } if average_speed
+    if average_speed
+      fields << { title: 'Pace', value: pace_s, short: true }
+      fields << { title: 'Speed', value: speed_s, short: true } if average_speed
+    end
+
     fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain && total_elevation_gain.positive?
 
     fields

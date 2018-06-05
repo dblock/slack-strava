@@ -43,6 +43,7 @@ describe ClubActivity do
               { title: 'Moving Time', value: '2h6m26s', short: true },
               { title: 'Elapsed Time', value: '2h8m6s', short: true },
               { title: 'Pace', value: '9m02s/mi', short: true },
+              { title: 'Speed', value: '6.6mph', short: true },
               { title: 'Elevation', value: '475.4ft', short: true }
             ],
             thumb_url: club.logo
@@ -69,6 +70,7 @@ describe ClubActivity do
               { title: 'Moving Time', value: '2h6m26s', short: true },
               { title: 'Elapsed Time', value: '2h8m6s', short: true },
               { title: 'Pace', value: '5m37s/km', short: true },
+              { title: 'Speed', value: '10.7km/h', short: true },
               { title: 'Elevation', value: '144.9m', short: true }
             ],
             thumb_url: club.logo
