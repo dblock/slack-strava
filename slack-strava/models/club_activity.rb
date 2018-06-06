@@ -47,7 +47,8 @@ class ClubActivity < Activity
     result[:title] = name
     result[:title_link] = club.strava_url
     result[:text] = "#{athlete_name}, #{club.name}"
-    result[:fields] = slack_fields
+    fields = slack_fields
+    result[:fields] = fields if fields
     result[:thumb_url] = club.logo
     result
   end

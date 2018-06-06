@@ -230,32 +230,43 @@ class Activity
   end
 
   def slack_fields
-    fields = [
-      { title: 'Type', value: type_with_emoji, short: true }
-    ]
+    activity_fields = team.activity_fields
+    return if activity_fields == ['None']
+    activity_fields = ActivityFields.values if activity_fields == ['All']
 
-    fields << { title: 'Distance', value: distance_s, short: true } if distance && distance.positive?
-
-    if elapsed_time && moving_time
-      if elapsed_time == moving_time
-        fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
-      else
-        fields << { title: 'Moving Time', value: moving_time_in_hours_s, short: true }
-        fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true }
+    fields = []
+    activity_fields.each do |activity_field|
+      case activity_field
+      when 'Type' then
+        fields << { title: 'Type', value: type_with_emoji, short: true }
+      when 'Distance' then
+        fields << { title: 'Distance', value: distance_s, short: true } if distance && distance.positive?
+      when 'Time' then
+        if elapsed_time && moving_time
+          if elapsed_time == moving_time
+            fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
+          end
+        elsif moving_time
+          fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
+        elsif elapsed_time
+          fields << { title: 'Time', value: elapsed_time_in_hours_s, short: true }
+        end
+      when 'Moving Time' then
+        if elapsed_time && moving_time && elapsed_time != moving_time
+          fields << { title: 'Moving Time', value: moving_time_in_hours_s, short: true }
+        end
+      when 'Elapsed Time' then
+        if elapsed_time && moving_time && elapsed_time != moving_time
+          fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true }
+        end
+      when 'Pace' then
+        fields << { title: 'Pace', value: pace_s, short: true } if average_speed
+      when 'Speed' then
+        fields << { title: 'Speed', value: speed_s, short: true } if average_speed
+      when 'Elevation' then
+        fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain && total_elevation_gain.positive?
       end
-    elsif moving_time
-      fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
-    elsif elapsed_time
-      fields << { title: 'Time', value: elapsed_time_in_hours_s, short: true }
     end
-
-    if average_speed
-      fields << { title: 'Pace', value: pace_s, short: true }
-      fields << { title: 'Speed', value: speed_s, short: true } if average_speed
-    end
-
-    fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain && total_elevation_gain.positive?
-
     fields
   end
 

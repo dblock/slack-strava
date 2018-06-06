@@ -79,4 +79,45 @@ describe ClubActivity do
       )
     end
   end
+  context 'fields' do
+    let(:club) { Fabricate(:club, team: team) }
+    let(:activity) { Fabricate(:club_activity, club: club) }
+    context 'none' do
+      let(:team) { Fabricate(:team, activity_fields: ['None']) }
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
+              title: activity.name,
+              title_link: club.strava_url,
+              text: "#{activity.athlete_name}, #{club.name}",
+              thumb_url: club.logo
+            }
+          ]
+        )
+      end
+    end
+    context 'some' do
+      let(:team) { Fabricate(:team, activity_fields: %w[Pace Elevation Type]) }
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
+              title: activity.name,
+              title_link: club.strava_url,
+              text: "#{activity.athlete_name}, #{club.name}",
+              fields: [
+                { title: 'Pace', value: '9m02s/mi', short: true },
+                { title: 'Elevation', value: '475.4ft', short: true },
+                { title: 'Type', value: 'Run 🏃', short: true }
+              ],
+              thumb_url: club.logo
+            }
+          ]
+        )
+      end
+    end
+  end
 end

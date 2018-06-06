@@ -4,6 +4,9 @@ class Team
   field :units, type: String, default: 'mi'
   validates_inclusion_of :units, in: %w[mi km]
 
+  field :activity_fields, type: Array, default: ['All']
+  validates :activity_fields, array: { presence: true, inclusion: { in: ActivityFields.values } }
+
   field :maps, type: String, default: 'full'
   validates_inclusion_of :maps, in: %w[off full thumb]
 
@@ -37,14 +40,25 @@ class Team
 
   def maps_s
     case maps
-    when 'off'
+    when 'off' then
       'not displayed'
-    when 'full'
+    when 'full' then
       'displayed in full'
-    when 'thumb'
+    when 'thumb' then
       'displayed as thumbnails'
     else
       raise ArgumentError
+    end
+  end
+
+  def activity_fields_s
+    case activity_fields
+    when ['All'] then
+      'displayed as available'
+    when ['None'] then
+      'not displayed'
+    else
+      activity_fields.and
     end
   end
 

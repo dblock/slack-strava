@@ -22,6 +22,7 @@ describe SlackStrava::Commands::Set do
       it 'shows current settings' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles*.",
+          'Activity fields are *displayed as available*.',
           "Maps for team #{team.name} are *displayed in full*.",
           'Your private activities will not be posted.'
         ].join("\n"))
@@ -81,47 +82,39 @@ describe SlackStrava::Commands::Set do
           expect(team.reload.units).to eq 'km'
         end
       end
-      context 'maps' do
-        it 'shows current value of maps' do
-          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
-            "Maps for team #{team.name} are *displayed in full*."
+      context 'fields' do
+        it 'shows current value of fields' do
+          expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
+            "Activity fields for team #{team.name} are *displayed as available*."
           )
         end
-        it 'shows current value of maps set to thumb' do
-          team.update_attributes!(maps: 'thumb')
-          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
-            "Maps for team #{team.name} are *displayed as thumbnails*."
+        it 'shows current value of fields set to Time and Elapsed Time' do
+          team.update_attributes!(activity_fields: ['Time', 'Elapsed Time'])
+          expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
+            "Activity fields for team #{team.name} are *Time and Elapsed Time*."
           )
         end
-        it 'shows current value of maps set to off' do
-          team.update_attributes!(maps: 'off')
-          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
-            "Maps for team #{team.name} are *not displayed*."
+        it 'changes fields' do
+          expect(message: "#{SlackRubyBot.config.user} set fields Time, Elapsed Time").to respond_with_slack_message(
+            "Activity fields for team #{team.name} are now *Time and Elapsed Time*."
           )
+          expect(client.owner.activity_fields).to eq(['Time', 'Elapsed Time'])
+          expect(team.reload.activity_fields).to eq(['Time', 'Elapsed Time'])
         end
-        it 'changes maps to full' do
-          team.update_attributes!(maps: 'thumb')
-          expect(message: "#{SlackRubyBot.config.user} set maps full").to respond_with_slack_message(
-            "Maps for team #{team.name} are now *displayed in full*."
+        it 'sets fields to none' do
+          expect(message: "#{SlackRubyBot.config.user} set fields none").to respond_with_slack_message(
+            "Activity fields for team #{team.name} are now *not displayed*."
           )
-          expect(client.owner.maps).to eq 'full'
-          expect(team.reload.maps).to eq 'full'
+          expect(client.owner.activity_fields).to eq(['None'])
+          expect(team.reload.activity_fields).to eq(['None'])
         end
-        it 'changes maps to thumb' do
-          team.update_attributes!(maps: 'full')
-          expect(message: "#{SlackRubyBot.config.user} set maps thumb").to respond_with_slack_message(
-            "Maps for team #{team.name} are now *displayed as thumbnails*."
+        it 'sets fields to all' do
+          team.update_attributes!(activity_fields: ['None'])
+          expect(message: "#{SlackRubyBot.config.user} set fields all").to respond_with_slack_message(
+            "Activity fields for team #{team.name} are now *displayed as available*."
           )
-          expect(client.owner.maps).to eq 'thumb'
-          expect(team.reload.maps).to eq 'thumb'
-        end
-        it 'changes maps to off' do
-          team.update_attributes!(maps: 'full')
-          expect(message: "#{SlackRubyBot.config.user} set maps off").to respond_with_slack_message(
-            "Maps for team #{team.name} are now *not displayed*."
-          )
-          expect(client.owner.maps).to eq 'off'
-          expect(team.reload.maps).to eq 'off'
+          expect(client.owner.activity_fields).to eq(['All'])
+          expect(team.reload.activity_fields).to eq(['All'])
         end
       end
     end
