@@ -30,13 +30,14 @@ module SlackStrava
             logger.info "SET: #{team} - units set to #{team.units}"
           when 'fields' then
             parsed_fields = ActivityFields.parse_s(v) if v
-            changed = v && team.activity_fields != parsed_fields
+            changed = parsed_fields && team.activity_fields != parsed_fields
             team.update_attributes!(activity_fields: parsed_fields) if parsed_fields && parsed_fields.any?
             client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{changed ? ' now' : ''} *#{team.activity_fields_s}*.")
             logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
           when 'maps' then
-            changed = v && team.maps != v
-            team.update_attributes!(maps: v) unless v.nil?
+            parsed_value = MapTypes.parse_s(v) if v
+            changed = parsed_value && team.maps != parsed_value
+            team.update_attributes!(maps: parsed_value) if parsed_value
             client.say(channel: data.channel, text: "Maps for team #{team.name} are#{changed ? ' now' : ''} *#{team.maps_s}*.")
             logger.info "SET: #{team} - maps set to #{team.maps}"
           else

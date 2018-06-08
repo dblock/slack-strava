@@ -82,6 +82,38 @@ describe SlackStrava::Commands::Set do
           expect(team.reload.units).to eq 'km'
         end
       end
+      context 'maps' do
+        it 'shows current value of maps' do
+          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
+            "Maps for team #{team.name} are *displayed in full*."
+          )
+        end
+        it 'shows current value of maps set to thumb' do
+          team.update_attributes!(maps: 'thumb')
+          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
+            "Maps for team #{team.name} are *displayed as thumbnails*."
+          )
+        end
+        it 'sets maps to thumb' do
+          user.update_attributes!(private_activities: true)
+          expect(message: "#{SlackRubyBot.config.user} set maps thumb").to respond_with_slack_message(
+            "Maps for team #{team.name} are now *displayed as thumbnails*."
+          )
+          expect(team.reload.maps).to eq 'thumb'
+        end
+        it 'sets maps to off' do
+          expect(message: "#{SlackRubyBot.config.user} set maps off").to respond_with_slack_message(
+            "Maps for team #{team.name} are now *not displayed*."
+          )
+          expect(team.reload.maps).to eq 'off'
+        end
+        it 'displays an error for an invalid maps value' do
+          expect(message: "#{SlackRubyBot.config.user} set maps foobar").to respond_with_slack_message(
+            'Invalid value: foobar, possible values are full, off and thumb.'
+          )
+          expect(team.reload.maps).to eq 'full'
+        end
+      end
       context 'fields' do
         it 'shows current value of fields' do
           expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
@@ -115,6 +147,12 @@ describe SlackStrava::Commands::Set do
           )
           expect(client.owner.activity_fields).to eq(['All'])
           expect(team.reload.activity_fields).to eq(['All'])
+        end
+        it 'sets to invalid fields' do
+          expect(message: "#{SlackRubyBot.config.user} set fields Time, Foo, Bar").to respond_with_slack_message(
+            'Invalid fields: Foo and Bar, possible values are All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed and Elevation.'
+          )
+          expect(team.reload.activity_fields).to eq ['All']
         end
       end
     end

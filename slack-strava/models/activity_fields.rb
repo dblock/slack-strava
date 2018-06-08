@@ -27,7 +27,7 @@ class ActivityFields
     end
     fields.uniq!
     errors.uniq!
-    raise SlackStrava::Error, "Invalid field#{errors.count == 1 ? '' : 's'}: #{errors.and}." if errors.any?
+    raise SlackStrava::Error, "Invalid field#{errors.count == 1 ? '' : 's'}: #{errors.and}, possible values are #{ActivityFields.values.and}." if errors.any?
     raise SlackStrava::Error, 'None cannot be used with other fields.' if fields.include?('None') && fields.count != 1
     raise SlackStrava::Error, 'All cannot be used with other fields.' if fields.include?('All') && fields.count != 1
     fields

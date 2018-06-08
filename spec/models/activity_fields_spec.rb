@@ -30,10 +30,10 @@ describe ActivityFields do
       expect(ActivityFields.parse_s('elapsed time, Elapsed Time, Time')).to eq([ActivityFields::ELAPSED_TIME, ActivityFields::TIME])
     end
     it 'raise an error on an invalid value' do
-      expect { ActivityFields.parse_s('invalid, elapsed time') }.to raise_error SlackStrava::Error, 'Invalid field: invalid.'
+      expect { ActivityFields.parse_s('invalid, elapsed time') }.to raise_error SlackStrava::Error, 'Invalid field: invalid, possible values are All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed and Elevation.'
     end
     it 'raise an error on invalid fields' do
-      expect { ActivityFields.parse_s('invalid, elapsed time, whatever') }.to raise_error SlackStrava::Error, 'Invalid fields: invalid and whatever.'
+      expect { ActivityFields.parse_s('invalid, elapsed time, whatever') }.to raise_error SlackStrava::Error, 'Invalid fields: invalid and whatever, possible values are All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed and Elevation.'
     end
   end
 end

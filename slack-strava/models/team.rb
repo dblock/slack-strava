@@ -8,7 +8,7 @@ class Team
   validates :activity_fields, array: { presence: true, inclusion: { in: ActivityFields.values } }
 
   field :maps, type: String, default: 'full'
-  validates_inclusion_of :maps, in: %w[off full thumb]
+  validates_inclusion_of :maps, in: MapTypes.values
 
   field :stripe_customer_id, type: String
   field :subscribed, type: Boolean, default: false
