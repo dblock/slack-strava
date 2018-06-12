@@ -77,7 +77,8 @@ module SlackStrava
         next unless team.asleep?
         begin
           team.deactivate!
-          team.inform!(text: "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks.")
+          purge_message = "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackStrava::Service.url}. Your data will be purged in another 2 weeks."
+          team.inform_everyone!(text: purge_message)
         rescue StandardError => e
           logger.warn "Error informing team #{team}, #{e.message}."
         end
@@ -94,10 +95,10 @@ module SlackStrava
           case subscription.status
           when 'past_due'
             logger.warn "Subscription for #{team} is #{subscription.status}, notifying."
-            team.inform!(text: "Your subscription to #{subscription_name} is past due. #{team.update_cc_text}")
+            team.inform_everyone!(text: "Your subscription to #{subscription_name} is past due. #{team.update_cc_text}")
           when 'canceled', 'unpaid'
             logger.warn "Subscription for #{team} is #{subscription.status}, downgrading."
-            team.inform!(text: "Your subscription to #{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)}) was canceled and your team has been downgraded. Thank you for being a customer!")
+            team.inform_everyone!(text: "Your subscription to #{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)}) was canceled and your team has been downgraded. Thank you for being a customer!")
             team.update_attributes!(subscribed: false)
           end
         end

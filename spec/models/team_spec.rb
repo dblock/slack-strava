@@ -79,6 +79,7 @@ describe Team do
     let(:team) { Fabricate(:team, created_at: 2.weeks.ago) }
     before do
       expect(team).to receive(:inform!).with(text: team.subscribe_text)
+      expect(team).to receive(:inform_admin!).with(text: team.subscribe_text)
       team.subscription_expired!
     end
     it 'sets subscription_expired_at' do
@@ -87,6 +88,7 @@ describe Team do
     context '(re)subscribed' do
       before do
         expect(team).to receive(:inform!).with(text: team.subscribed_text)
+        expect(team).to receive(:inform_admin!).with(text: team.subscribed_text)
         team.update_attributes!(subscribed: true)
       end
       it 'resets subscription_expired_at' do
@@ -137,14 +139,19 @@ describe Team do
         expect(team_created_1_week_ago).to receive(:inform!).with(
           text: "Your trial subscription expires in 6 days. #{team_created_1_week_ago.subscribe_text}"
         )
+        expect(team_created_1_week_ago).to receive(:inform_admin!).with(
+          text: "Your trial subscription expires in 6 days. #{team_created_1_week_ago.subscribe_text}"
+        )
         team_created_1_week_ago.inform_trial!
       end
       it 'expired' do
         expect(team_created_3_weeks_ago).to_not receive(:inform!)
+        expect(team_created_3_weeks_ago).to_not receive(:inform_admin!)
         team_created_3_weeks_ago.inform_trial!
       end
       it 'informs once' do
         expect(team_created_1_week_ago).to receive(:inform!).once
+        expect(team_created_1_week_ago).to receive(:inform_admin!).once
         2.times { team_created_1_week_ago.inform_trial! }
       end
     end
