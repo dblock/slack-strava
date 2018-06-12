@@ -2,15 +2,10 @@ module SlackStrava
   class App < SlackRubyBotServer::App
     include Celluloid
 
-    def prepare!
-      super
-      deactivate_asleep_teams!
-      update_activity_types!
-    end
-
     def after_start!
       once_and_every 60 * 60 * 24 do
         check_subscribed_teams!
+        deactivate_asleep_teams!
       end
       once_and_every 60 * 60 do
         expire_subscriptions!
@@ -21,11 +16,6 @@ module SlackStrava
     end
 
     private
-
-    def update_activity_types!
-      result = Activity.where(_type: nil).set(_type: 'UserActivity')
-      logger.info "update_activity_types: #{result}"
-    end
 
     def log_info_without_repeat(message)
       return if message == @log_message
