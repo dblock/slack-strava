@@ -17,8 +17,11 @@ class Team
   field :bot_user_id, type: String
   field :activated_user_id, type: String
 
+  field :trial_informed_at, type: DateTime
+
   scope :api, -> { where(api: true) }
   scope :striped, -> { where(subscribed: true, :stripe_customer_id.ne => nil) }
+  scope :trials, -> { where(subscribed: false) }
 
   has_many :users, dependent: :destroy
   has_many :clubs, dependent: :destroy
@@ -111,7 +114,7 @@ class Team
 
   def subscription_expired?
     return false if subscribed?
-    (created_at + 1.week) < Time.now
+    (created_at + 2.weeks) < Time.now
   end
 
   def subscribe_text
@@ -149,11 +152,35 @@ EOS
     result
   end
 
+  def trial_ends_at
+    raise 'Team is subscribed.' if subscribed?
+    created_at + 2.weeks
+  end
+
+  def remaining_trial_days
+    raise 'Team is subscribed.' if subscribed?
+    [0, (trial_ends_at.to_date - Time.now.utc.to_date).to_i].max
+  end
+
+  def trial_message
+    [
+      remaining_trial_days.zero? ? 'Your trial subscription has expired.' : "Your trial subscription expires in #{remaining_trial_days} day#{remaining_trial_days == 1 ? '' : 's'}.",
+      subscribe_text
+    ].join(' ')
+  end
+
+  def inform_trial!
+    return if subscribed? || subscription_expired?
+    return if trial_informed_at && (Time.now.utc < trial_informed_at + 7.days)
+    inform! trial_message
+    update_attributes!(trial_informed_at: Time.now.utc)
+  end
+
   private
 
   def trial_expired_text
     return unless subscription_expired?
-    'Your trial subscription has expired and we will no longer send your Strava activities to Slack.'
+    'Your trial subscription has expired.'
   end
 
   def subscribe_team_text

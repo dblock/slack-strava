@@ -6,6 +6,7 @@ module SlackStrava
       once_and_every 60 * 60 * 24 do
         check_subscribed_teams!
         deactivate_asleep_teams!
+        check_trials!
       end
       once_and_every 60 * 60 do
         expire_subscriptions!
@@ -27,6 +28,19 @@ module SlackStrava
       yield
       every tt do
         yield
+      end
+    end
+
+    def check_trials!
+      log_info_without_repeat "Checking trials for #{Team.active.trials.count} team(s)."
+      Team.active.trials.each do |team|
+        begin
+          logger.info "Team #{team} has #{team.remaining_trial_days} trial days left."
+          next unless team.remaining_trial_days > 0 && team.remaining_trial_days <= 3
+          team.inform_trial!
+        rescue StandardError => e
+          logger.warn "Error checking team #{team} trial, #{e.message}."
+        end
       end
     end
 

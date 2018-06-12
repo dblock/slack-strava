@@ -39,6 +39,7 @@ group :test do
   gem 'rspec'
   gem 'selenium-webdriver'
   gem 'stripe-ruby-mock', '~> 2.4.1', require: 'stripe_mock'
+  gem 'timecop'
   gem 'vcr'
   gem 'webmock'
 end
