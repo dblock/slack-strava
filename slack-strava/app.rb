@@ -60,6 +60,7 @@ module SlackStrava
     def brag!
       log_info_without_repeat "Checking activities for #{Team.active.count} team(s)."
       Team.active.each do |team|
+        next if team.subscription_expired?
         begin
           team.users.connected_to_strava.each(&:sync_and_brag!)
           team.clubs.connected_to_strava.each(&:sync_and_brag!)

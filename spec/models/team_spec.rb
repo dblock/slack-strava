@@ -135,7 +135,7 @@ describe Team do
       end
       it '1 week ago' do
         expect(team_created_1_week_ago).to receive(:inform!).with(
-          "Your trial subscription expires in 6 days. #{team_created_1_week_ago.subscribe_text}"
+          text: "Your trial subscription expires in 6 days. #{team_created_1_week_ago.subscribe_text}"
         )
         team_created_1_week_ago.inform_trial!
       end
