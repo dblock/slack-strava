@@ -10,6 +10,8 @@ module SlackStrava
       end
       once_and_every 60 * 60 do
         expire_subscriptions!
+      end
+      once_and_every 60 * 3 do
         ping_teams!
       end
       once_and_every 10 * 60 do
