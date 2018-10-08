@@ -1,5 +1,7 @@
 ### Changelog
 
+* 2018/10/8: Announce when someone connects to Strava - [@dblock](https://github.com/dblock).
+* 2018/10/8: Only send activities since user joined a channel - [@dblock](https://github.com/dblock).
 * 2018/6/05: Added `set fields` to choose which fields to display - [@dblock](https://github.com/dblock).
 * 2018/6/05: Display both speed and pace - [@dblock](https://github.com/dblock).
 * 2018/5/28: Update activity labels according to the strava API - [@gmiossec](https://github.com/gmiossec).

@@ -10,13 +10,16 @@ describe Api::Endpoints::UsersEndpoint do
         text: 'Your Strava account has been successfully connected.'
       )
 
-      expect_any_instance_of(User).to receive(:sync_last_strava_activity!).and_return(nil)
+      expect_any_instance_of(User).to receive(:inform!).with(
+        text: "New Strava account connected for #{user.slack_mention}."
+      )
 
       client.user(id: user.id)._put(code: 'code')
 
       user.reload
 
       expect(user.access_token).to eq 'token'
+      expect(user.connected_to_strava_at).to_not be nil
       expect(user.token_type).to eq 'Bearer'
       expect(user.athlete.athlete_id).to eq '12345'
     end

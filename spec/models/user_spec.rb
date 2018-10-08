@@ -52,52 +52,6 @@ describe User do
       end
     end
   end
-  context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/user_sync_last_strava_activity' } do
-    let!(:user) { Fabricate(:user, access_token: 'token', token_type: 'Bearer') }
-    it 'retrieves the last activity' do
-      expect {
-        user.sync_last_strava_activity!
-      }.to change(user.activities, :count).by(1)
-      activity = user.activities.last
-      expect(activity.strava_id).to eq '1484119264'
-      expect(activity.name).to eq 'Reservoir Dogs'
-      expect(activity.map.id).to be_a BSON::ObjectId
-      expect(activity.map.strava_id).to_not be nil
-    end
-    it 'only saves the last activity once' do
-      expect {
-        2.times { user.sync_last_strava_activity! }
-      }.to change(user.activities, :count).by(1)
-    end
-    it 'disconnects user on auth failure' do
-      allow(user.strava_client).to receive(:list_athlete_activities).and_raise(
-        Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]}')
-      )
-      expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
-      expect { user.sync_last_strava_activity! }.to raise_error Strava::Api::V3::ClientError
-      expect(user.access_token).to be nil
-    end
-  end
-  context 'sync_last_strava_activity! with private activities', vcr: { cassette_name: 'strava/user_sync_last_strava_activity_with_private' } do
-    let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
-    context 'by default' do
-      it 'skips private activities' do
-        expect {
-          user.sync_last_strava_activity!
-        }.to_not change(user.activities, :count)
-      end
-    end
-    context 'with private_activities set to true' do
-      before do
-        user.update_attributes!(private_activities: true)
-      end
-      it 'skips private activities' do
-        expect {
-          user.sync_last_strava_activity!
-        }.to change(user.activities, :count).by(1)
-      end
-    end
-  end
   context 'sync_new_strava_activities!' do
     context 'recent created_at', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
@@ -152,6 +106,14 @@ describe User do
     end
     context 'old created_at' do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
+      it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_many' } do
+        expect {
+          user.sync_new_strava_activities!
+        }.to change(user.activities, :count).by(14)
+      end
+    end
+    context 'different connected_to_strava_at' do
+      let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
       it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_many' } do
         expect {
           user.sync_new_strava_activities!

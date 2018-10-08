@@ -8,6 +8,7 @@ class User
   field :access_token, type: String
   field :token_type, type: String
   field :activities_at, type: DateTime
+  field :connected_to_strava_at, type: DateTime
   field :is_bot, type: Boolean
   field :private_activities, type: Boolean, default: false
 
@@ -80,16 +81,16 @@ class User
     response = Strava::Api::V3::Auth.retrieve_access(ENV['STRAVA_CLIENT_ID'], ENV['STRAVA_CLIENT_SECRET'], code)
     raise "Strava returned #{response.code}: #{response.body}" unless response.success?
     create_athlete(Athlete.attrs_from_strava(response['athlete']))
-    update_attributes!(token_type: response['token_type'], access_token: response['access_token'])
+    update_attributes!(token_type: response['token_type'], access_token: response['access_token'], connected_to_strava_at: DateTime.now.utc)
     logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
-    sync_last_strava_activity!
     dm!(text: 'Your Strava account has been successfully connected.')
+    inform!(text: "New Strava account connected for #{slack_mention}.")
   end
 
   def disconnect!
     if access_token
       logger.info "Disconnected team=#{team_id}, user=#{user_name}, user_id=#{id}"
-      update_attributes!(token_type: nil, access_token: nil)
+      update_attributes!(token_type: nil, access_token: nil, connected_to_strava_at: nil)
       dm!(text: 'Your Strava account has been successfully disconnected.')
     else
       dm!(text: 'Your Strava account is not connected.')
@@ -131,18 +132,8 @@ class User
     @strava_client ||= Strava::Api::V3::Client.new(access_token: access_token)
   end
 
-  def sync_last_strava_activity!
-    activities = strava_client.list_athlete_activities(per_page: 1)
-    return unless activities.any?
-    logger.debug "Activity team=#{team_id}, user=#{user_name}, #{activities.first}"
-    return if activities.first['private'] && !private_activities?
-    UserActivity.create_from_strava!(self, activities.first)
-  rescue Strava::Api::V3::ClientError => e
-    handle_strava_error e
-  end
-
   def sync_new_strava_activities!
-    sync_strava_activities!(after: activities_at || latest_activity_start_date || created_at)
+    sync_strava_activities!(after: activities_at || latest_activity_start_date || connected_to_strava_at || created_at)
   end
 
   def athlete_clubs_to_slack(channel_id)
@@ -189,7 +180,7 @@ class User
     case e.message
     when '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]} [HTTP 401]' then
       dm_connect! 'There was an authorization problem. Please reconnect your Strava account'
-      update_attributes!(access_token: nil)
+      update_attributes!(access_token: nil, connected_to_strava_at: nil)
     end
     raise e
   end
