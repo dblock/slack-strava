@@ -83,7 +83,7 @@ class User
     create_athlete(Athlete.attrs_from_strava(response['athlete']))
     update_attributes!(token_type: response['token_type'], access_token: response['access_token'], connected_to_strava_at: DateTime.now.utc)
     logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
-    dm!(text: 'Your Strava account has been successfully connected.')
+    dm!(text: "Your Strava account has been successfully connected.\nI won't post any private activities, DM me `set private on` to toggle that and `help` for other options.")
     inform!(text: "New Strava account connected for #{slack_mention}.")
   end
 
