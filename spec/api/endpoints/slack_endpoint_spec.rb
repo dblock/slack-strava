@@ -10,7 +10,7 @@ describe Api::Endpoints::SlackEndpoint do
       ENV['SLACK_VERIFICATION_TOKEN'] = token
     end
     context 'interactive buttons' do
-      let(:user) { Fabricate(:user, team: team, access_token: 'token') }
+      let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
       context 'without a club' do
         let(:club) do
           Club.new(
@@ -131,7 +131,7 @@ describe Api::Endpoints::SlackEndpoint do
           end
         end
         context 'connected user' do
-          let(:user) { Fabricate(:user, team: team, access_token: 'token') }
+          let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
           let(:nyrr_club) do
             Club.new(
               strava_id: '108605',

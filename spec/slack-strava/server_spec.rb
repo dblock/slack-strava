@@ -14,7 +14,7 @@ describe SlackStrava::Server do
   end
   context '#member_joined_channel' do
     let(:user) { Fabricate(:user, team: team) }
-    let(:connect_url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
+    let(:connect_url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=activity:read_all&state=#{user.id}" }
     it 'offers to connect account', vcr: { cassette_name: 'slack/user_info' } do
       allow(client).to receive(:self).and_return(Hashie::Mash.new(id: 'U12345'))
       allow(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)

@@ -1,12 +1,11 @@
 class User
   include Mongoid::Document
   include Mongoid::Timestamps
+  include StravaTokens
   include Brag
 
   field :user_id, type: String
   field :user_name, type: String
-  field :access_token, type: String
-  field :token_type, type: String
   field :activities_at, type: DateTime
   field :connected_to_strava_at, type: DateTime
   field :is_bot, type: Boolean
@@ -30,7 +29,7 @@ class User
 
   def connect_to_strava_url
     redirect_uri = "#{SlackStrava::Service.url}/connect"
-    "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=view_private&state=#{id}"
+    "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=activity:read_all&state=#{id}"
   end
 
   def slack_mention
@@ -78,10 +77,15 @@ class User
   end
 
   def connect!(code)
-    response = Strava::Api::V3::Auth.retrieve_access(ENV['STRAVA_CLIENT_ID'], ENV['STRAVA_CLIENT_SECRET'], code)
-    raise "Strava returned #{response.code}: #{response.body}" unless response.success?
+    response = get_access_token!(code)
     create_athlete(Athlete.attrs_from_strava(response['athlete']))
-    update_attributes!(token_type: response['token_type'], access_token: response['access_token'], connected_to_strava_at: DateTime.now.utc)
+    update_attributes!(
+      token_type: response['token_type'],
+      access_token: response['access_token'],
+      refresh_token: response['refresh_token'],
+      token_expires_at: Time.at(response['expires_at']),
+      connected_to_strava_at: DateTime.now.utc
+    )
     logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
     dm!(text: "Your Strava account has been successfully connected.\nI won't post any private activities, DM me `set private on` to toggle that and `help` for other options.")
     inform!(text: "New Strava account connected for #{slack_mention}.")
@@ -125,11 +129,6 @@ class User
     results.map do |result|
       result.merge(activity: activity)
     end
-  end
-
-  def strava_client
-    raise 'Missing access_token' unless access_token
-    @strava_client ||= Strava::Api::V3::Client.new(access_token: access_token)
   end
 
   def sync_new_strava_activities!

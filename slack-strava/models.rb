@@ -1,5 +1,6 @@
 require 'slack-strava/models/error'
 require 'slack-strava/models/brag'
+require 'slack-strava/models/strava_tokens'
 require 'slack-strava/models/array_validator'
 require 'slack-strava/models/activity_fields'
 require 'slack-strava/models/map_types'

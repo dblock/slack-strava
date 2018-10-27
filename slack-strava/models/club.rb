@@ -1,6 +1,7 @@
 class Club
   include Mongoid::Document
   include Mongoid::Timestamps
+  include StravaTokens
   include Brag
 
   field :strava_id, type: String
@@ -13,9 +14,6 @@ class Club
   field :country, type: String
   field :url, type: String
   field :member_count, type: Integer
-
-  field :access_token, type: String
-  field :token_type, type: String
 
   belongs_to :team
   field :channel_id, type: String
@@ -133,10 +131,5 @@ class Club
       update_attributes!(access_token: nil)
     end
     raise e
-  end
-
-  def strava_client
-    raise 'Missing access_token' unless access_token
-    @strava_client ||= Strava::Api::V3::Client.new(access_token: access_token)
   end
 end

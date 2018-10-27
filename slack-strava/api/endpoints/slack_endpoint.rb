@@ -76,6 +76,8 @@ module Api
             club = Club.create!(
               strava_club.merge(
                 access_token: user.access_token,
+                refresh_token: user.refresh_token,
+                token_expires_at: user.token_expires_at,
                 token_type: user.token_type,
                 team: user.team,
                 channel_id: channel_id,

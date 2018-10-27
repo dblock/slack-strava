@@ -54,7 +54,7 @@ describe User do
   end
   context 'sync_new_strava_activities!' do
     context 'recent created_at', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
-      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
+      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       it 'retrieves new activities since created_at' do
         expect {
           user.sync_new_strava_activities!
@@ -103,9 +103,33 @@ describe User do
           user.sync_new_strava_activities!
         end
       end
+      context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
+        before do
+          user.update_attributes!(refresh_token: nil, token_expires_at: nil)
+        end
+        it 'refreshes access token using access token' do
+          user.send(:strava_client)
+          expect(user.refresh_token).to eq 'updated-refresh-token'
+          expect(user.access_token).to eq 'updated-access-token'
+          expect(user.token_expires_at).to_not be_nil
+          expect(user.token_type).to eq 'Bearer'
+        end
+      end
+      context 'with an expired refresh token', vcr: { cassette_name: 'strava/refresh_access_token' } do
+        before do
+          user.update_attributes!(refresh_token: 'refresh_token', token_expires_at: nil)
+        end
+        it 'refreshes access token' do
+          user.send(:strava_client)
+          expect(user.refresh_token).to eq 'updated-refresh-token'
+          expect(user.access_token).to eq 'updated-access-token'
+          expect(user.token_expires_at).to_not be_nil
+          expect(user.token_type).to eq 'Bearer'
+        end
+      end
     end
     context 'old created_at' do
-      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
+      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 2, 1), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_many' } do
         expect {
           user.sync_new_strava_activities!
@@ -113,7 +137,7 @@ describe User do
       end
     end
     context 'different connected_to_strava_at' do
-      let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1), access_token: 'token', token_type: 'Bearer') }
+      let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_many' } do
         expect {
           user.sync_new_strava_activities!
@@ -121,7 +145,7 @@ describe User do
       end
     end
     context 'with private activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_with_private' } do
-      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_type: 'Bearer') }
+      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       context 'by default' do
         it 'skips private activities' do
           expect {
@@ -176,7 +200,7 @@ describe User do
   end
   context '#dm_connect!' do
     let(:user) { Fabricate(:user) }
-    let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=view_private&state=#{user.id}" }
+    let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=activity:read_all&state=#{user.id}" }
     it 'uses the default message' do
       expect(user).to receive(:dm!).with(
         text: 'Please connect your Strava account.',

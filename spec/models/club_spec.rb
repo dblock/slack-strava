@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Club do
   let(:team) { Fabricate(:team) }
-  let!(:club) { Fabricate(:club, team: team, strava_id: '43749', access_token: 'token', token_type: 'Bearer') }
+  let!(:club) { Fabricate(:club, team: team, strava_id: '43749', access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
   context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/club_sync_last_strava_activity' } do
     it 'retrieves the last activity' do
       expect {
@@ -28,6 +28,30 @@ describe Club do
       )
       expect { club.sync_last_strava_activity! }.to raise_error Strava::Api::V3::ClientError
       expect(club.access_token).to be nil
+    end
+    context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
+      before do
+        club.update_attributes!(refresh_token: nil, token_expires_at: nil)
+      end
+      it 'refreshes access token using access token' do
+        club.send(:strava_client)
+        expect(club.refresh_token).to eq 'updated-refresh-token'
+        expect(club.access_token).to eq 'updated-access-token'
+        expect(club.token_expires_at).to_not be_nil
+        expect(club.token_type).to eq 'Bearer'
+      end
+    end
+    context 'with an expired refresh token', vcr: { cassette_name: 'strava/refresh_access_token' } do
+      before do
+        club.update_attributes!(refresh_token: 'refresh_token', token_expires_at: nil)
+      end
+      it 'refreshes access token' do
+        club.send(:strava_client)
+        expect(club.refresh_token).to eq 'updated-refresh-token'
+        expect(club.access_token).to eq 'updated-access-token'
+        expect(club.token_expires_at).to_not be_nil
+        expect(club.token_type).to eq 'Bearer'
+      end
     end
   end
   context 'brag!' do
