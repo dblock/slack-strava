@@ -38,7 +38,9 @@ class Club
     return unless activity
     results = activity.brag!
     return unless results
-    results.merge(activity: activity)
+    results.map do |result|
+      result.merge(activity: activity)
+    end
   end
 
   def self.attrs_from_strava(response)

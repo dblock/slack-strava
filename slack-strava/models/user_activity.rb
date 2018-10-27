@@ -19,9 +19,17 @@ class UserActivity < Activity
   def brag!
     return if bragged_at
     logger.info "Bragging about #{user}, #{self}"
-    channels = user.inform!(to_slack)
-    update_attributes!(bragged_at: Time.now.utc)
-    channels
+    rc = user.inform!(to_slack)
+    update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
+    rc
+  end
+
+  def rebrag!
+    return unless channel_messages
+    logger.info "Rebragging about #{user}, #{self}"
+    rc = user.update!(to_slack, channel_messages)
+    update_attributes!(channel_messages: rc)
+    rc
   end
 
   def self.attrs_from_strava(response)
@@ -35,7 +43,12 @@ class UserActivity < Activity
     activity = UserActivity.where(strava_id: response['id'], user_id: user.id).first
     activity ||= UserActivity.new(strava_id: response['id'], user_id: user.id)
     activity.assign_attributes(attrs_from_strava(response))
-    activity.build_map(Map.attrs_from_strava(response['map']))
+    map_response = Map.attrs_from_strava(response['map'])
+    if activity.map
+      activity.map.assign_attributes(map_response)
+    else
+      activity.build_map(map_response)
+    end
     activity.map.update!
     activity.save!
     activity
@@ -46,7 +59,7 @@ class UserActivity < Activity
     result[:fallback] = "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
     result[:title] = name
     result[:title_link] = strava_url
-    result[:text] = "<@#{user.user_name}> on #{start_date_local_s}"
+    result[:text] = ["<@#{user.user_name}> on #{start_date_local_s}", description].compact.join("\n\n")
     if map
       if team.maps == 'full'
         result[:image_url] = map.proxy_image_url

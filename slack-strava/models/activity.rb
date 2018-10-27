@@ -5,6 +5,7 @@ class Activity
   field :strava_id, type: String
   field :name, type: String
   field :distance, type: Float
+  field :description, type: String
   field :moving_time, type: Float
   field :elapsed_time, type: Float
   field :average_speed, type: Float
@@ -14,6 +15,8 @@ class Activity
   field :type, type: String
 
   index(strava_id: 1)
+
+  embeds_many :channel_messages, inverse_of: nil
 
   scope :unbragged, -> { where(bragged_at: nil) }
   scope :bragged, -> { where(:bragged_at.ne => nil) }
@@ -171,7 +174,8 @@ class Activity
       average_speed: response['average_speed'],
       type: response['type'],
       total_elevation_gain: response['total_elevation_gain'],
-      private: response['private']
+      private: response['private'],
+      description: response['description']
     }
   end
 

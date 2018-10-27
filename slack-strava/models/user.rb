@@ -67,7 +67,20 @@ class User
 
       {
         ts: rc['ts'],
-        channel: channel
+        channel: channel['id']
+      }
+    }.compact
+  end
+
+  def update!(message, channel_messages)
+    channel_messages.map { |channel_message|
+      message_with_channel = message.merge(channel: channel_message.channel, ts: channel_message.ts, as_user: true)
+      logger.info "Updating '#{message_with_channel.to_json}' to #{team} on ##{channel_message.channel}."
+      rc = team.slack_client.chat_update(message_with_channel)
+
+      {
+        ts: rc['ts'],
+        channel: channel_message.channel
       }
     }.compact
   end
@@ -121,10 +134,30 @@ class User
   end
 
   def brag!
+    rebrag_last_activity!
+    brag_new_activities!
+  end
+
+  def brag_new_activities!
     activity = activities.unbragged.asc(:start_date).first
     return unless activity
     update_attributes!(activities_at: activity.start_date)
     results = activity.brag!
+    return unless results
+    results.map do |result|
+      result.merge(activity: activity)
+    end
+  end
+
+  # updates activity details, brings in description, etc.
+  def rebrag_last_activity!
+    activity = activities.bragged.desc(:start_date).first
+    return unless activity
+    detailed_activity = strava_client.retrieve_an_activity(activity.strava_id)
+    return if detailed_activity['private'] && !private_activities?
+    activity = UserActivity.create_from_strava!(self, detailed_activity)
+    return unless activity
+    results = activity.rebrag!
     return unless results
     results.map do |result|
       result.merge(activity: activity)

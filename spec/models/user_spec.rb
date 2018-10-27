@@ -118,7 +118,7 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          allow_any_instance_of(User).to receive(:inform!)
+          allow_any_instance_of(User).to receive(:inform!).and_return([{ ts: 'ts', channel: 'C1' }])
           user.brag!
         end
         it 'sets activities_at to the most recent bragged activity' do
@@ -127,6 +127,17 @@ describe User do
         it 'updates activities since activities_at' do
           expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at)
           user.sync_new_strava_activities!
+        end
+        it 'retrieves last activity details and rebrags it with udpated description' do
+          last_activity = user.activities.bragged.desc(:_id).first
+          expect(user).to receive(:brag_new_activities!)
+          updated_last_activity = last_activity.to_slack
+          updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> on #{last_activity.start_date_local_s}\n\ndetailed description"
+          expect_any_instance_of(User).to receive(:update!).with(
+            updated_last_activity,
+            last_activity.channel_messages
+          )
+          user.brag!
         end
       end
       context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do

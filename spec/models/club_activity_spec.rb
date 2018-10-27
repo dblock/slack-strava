@@ -12,7 +12,7 @@ describe ClubActivity do
           as_user: true
         )
       ).and_return('ts' => 1)
-      expect(activity.brag!).to eq(ts: 1, channel: club.channel_id)
+      expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
     end
     it 'destroys the activity if the bot left the channel' do
       expect {

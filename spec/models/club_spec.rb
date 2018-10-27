@@ -61,16 +61,19 @@ describe Club do
     let!(:activity) { Fabricate(:club_activity, club: club) }
     it 'brags the last unbragged activity' do
       expect_any_instance_of(ClubActivity).to receive(:brag!).and_return(
-        ts: '1503435956.000247',
-        channel: {
-          id: 'C1',
-          name: 'channel'
-        }
+        [
+          ts: '1503435956.000247',
+          channel: 'C1'
+        ]
       )
       results = club.brag!
-      expect(results[:ts]).to eq '1503435956.000247'
-      expect(results[:channel]).to eq(id: 'C1', name: 'channel')
-      expect(results[:activity]).to eq activity
+      expect(results).to eq(
+        [
+          ts: '1503435956.000247',
+          channel: 'C1',
+          activity: activity
+        ]
+      )
     end
   end
   context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do

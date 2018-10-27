@@ -100,7 +100,7 @@ class Team
 
       {
         ts: rc['ts'],
-        channel: channel
+        channel: channel['id']
       }
     end
   end
@@ -115,7 +115,7 @@ class Team
 
     {
       ts: rc['ts'],
-      channel: channel
+      channel: channel.channel.id
     }
   end
 
