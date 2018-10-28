@@ -8,6 +8,7 @@ class Map
   field :summary_polyline, type: String
   field :decoded_summary_polyline, type: Array
   field :png, type: BSON::Binary
+  field :png_retrieved_at, type: DateTime
 
   before_save :update_decoded_summary_polyline
   before_save :update_png
@@ -44,6 +45,10 @@ class Map
     "proxy=#{proxy_image_url}, png=#{png_size} byte(s)"
   end
 
+  def delete_png!
+    update_attributes!(png: nil)
+  end
+
   private
 
   def update_decoded_summary_polyline
@@ -64,6 +69,7 @@ class Map
   end
 
   def update_png
+    return if png_changed?
     return unless summary_polyline_changed? || png.nil?
     update_png!
   end

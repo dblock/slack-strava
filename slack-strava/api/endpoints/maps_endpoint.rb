@@ -13,6 +13,8 @@ module Api
           activity = Activity.where('map._id' => BSON::ObjectId(params[:id])).first
           error!('Not Found', 404) unless activity
           error!('Map Not Found', 404) unless activity.map
+          # will also re-fetch the map if needed
+          activity.map.update_attributes!(png_retrieved_at: Time.now.utc)
           error!('Map Data Not Found', 404) unless activity.map.png
           Api::Middleware.logger.debug "Found activity ID #{params[:id]} with URL #{activity.map.proxy_image_url}."
           content_type 'image/png'

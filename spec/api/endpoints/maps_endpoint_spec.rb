@@ -14,10 +14,20 @@ describe Api::Endpoints::MapsEndpoint do
     context 'with an activity' do
       let(:user) { Fabricate(:user) }
       let(:activity) { Fabricate(:user_activity, user: user) }
-      it 'returns map', vcr: { cassette_name: 'strava/map' } do
+      it 'returns map and updates map timestamp', vcr: { cassette_name: 'strava/map' } do
         get "/api/maps/#{activity.map.id}.png"
         expect(last_response.status).to eq 200
         expect(last_response.headers['Content-Type']).to eq 'image/png'
+        expect(activity.reload.map.png_retrieved_at).to_not be_nil
+      end
+      it 'refetches map if needed', vcr: { cassette_name: 'strava/map', allow_playback_repeats: true } do
+        expect(activity.map.png).to_not be_nil
+        activity.map.delete_png!
+        expect(activity.reload.map.png).to be_nil
+        get "/api/maps/#{activity.map.id}.png"
+        expect(last_response.status).to eq 200
+        expect(last_response.headers['Content-Type']).to eq 'image/png'
+        expect(activity.reload.map.png).to_not be_nil
       end
     end
   end
