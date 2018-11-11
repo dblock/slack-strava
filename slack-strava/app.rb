@@ -7,6 +7,7 @@ module SlackStrava
           check_subscribed_teams!
           deactivate_asleep_teams!
           check_trials!
+          prune_pngs!
         end
         once_and_every 60 * 60 do
           expire_subscriptions!
@@ -44,6 +45,19 @@ module SlackStrava
         rescue StandardError => e
           logger.warn "Error checking team #{team} trial, #{e.message}."
         end
+      end
+    end
+
+    def prune_pngs!
+      activities = UserActivity.where(
+        'map.png_retrieved_at' => {
+          '$lt' => Time.now - 1.month
+        },
+        'map.png' => { '$ne' => nil }
+      )
+      log_info_without_repeat "Pruning #{activities.count} PNGs for #{Team.active.trials.count} team(s)."
+      activities.each do |activity|
+        activity.map.delete_png!
       end
     end
 
