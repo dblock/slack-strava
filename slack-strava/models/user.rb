@@ -134,8 +134,13 @@ class User
   end
 
   def brag!
-    rebrag_last_activity!
     brag_new_activities!
+  end
+
+  def rebrag!
+    with_strava_error_handler do
+      rebrag_last_activity!
+    end
   end
 
   def brag_new_activities!

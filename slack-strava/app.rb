@@ -15,6 +15,9 @@ module SlackStrava
         once_and_every 10 * 60 do
           brag!
         end
+        once_and_every 3 * 60 * 60 do
+          rebrag!
+        end
       end
     end
 
@@ -83,7 +86,20 @@ module SlackStrava
           team.clubs.connected_to_strava.each(&:sync_and_brag!)
         rescue StandardError => e
           backtrace = e.backtrace.join("\n")
-          logger.warn "Error in cron for team #{team}, #{e.message}, #{backtrace}."
+          logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
+        end
+      end
+    end
+
+    def rebrag!
+      log_info_without_repeat "Editing activities for #{Team.active.count} team(s)."
+      Team.active.each do |team|
+        next if team.subscription_expired?
+        begin
+          team.users.connected_to_strava.each(&:rebrag!)
+        rescue StandardError => e
+          backtrace = e.backtrace.join("\n")
+          logger.warn "Error in rebrag cron for team #{team}, #{e.message}, #{backtrace}."
         end
       end
     end

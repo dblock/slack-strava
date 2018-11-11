@@ -130,7 +130,6 @@ describe User do
         end
         it 'retrieves last activity details and rebrags it with udpated description' do
           last_activity = user.activities.bragged.desc(:_id).first
-          expect(user).to receive(:brag_new_activities!)
           expect(user).to receive(:latest_bragged_activity).and_return(last_activity)
           updated_last_activity = last_activity.to_slack
           updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> on #{last_activity.start_date_local_s}\n\ndetailed description"
@@ -138,7 +137,7 @@ describe User do
             updated_last_activity,
             last_activity.channel_messages
           )
-          user.brag!
+          user.rebrag!
         end
       end
       context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
