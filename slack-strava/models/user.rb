@@ -94,7 +94,7 @@ class User
   def disconnect!
     if access_token
       logger.info "Disconnected team=#{team_id}, user=#{user_name}, user_id=#{id}"
-      update_attributes!(token_type: nil, access_token: nil, connected_to_strava_at: nil)
+      reset_access_tokens!(connected_to_strava_at: nil)
       dm!(text: 'Your Strava account has been successfully disconnected.')
     else
       dm!(text: 'Your Strava account is not connected.')
@@ -177,9 +177,9 @@ class User
   def handle_strava_error(e)
     logger.error e
     case e.message
-    when '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]} [HTTP 401]' then
+    when /Authorization Error/
       dm_connect! 'There was an authorization problem. Please reconnect your Strava account'
-      update_attributes!(access_token: nil, connected_to_strava_at: nil)
+      reset_access_tokens!(connected_to_strava_at: nil)
     end
     raise e
   end

@@ -28,6 +28,9 @@ describe Club do
       )
       expect { club.sync_last_strava_activity! }.to raise_error Strava::Api::V3::ClientError
       expect(club.access_token).to be nil
+      expect(club.token_type).to be nil
+      expect(club.refresh_token).to be nil
+      expect(club.token_expires_at).to be nil
     end
     context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
       before do

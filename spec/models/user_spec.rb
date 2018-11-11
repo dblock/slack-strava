@@ -88,6 +88,32 @@ describe User do
             expect { user.sync_and_brag! }.to raise_error(Strava::Api::V3::ClientError, /Rate Limit Exceeded/)
           end
         end
+        context 'invalid token' do
+          let(:authorization_error) { Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]}') }
+          it 'raises an exception and resets token' do
+            allow(user.strava_client).to receive(:paginate).and_raise authorization_error
+            expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
+            user.sync_and_brag!
+            expect(user.access_token).to be nil
+            expect(user.token_type).to be nil
+            expect(user.refresh_token).to be nil
+            expect(user.token_expires_at).to be nil
+            expect(user.connected_to_strava_at).to be nil
+          end
+        end
+        context 'read:permission authorization error' do
+          let(:authorization_error) { Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[{"resource":"AccessToken","field":"activity:read_permission","code":"missing"}]}') }
+          it 'raises an exception and resets token' do
+            allow(user.strava_client).to receive(:paginate).and_raise authorization_error
+            expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
+            user.sync_and_brag!
+            expect(user.access_token).to be nil
+            expect(user.token_type).to be nil
+            expect(user.refresh_token).to be nil
+            expect(user.token_expires_at).to be nil
+            expect(user.connected_to_strava_at).to be nil
+          end
+        end
       end
       context 'with bragged activities' do
         before do

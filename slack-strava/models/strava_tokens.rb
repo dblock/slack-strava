@@ -27,6 +27,17 @@ module StravaTokens
     response
   end
 
+  def reset_access_tokens!(attrs = {})
+    update_attributes!(
+      attrs.merge(
+        token_type: nil,
+        access_token: nil,
+        refresh_token: nil,
+        token_expires_at: nil
+      )
+    )
+  end
+
   def refresh_access_token!
     return if token_expires_at && Time.now + 1.hour < token_expires_at
 

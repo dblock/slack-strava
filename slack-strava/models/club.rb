@@ -127,8 +127,8 @@ class Club
   def handle_strava_error(e)
     logger.error e
     case e.message
-    when '{"message":"Authorization Error","errors":[]} [HTTP 401]' then
-      update_attributes!(access_token: nil)
+    when /Authorization Error/ then
+      reset_access_tokens!
     end
     raise e
   end
