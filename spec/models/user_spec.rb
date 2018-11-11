@@ -131,6 +131,7 @@ describe User do
         it 'retrieves last activity details and rebrags it with udpated description' do
           last_activity = user.activities.bragged.desc(:_id).first
           expect(user).to receive(:brag_new_activities!)
+          expect(user).to receive(:latest_bragged_activity).and_return(last_activity)
           updated_last_activity = last_activity.to_slack
           updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> on #{last_activity.start_date_local_s}\n\ndetailed description"
           expect_any_instance_of(User).to receive(:update!).with(

@@ -151,7 +151,7 @@ class User
 
   # updates activity details, brings in description, etc.
   def rebrag_last_activity!
-    activity = activities.bragged.desc(:start_date).first
+    activity = latest_bragged_activity
     return unless activity
     detailed_activity = strava_client.retrieve_an_activity(activity.strava_id)
     return if detailed_activity['private'] && !private_activities?
@@ -186,6 +186,10 @@ class User
   end
 
   private
+
+  def latest_bragged_activity(dt = 12.hours)
+    activities.bragged.where(:start_date.gt => Time.now - dt).desc(:start_date).first
+  end
 
   def latest_activity_start_date
     activities.desc(:start_date).first&.start_date
