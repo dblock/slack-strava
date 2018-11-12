@@ -53,7 +53,7 @@ describe User do
     end
   end
   context 'sync_new_strava_activities!' do
-    context 'recent created_at', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
+    context 'recent created_at', vcr: { cassette_name: 'strava/user_sync_new_strava_activities', allow_playback_repeats: true } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       it 'retrieves new activities since created_at' do
         expect {
@@ -128,16 +128,24 @@ describe User do
           expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at)
           user.sync_new_strava_activities!
         end
-        it 'retrieves last activity details and rebrags it with udpated description' do
-          last_activity = user.activities.bragged.desc(:_id).first
-          expect(user).to receive(:latest_bragged_activity).and_return(last_activity)
-          updated_last_activity = last_activity.to_slack
-          updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> on #{last_activity.start_date_local_s}\n\ndetailed description"
-          expect_any_instance_of(User).to receive(:update!).with(
-            updated_last_activity,
-            last_activity.channel_messages
-          )
-          user.rebrag!
+        context 'latest activity' do
+          let(:last_activity) { user.activities.bragged.desc(:_id).first }
+          before do
+            allow(user).to receive(:latest_bragged_activity).and_return(last_activity)
+          end
+          it 'retrieves last activity details and rebrags it with udpated description' do
+            updated_last_activity = last_activity.to_slack
+            updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> on #{last_activity.start_date_local_s}\n\ndetailed description"
+            expect_any_instance_of(User).to receive(:update!).with(
+              updated_last_activity,
+              last_activity.channel_messages
+            )
+            user.rebrag!
+          end
+          it 'does not rebrag if the activity has not changed' do
+            expect_any_instance_of(User).to receive(:update!).once
+            2.times { user.rebrag! }
+          end
         end
       end
       context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do

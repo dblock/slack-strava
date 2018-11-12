@@ -15,7 +15,7 @@ module SlackStrava
         once_and_every 10 * 60 do
           brag!
         end
-        once_and_every 3 * 60 * 60 do
+        once_and_every 1 * 60 * 60 do
           rebrag!
         end
       end

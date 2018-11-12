@@ -32,23 +32,25 @@ class UserActivity < Activity
     rc
   end
 
-  def self.attrs_from_strava(response)
+  def attrs_from_strava(response)
     Activity.attrs_from_strava(response).merge(
       start_date: DateTime.parse(response['start_date']),
       start_date_local: DateTime.parse(response['start_date_local'])
     )
   end
 
+  def update_from_strava(response)
+    assign_attributes(attrs_from_strava(response))
+    map_response = Map.attrs_from_strava(response['map'])
+    map ? map.assign_attributes(map_response) : build_map(map_response)
+    self
+  end
+
   def self.create_from_strava!(user, response)
     activity = UserActivity.where(strava_id: response['id'], user_id: user.id).first
     activity ||= UserActivity.new(strava_id: response['id'], user_id: user.id)
-    activity.assign_attributes(attrs_from_strava(response))
-    map_response = Map.attrs_from_strava(response['map'])
-    if activity.map
-      activity.map.assign_attributes(map_response)
-    else
-      activity.build_map(map_response)
-    end
+    activity.update_from_strava(response)
+    return unless activity.changed?
     activity.map.update!
     activity.save!
     activity
