@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2018/12/8: Update activities in Slack during the next 24 hours - [@dblock](https://github.com/dblock).
 * 2018/10/8: Announce when someone connects to Strava - [@dblock](https://github.com/dblock).
 * 2018/10/8: Only send activities since user joined a channel - [@dblock](https://github.com/dblock).
 * 2018/6/05: Added `set fields` to choose which fields to display - [@dblock](https://github.com/dblock).
