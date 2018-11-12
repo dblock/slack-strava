@@ -146,7 +146,7 @@ class Team
 
   def subscribed_text
     <<~EOS.freeze
-      Your team has been subscribed. All proceeds go to NYC TeamForKids charity. Thank you!
+      Your team has been subscribed. All proceeds go to NYRR. Thank you!
       Follow https://twitter.com/playplayio for news and updates.
 EOS
   end
@@ -203,7 +203,7 @@ EOS
   end
 
   def subscribe_team_text
-    "Subscribe your team for $9.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
+    "Subscribe your team for $9.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds go to NYRR."
   end
 
   def inform_subscribed_changed!

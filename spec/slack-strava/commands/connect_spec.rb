@@ -36,7 +36,7 @@ describe SlackStrava::Commands::Connect do
     end
     it 'prevents new connections' do
       expect(message: "#{SlackRubyBot.config.user} connect").to respond_with_slack_message(
-        "Your trial subscription has expired. Subscribe your team for $9.99 a year at https://slava.playplay.io/subscribe?team_id=#{team.team_id} to continue receiving Strava activities in Slack. All proceeds donated to NYC TeamForKids charity."
+        "Your trial subscription has expired. Subscribe your team for $9.99 a year at https://slava.playplay.io/subscribe?team_id=#{team.team_id} to continue receiving Strava activities in Slack. All proceeds go to NYRR."
       )
     end
   end
