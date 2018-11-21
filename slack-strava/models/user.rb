@@ -91,6 +91,7 @@ class User
 
   def connect!(code)
     response = get_access_token!(code)
+    logger.debug "Connecting team=#{team_id}, user=#{user_name}, user_id=#{id}, #{response}"
     create_athlete(Athlete.attrs_from_strava(response['athlete']))
     update_attributes!(
       token_type: response['token_type'],
