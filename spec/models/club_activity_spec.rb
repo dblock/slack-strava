@@ -24,6 +24,16 @@ describe ClubActivity do
         }.to change(Club, :count).by(-1)
       }.to change(ClubActivity, :count).by(-1)
     end
+    it 'destroys the activity if account inactive' do
+      expect {
+        expect {
+          expect(club.team.slack_client).to receive(:chat_postMessage) {
+            raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
+          }
+          expect(activity.brag!).to be nil
+        }.to change(Club, :count).by(-1)
+      }.to change(ClubActivity, :count).by(-1)
+    end
   end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }

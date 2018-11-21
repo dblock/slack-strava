@@ -20,8 +20,8 @@ class ClubActivity < Activity
     [channel_message]
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
-    when 'not_in_channel' then
-      logger.error "Bragging to #{club} failed, removed from channel, destroying."
+    when 'not_in_channel', 'account_inactive' then
+      logger.error "Bragging to #{club} failed, #{e.message}, removed from channel, destroying."
       club.destroy
       nil
     else
