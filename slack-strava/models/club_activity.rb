@@ -10,14 +10,21 @@ class ClubActivity < Activity
   end
 
   def brag!
-    return if bragged_at
-    logger.info "Bragging about #{club}, #{self}"
-    message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)
-    logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
-    channel_message = club.team.slack_client.chat_postMessage(message_with_channel)
-    channel_message = { ts: channel_message['ts'], channel: club.channel_id } if channel_message
-    update_attributes!(bragged_at: Time.now.utc, channel_messages: [channel_message])
-    [channel_message]
+    if bragged_at?
+      logger.info "Already bragged about #{club}, #{self}"
+      nil
+    elsif bragged_in?(club.channel_id)
+      logger.info "Already bragged about #{club} in #{club.channel_id}, #{self}"
+      nil
+    else
+      logger.info "Bragging about #{club}, #{self}"
+      message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)
+      logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
+      channel_message = club.team.slack_client.chat_postMessage(message_with_channel)
+      channel_message = { ts: channel_message['ts'], channel: club.channel_id } if channel_message
+      update_attributes!(bragged_at: Time.now.utc, channel_messages: [channel_message])
+      [channel_message]
+    end
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
     when 'not_in_channel', 'account_inactive' then

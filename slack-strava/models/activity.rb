@@ -15,6 +15,7 @@ class Activity
   field :type, type: String
 
   index(strava_id: 1)
+  index(distance: 1, moving_time: 1, elapsed_time: 1, average_speed: 1, total_elevation_gain: 1)
 
   embeds_many :channel_messages, inverse_of: nil
 
@@ -179,18 +180,15 @@ class Activity
     }
   end
 
-  private
+  alias eql? ==
 
-  def time_in_hours_s(time)
-    return unless time
-    hours = time / 3600 % 24
-    minutes = time / 60 % 60
-    seconds = time % 60
-    [
-      hours.to_i.positive? ? format('%dh', hours) : nil,
-      minutes.to_i.positive? ? format('%dm', minutes) : nil,
-      seconds.to_i.positive? ? format('%ds', seconds) : nil
-    ].compact.join
+  def ==(rhs)
+    rhs.is_a?(Activity) &&
+      distance == rhs.distance &&
+      moving_time == rhs.moving_time &&
+      elapsed_time == rhs.elapsed_time &&
+      average_speed == rhs.average_speed &&
+      total_elevation_gain == rhs.total_elevation_gain
   end
 
   def emoji
@@ -231,6 +229,33 @@ class Activity
 
   def type_with_emoji
     [type, emoji].compact.join(' ')
+  end
+
+  # Have we recently bragged an identically looking activity?
+  # Typically a user activity.
+  def bragged_in?(channel_id)
+    Activity.where(
+      distance: distance,
+      moving_time: moving_time,
+      elapsed_time: elapsed_time,
+      average_speed: average_speed,
+      total_elevation_gain: total_elevation_gain,
+      "channel_messages.channel": channel_id
+    ).exists?
+  end
+
+  private
+
+  def time_in_hours_s(time)
+    return unless time
+    hours = time / 3600 % 24
+    minutes = time / 60 % 60
+    seconds = time % 60
+    [
+      hours.to_i.positive? ? format('%dh', hours) : nil,
+      minutes.to_i.positive? ? format('%dm', minutes) : nil,
+      seconds.to_i.positive? ? format('%ds', seconds) : nil
+    ].compact.join
   end
 
   def slack_fields

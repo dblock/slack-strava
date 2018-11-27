@@ -34,6 +34,24 @@ describe ClubActivity do
         }.to change(Club, :count).by(-1)
       }.to change(ClubActivity, :count).by(-1)
     end
+    context 'having already bragged a user activity in the channel' do
+      let!(:user_activity) do
+        Fabricate(:user_activity,
+                  distance: activity.distance,
+                  moving_time: activity.moving_time,
+                  elapsed_time: activity.elapsed_time,
+                  average_speed: activity.average_speed,
+                  total_elevation_gain: activity.total_elevation_gain,
+                  map: nil,
+                  channel_messages: [
+                    ChannelMessage.new(channel: club.channel_id)
+                  ])
+      end
+      it 'does not re-brag the activity' do
+        expect(club.team.slack_client).to_not receive(:chat_postMessage)
+        expect(activity.brag!).to be nil
+      end
+    end
   end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }

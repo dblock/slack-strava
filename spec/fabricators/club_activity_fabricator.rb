@@ -1,5 +1,6 @@
 Fabricator(:club_activity) do
   strava_id { Fabricate.sequence(:user_id) { |i| "12345677892806#{i}" } }
+  club { Fabricate.build(:club) }
   type 'Run'
   name { Faker::Internet.user_name }
   athlete_name { Faker::Name.name }
