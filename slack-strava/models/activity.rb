@@ -15,7 +15,7 @@ class Activity
   field :type, type: String
 
   index(strava_id: 1)
-  index(distance: 1, moving_time: 1, elapsed_time: 1, average_speed: 1, total_elevation_gain: 1)
+  index(distance: 1, moving_time: 1, elapsed_time: 1, total_elevation_gain: 1)
 
   embeds_many :channel_messages, inverse_of: nil
 
@@ -187,7 +187,6 @@ class Activity
       distance == rhs.distance &&
       moving_time == rhs.moving_time &&
       elapsed_time == rhs.elapsed_time &&
-      average_speed == rhs.average_speed &&
       total_elevation_gain == rhs.total_elevation_gain
   end
 
@@ -238,7 +237,6 @@ class Activity
       distance: distance,
       moving_time: moving_time,
       elapsed_time: elapsed_time,
-      average_speed: average_speed,
       total_elevation_gain: total_elevation_gain,
       "channel_messages.channel": channel_id
     ).exists?

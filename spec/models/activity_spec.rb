@@ -24,8 +24,7 @@ describe Activity do
           distance: 1,
           moving_time: 2,
           elapsed_time: 3,
-          average_speed: 4,
-          total_elevation_gain: 5
+          total_elevation_gain: 4
         }
       end
       let(:activity) { Activity.new(data) }
@@ -39,7 +38,6 @@ describe Activity do
         expect(Activity.new(data.merge(distance: 0))).to_not eq activity
         expect(Activity.new(data.merge(moving_time: 0))).to_not eq activity
         expect(Activity.new(data.merge(elapsed_time: 0))).to_not eq activity
-        expect(Activity.new(data.merge(average_speed: 0))).to_not eq activity
         expect(Activity.new(data.merge(total_elevation_gain: 0))).to_not eq activity
       end
     end
@@ -61,7 +59,6 @@ describe Activity do
         distance: user_activity.distance,
         moving_time: user_activity.moving_time,
         elapsed_time: user_activity.elapsed_time,
-        average_speed: user_activity.average_speed,
         total_elevation_gain: user_activity.total_elevation_gain
       }
     end

@@ -40,7 +40,6 @@ describe ClubActivity do
                   distance: activity.distance,
                   moving_time: activity.moving_time,
                   elapsed_time: activity.elapsed_time,
-                  average_speed: activity.average_speed,
                   total_elevation_gain: activity.total_elevation_gain,
                   map: nil,
                   channel_messages: [
