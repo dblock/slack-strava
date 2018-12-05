@@ -15,8 +15,8 @@ class Map
 
   def self.attrs_from_strava(response)
     {
-      strava_id: response['id'],
-      summary_polyline: response['summary_polyline']
+      strava_id: response.id,
+      summary_polyline: response.summary_polyline
     }
   end
 

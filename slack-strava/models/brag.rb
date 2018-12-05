@@ -1,9 +1,9 @@
 module Brag
   def with_strava_error_handler(&_block)
     yield
-  rescue Strava::Api::V3::ClientError => e
+  rescue Strava::Errors::Fault => e
     case e.message
-    when '{"message":"Rate Limit Exceeded","errors":[{"resource":"Application","field":"rate limit","code":"exceeded"}]} [HTTP 429]' then
+    when 'Rate Limit Exceeded'
       logger.warn 'Strava API rate limit exceeded.'
       raise e
     else

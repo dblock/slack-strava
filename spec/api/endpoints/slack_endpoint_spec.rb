@@ -33,7 +33,7 @@ describe Api::Endpoints::SlackEndpoint do
                 text: "A club has been connected by #{user.slack_mention}."
               )
             )
-            expect_any_instance_of(Strava::Api::V3::Client).to receive(:paginate)
+            expect_any_instance_of(Strava::Api::Client).to receive(:paginate)
             expect_any_instance_of(Club).to receive(:sync_last_strava_activity!)
             post '/api/slack/action', payload: {
               actions: [{ name: 'strava_id', value: '43749' }],
@@ -53,7 +53,7 @@ describe Api::Endpoints::SlackEndpoint do
         let!(:club) { Fabricate(:club, team: team) }
         it 'disconnects club' do
           expect {
-            expect_any_instance_of(Strava::Api::V3::Client).to receive(:paginate)
+            expect_any_instance_of(Strava::Api::Client).to receive(:paginate)
             expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
               club.to_slack.merge(
                 as_user: true,

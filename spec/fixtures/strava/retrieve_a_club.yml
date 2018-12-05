@@ -2,11 +2,13 @@
 http_interactions:
 - request:
     method: get
-    uri: https://www.strava.com/api/v3//clubs/43749?access_token=token
+    uri: https://www.strava.com/api/v3/clubs/43749
     body:
       encoding: US-ASCII
       string: ''
     headers:
+      Authorization:
+      - Bearer token
       Accept-Encoding:
       - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
       Accept:

@@ -45,16 +45,16 @@ class Club
 
   def self.attrs_from_strava(response)
     {
-      strava_id: response['id'],
-      name: response['name'],
-      description: response['description'],
-      logo: response['profile_medium'],
-      sport_type: response['sport_type'],
-      city: response['city'] && !response['city'].empty? ? response['city'] : nil,
-      state: response['state'] && !response['state'].empty? ? response['state'] : nil,
-      country: response['country'] && !response['country'].empty? ? response['country'] : nil,
-      url: response['url'],
-      member_count: response['member_count']
+      strava_id: response.id,
+      name: response.name,
+      description: response.description,
+      logo: response.profile_medium,
+      sport_type: response.sport_type,
+      city: response.city && !response.city.empty? ? response.city : nil,
+      state: response.state && !response.state.empty? ? response.state : nil,
+      country: response.country && !response.country.empty? ? response.country : nil,
+      url: response.url,
+      member_count: response.member_count
     }
   end
 
@@ -116,13 +116,13 @@ class Club
   private
 
   def sync_strava_activities!(options = {})
-    strava_client.list_club_activities(strava_id, options).each do |activity|
+    strava_client.club_activities(strava_id, options).each do |activity|
       club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(club: self))
       break if ClubActivity.where(strava_id: club_activity.strava_id).exists?
       club_activity.save!
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
     end
-  rescue Strava::Api::V3::ClientError => e
+  rescue Strava::Errors::Fault => e
     handle_strava_error e
   end
 

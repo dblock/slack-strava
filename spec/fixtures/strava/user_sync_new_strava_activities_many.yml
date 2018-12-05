@@ -2,11 +2,13 @@
 http_interactions:
 - request:
     method: get
-    uri: https://www.strava.com/api/v3//athlete/activities?access_token=token&after=1517443200&page=1&per_page=10
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1517443200&page=1
     body:
       encoding: US-ASCII
       string: ''
     headers:
+      Authorization:
+      - Bearer token
       Accept-Encoding:
       - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
       Accept:
@@ -72,7 +74,7 @@ http_interactions:
   recorded_at: Tue, 03 Apr 2018 13:04:44 GMT
 - request:
     method: get
-    uri: https://www.strava.com/api/v3//athlete/activities?access_token=token&after=1517443200&page=2&per_page=10
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1517443200&page=2
     body:
       encoding: US-ASCII
       string: ''
@@ -129,4 +131,57 @@ http_interactions:
         America/New_York","utc_offset":-14400.0,"start_latlng":[40.782474,-73.96003],"end_latlng":[40.782216,-73.962644],"location_city":null,"location_state":null,"location_country":"","start_latitude":40.782474,"start_longitude":-73.96003,"achievement_count":27,"kudos_count":3,"comment_count":0,"athlete_count":1,"photo_count":0,"map":{"id":"a1484119264","summary_polyline":"mi|wFdilbMi@`BaWqP}J_AoBpB|@vIiBbIjDrFf@jRnDnCpK|@hDiD`DkLrGmENaIsZwSsMDy@~Tx@hDdBl@^zR`CnChNhBrEgIe@jDeDjDgDs@nF}@bFkOdG{D\\mHqZqTmJ{@sBrBn@tKcB~EhDtFDjNjBdF~OdCtGaQrGiEp@mGaAkCcWoPsNmAq@zCz@nGaB~HbC~Hf@hO|BrBhOxBrHcSjGcD","resource_state":2},"trainer":false,"commute":false,"manual":false,"private":false,"flagged":false,"gear_id":null,"from_accepted_tag":false,"average_speed":3.15,"max_speed":4.4,"has_heartrate":false,"elev_high":37.1,"elev_low":33.1,"pr_count":9,"total_photo_count":2,"has_kudoed":false}]'
     http_version:
   recorded_at: Tue, 03 Apr 2018 13:04:47 GMT
+- request:
+    method: get
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1517443200&page=3
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer token
+      Accept:
+      - application/json; charset=utf-8
+      User-Agent:
+      - Strava Ruby Client/0.3.1
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Tue, 03 Apr 2018 13:04:47 GMT
+      Etag:
+      - W/"40809774d3e325884c34ded73f361308"
+      Status:
+      - 200 OK
+      Strava-Athlete-Upload-Version:
+      - fb57d7ed2855de15116459e32e4c9f62
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Ratelimit-Limit:
+      - '600,30000'
+      X-Ratelimit-Usage:
+      - '28,3071'
+      X-Request-Id:
+      - 55c2efc7-e9de-4260-9d51-c4fdedb6de9c
+      X-Xss-Protection:
+      - 1; mode=block
+      Content-Length:
+      - '2005'
+      Connection:
+      - keep-alive
+    body:
+      encoding: ASCII-8BIT
+      string: '[]'
+    http_version:
+  recorded_at: Wed, 05 Dec 2018 18:44:38 GMT
 recorded_with: VCR 4.0.0

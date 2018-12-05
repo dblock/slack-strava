@@ -72,7 +72,7 @@ module Api
           when 'club-connect-channel' then
             raise 'User not connected to Strava.' unless user.connected_to_strava?
             strava_id = payload['actions'][0]['value']
-            strava_club = Club.attrs_from_strava(user.strava_client.retrieve_a_club(strava_id))
+            strava_club = Club.attrs_from_strava(user.strava_client.club(strava_id))
             club = Club.create!(
               strava_club.merge(
                 access_token: user.access_token,

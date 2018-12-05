@@ -67,7 +67,7 @@ describe User do
       context 'with unbragged activities' do
         let!(:activity) { Fabricate(:user_activity, user: user, start_date: DateTime.new(2018, 4, 1)) }
         it 'syncs activities since the first one' do
-          expect(user).to receive(:sync_strava_activities!).with(after: activity.start_date)
+          expect(user).to receive(:sync_strava_activities!).with(after: activity.start_date.to_i)
           user.sync_new_strava_activities!
         end
       end
@@ -82,14 +82,14 @@ describe User do
           expect { user.sync_and_brag! }.to_not raise_error
         end
         context 'rate limit exceeded' do
-          let(:rate_limit_exceeded_error) { Strava::Api::V3::ClientError.new(429, '{"message":"Rate Limit Exceeded","errors":[{"resource":"Application","field":"rate limit","code":"exceeded"}]}') }
+          let(:rate_limit_exceeded_error) { Strava::Errors::Fault.new(429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [{ 'resource' => 'Application', 'field' => 'rate limit', 'code' => 'exceeded' }] }) }
           it 'raises an exception' do
             allow(user).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
-            expect { user.sync_and_brag! }.to raise_error(Strava::Api::V3::ClientError, /Rate Limit Exceeded/)
+            expect { user.sync_and_brag! }.to raise_error(Strava::Errors::Fault, /Rate Limit Exceeded/)
           end
         end
         context 'invalid token' do
-          let(:authorization_error) { Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[{"resource":"Athlete","field":"access_token","code":"invalid"}]}') }
+          let(:authorization_error) { Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [{ 'resource' => 'Athlete', 'field' => 'access_token', 'code' => 'invalid' }] }) }
           it 'raises an exception and resets token' do
             allow(user.strava_client).to receive(:paginate).and_raise authorization_error
             expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
@@ -102,7 +102,7 @@ describe User do
           end
         end
         context 'read:permission authorization error' do
-          let(:authorization_error) { Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[{"resource":"AccessToken","field":"activity:read_permission","code":"missing"}]}') }
+          let(:authorization_error) { Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [{ 'resource' => 'AccessToken', 'field' => 'activity:read_permission', 'code' => 'missing' }] }) }
           it 'raises an exception and resets token' do
             allow(user.strava_client).to receive(:paginate).and_raise authorization_error
             expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
@@ -125,7 +125,7 @@ describe User do
           expect(user.activities_at).to eq user.activities.bragged.max(:start_date)
         end
         it 'updates activities since activities_at' do
-          expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at)
+          expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at.to_i)
           user.sync_new_strava_activities!
         end
         context 'latest activity' do
@@ -245,7 +245,7 @@ describe User do
   end
   context '#dm_connect!' do
     let(:user) { Fabricate(:user) }
-    let(:url) { "https://www.strava.com/oauth/authorize?client_id=&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=activity:read_all&state=#{user.id}" }
+    let(:url) { "https://www.strava.com/oauth/authorize?client_id=client-id&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=activity:read_all&state=#{user.id}" }
     it 'uses the default message' do
       expect(user).to receive(:dm!).with(
         text: 'Please connect your Strava account.',

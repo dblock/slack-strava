@@ -9,7 +9,7 @@ describe Club do
         club.sync_last_strava_activity!
       }.to change(club.activities, :count).by(1)
       activity = club.activities.last
-      expect(activity.strava_id).to eq '5eda0300f784214d9981ca60e9a730e4'
+      expect(activity.strava_id).to eq 'b1cbe401792d703084b56eb0bb9ac455'
       expect(activity.name).to eq 'Hard as fuck run home — tired + lots of aches '
     end
     it 'only saves the last activity once' do
@@ -23,10 +23,10 @@ describe Club do
       }.to change(club.activities, :count).by(8)
     end
     it 'disconnects club on auth failure' do
-      allow(club.send(:strava_client)).to receive(:list_club_activities).and_raise(
-        Strava::Api::V3::ClientError.new(401, '{"message":"Authorization Error","errors":[]}')
+      allow(club.strava_client).to receive(:club_activities).and_raise(
+        Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [] })
       )
-      expect { club.sync_last_strava_activity! }.to raise_error Strava::Api::V3::ClientError
+      expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
       expect(club.access_token).to be nil
       expect(club.token_type).to be nil
       expect(club.refresh_token).to be nil
@@ -87,10 +87,10 @@ describe Club do
       expect { club.sync_and_brag! }.to_not raise_error
     end
     context 'rate limit exceeded' do
-      let(:rate_limit_exceeded_error) { Strava::Api::V3::ClientError.new(429, '{"message":"Rate Limit Exceeded","errors":[{"resource":"Application","field":"rate limit","code":"exceeded"}]}') }
+      let(:rate_limit_exceeded_error) { Strava::Errors::Fault.new(429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [{ 'resource' => 'Application', 'field' => 'rate limit', 'code' => 'exceeded' }] }) }
       it 'raises an exception' do
         allow(club).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
-        expect { club.sync_and_brag! }.to raise_error(Strava::Api::V3::ClientError, /Rate Limit Exceeded/)
+        expect { club.sync_and_brag! }.to raise_error(Strava::Errors::Fault, /Rate Limit Exceeded/)
       end
     end
   end

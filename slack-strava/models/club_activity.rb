@@ -39,8 +39,8 @@ class ClubActivity < Activity
   def self.attrs_from_strava(response)
     Activity.attrs_from_strava(response).merge(
       strava_id: Digest::MD5.hexdigest(response.to_s),
-      athlete_name: [response['athlete']['firstname'], response['athlete']['lastname']].compact.join(' '),
-      average_speed: response['moving_time'].positive? ? response['distance'] / response['moving_time'] : 0
+      athlete_name: [response.athlete.firstname, response.athlete.lastname].compact.join(' '),
+      average_speed: response.moving_time.positive? ? response.distance / response.moving_time : 0
     )
   end
 

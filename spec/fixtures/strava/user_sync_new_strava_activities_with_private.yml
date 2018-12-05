@@ -2,11 +2,13 @@
 http_interactions:
 - request:
     method: get
-    uri: https://www.strava.com/api/v3//athlete/activities?access_token=token&after=1522022400&page=1&per_page=10
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1522022400&page=1
     body:
       encoding: US-ASCII
       string: ''
     headers:
+      Authorization:
+      - Bearer token
       Accept-Encoding:
       - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
       Accept:
@@ -56,6 +58,59 @@ http_interactions:
         America/New_York","utc_offset":-14400.0,"start_latlng":[40.71476,-73.966789],"end_latlng":[40.718766,-74.003006],"location_city":null,"location_state":null,"location_country":"","start_latitude":40.71476,"start_longitude":-73.966789,"achievement_count":46,"kudos_count":1,"comment_count":2,"athlete_count":1,"photo_count":0,"map":{"id":"a1546956719","summary_polyline":"gbowFlsmbM_HmBsp@ct@mXqAi@lIue@dEuBgl@aR`Ae~@uTfCm[cVkQ`A}Gi{@riChAqFuCg@yYz`AnAbCo@hAaEcBqHrBmFm@sQ}UmEwAuFdAuGiJcPwDqQkOgBsRw]aU_S`@sMyLaMsAsEiGyA`BtAnGe@zAsNaGqDzFkAlKd@`CxBx@rDuGrIa@dEnJ`EbDtCfJ`LvG|CxFtHjAzG~NbEfBdLu@dJzKtI`A~SbZnOn@zBpGnNdHbK~MnExBzB`M`H{AnKbBc_@lmAn_@rUdTdU`k@|^bVxGnH?tCcCxa@xDfVrGzt@`Btt@dGnmAtSh[xI~@kLbJgApAeCEcExDqDuCkQgHsLKwFmB`@mGoIwMqYwFaHqAcZl@eGsAcRkDiM^sU}Bea@sAm@cDdDCvIsFj@pEdeA{G|Av@le@oHdSiJmFoJzW{ByAbCmG","resource_state":2},"trainer":false,"commute":false,"manual":false,"private":false,"flagged":false,"gear_id":null,"from_accepted_tag":false,"average_speed":7.089,"max_speed":17.5,"average_watts":132.5,"kilojoules":671.6,"device_watts":false,"has_heartrate":false,"elev_high":39.2,"elev_low":-2.2,"pr_count":18,"total_photo_count":0,"has_kudoed":false},{"resource_state":2,"athlete":{"id":14784454,"resource_state":1},"name":"Morning
         Ride","distance":125458.0,"moving_time":16944,"elapsed_time":38882,"total_elevation_gain":484.6,"type":"Ride","workout_type":10,"id":1555582184,"external_id":"4c01fde301dcc65649b65e5bc5089a51","upload_id":1673091738,"start_date":"2018-05-06T12:29:52Z","start_date_local":"2018-05-06T08:29:52Z","timezone":"(GMT-05:00)
         America/New_York","utc_offset":-14400.0,"start_latlng":[41.420228,-73.955044],"end_latlng":[40.713152,-73.958927],"location_city":null,"location_state":null,"location_country":"","start_latitude":41.420228,"start_longitude":-73.955044,"achievement_count":0,"kudos_count":0,"comment_count":0,"athlete_count":1,"photo_count":0,"map":{"id":"a1555582184","summary_polyline":"k{x{F`jkbM`NmWB}NeA_CqA_YvY_c@ny@ud@ya@mhBeOy[}AMw^_jAgq@cqCeOm[vOkMcBViAwk@_TuaArwBuZlFbB~EvGs@_E`Guu@LaWnFzge@eEcIpUlaM}uAi}ZluhChF","resource_state":2},"trainer":false,"commute":false,"manual":false,"private":true,"flagged":false,"gear_id":null,"from_accepted_tag":false,"average_speed":7.404,"max_speed":52.2,"average_watts":59.5,"kilojoules":1008.7,"device_watts":false,"has_heartrate":false,"elev_high":377.3,"elev_low":10.4,"pr_count":0,"total_photo_count":0,"has_kudoed":false}]'
+    http_version:
+  recorded_at: Tue, 08 May 2018 02:54:34 GMT
+- request:
+    method: get
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1522022400&page=2
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer token
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Tue, 08 May 2018 02:54:34 GMT
+      Etag:
+      - W/"a20e2e73a5c4b99532f760a77d0909a1"
+      Status:
+      - 200 OK
+      Strava-Athlete-Upload-Version:
+      - 1cda7bba5706f5f18649dbcfc99656c4
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Ratelimit-Limit:
+      - '600,30000'
+      X-Ratelimit-Usage:
+      - '191,3326'
+      X-Request-Id:
+      - a94e6528-d81c-4c6f-a84a-a89a91d3b0c3
+      X-Xss-Protection:
+      - 1; mode=block
+      Content-Length:
+      - '2777'
+      Connection:
+      - keep-alive
+    body:
+      encoding: ASCII-8BIT
+      string: '[]'
     http_version:
   recorded_at: Tue, 08 May 2018 02:54:34 GMT
 recorded_with: VCR 4.0.0

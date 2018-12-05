@@ -2,11 +2,13 @@
 http_interactions:
 - request:
     method: get
-    uri: https://www.strava.com/api/v3//athlete/activities?access_token=token&after=1522022400&page=1&per_page=10
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1522022400&page=1
     body:
       encoding: US-ASCII
       string: ''
     headers:
+      Authorization:
+      - Bearer token
       Accept-Encoding:
       - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
       Accept:
@@ -59,11 +61,13 @@ http_interactions:
   recorded_at: Tue, 03 Apr 2018 13:00:45 GMT
 - request:
     method: get
-    uri: https://www.strava.com/api/v3//activities/1473024961?access_token=token
+    uri: https://www.strava.com/api/v3/activities/1473024961
     body:
       encoding: US-ASCII
       string: ''
     headers:
+      Authorization:
+      - Bearer token
       Accept-Encoding:
       - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
       Accept:
@@ -162,6 +166,59 @@ http_interactions:
         mile","activity":{"id":1473024961,"resource_state":1},"athlete":{"id":26462176,"resource_state":1},"elapsed_time":1029,"moving_time":1030,"start_date":"2018-03-26T13:59:14Z","start_date_local":"2018-03-26T09:59:14Z","distance":3219,"start_index":62,"end_index":824,"pr_rank":null,"achievements":[]},{"id":3204003818,"resource_state":2,"name":"5k","activity":{"id":1473024961,"resource_state":1},"athlete":{"id":26462176,"resource_state":1},"elapsed_time":1628,"moving_time":1629,"start_date":"2018-03-26T13:57:53Z","start_date_local":"2018-03-26T09:57:53Z","distance":5000,"start_index":11,"end_index":1188,"pr_rank":null,"achievements":[]},{"id":3204003819,"resource_state":2,"name":"10k","activity":{"id":1473024961,"resource_state":1},"athlete":{"id":26462176,"resource_state":1},"elapsed_time":3307,"moving_time":3308,"start_date":"2018-03-26T13:59:13Z","start_date_local":"2018-03-26T09:59:13Z","distance":10000,"start_index":61,"end_index":2319,"pr_rank":null,"achievements":[]}],"gear":{"id":"g3372291","primary":false,"name":"adidas
         Supernova Glide Boost Adidas Blue","resource_state":2,"distance":850909.0},"photos":{"primary":null,"count":0},"device_name":"Strava
         iPhone App","embed_token":"438842d193c72dbd46aad00a609da69e90949d13","similar_activities":{"effort_count":2,"average_speed":2.9788437715072265,"min_average_speed":2.95157215047726,"mid_average_speed":2.9780842575861883,"max_average_speed":3.0050769646232784,"pr_rank":1,"frequency_milestone":null,"trend":{"speeds":[2.95157215047726,2.9780842575861883],"current_activity_index":1,"min_speed":2.95157215047726,"mid_speed":2.9780842575861883,"max_speed":3.0050769646232784,"direction":1},"resource_state":2},"available_zones":["pace"]}'
+    http_version:
+  recorded_at: Sun, 11 Nov 2018 22:33:22 GMT
+- request:
+    method: get
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1522022400&page=2
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer token
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Tue, 03 Apr 2018 13:00:45 GMT
+      Etag:
+      - W/"95c56d0a96c304c4e42c5e47e3510a97"
+      Status:
+      - 200 OK
+      Strava-Athlete-Upload-Version:
+      - fb57d7ed2855de15116459e32e4c9f62
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Ratelimit-Limit:
+      - '600,30000'
+      X-Ratelimit-Usage:
+      - '5,3048'
+      X-Request-Id:
+      - 588294cf-05f2-4d27-bb55-3cfd6237cfff
+      X-Xss-Protection:
+      - 1; mode=block
+      Content-Length:
+      - '1552'
+      Connection:
+      - keep-alive
+    body:
+      encoding: ASCII-8BIT
+      string: '[]'
     http_version:
   recorded_at: Sun, 11 Nov 2018 22:33:22 GMT
 recorded_with: VCR 4.0.0

@@ -29,12 +29,12 @@ class Athlete
 
   def self.attrs_from_strava(response)
     {
-      athlete_id: response['id'],
-      username: response['username'],
-      firstname: response['firstname'],
-      lastname: response['lastname'],
-      profile: response['profile'],
-      profile_medium: response['profile_medium']
+      athlete_id: response.id,
+      username: response.username,
+      firstname: response.firstname,
+      lastname: response.lastname,
+      profile: response.profile,
+      profile_medium: response.profile_medium
     }
   end
 
@@ -47,7 +47,7 @@ class Athlete
   end
 
   def sync!
-    info = user.strava_client.retrieve_current_athlete
+    info = user.strava_client.athlete
     update_attributes!(Athlete.attrs_from_strava(info))
     self
   end

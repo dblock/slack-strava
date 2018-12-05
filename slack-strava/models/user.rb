@@ -92,12 +92,12 @@ class User
   def connect!(code)
     response = get_access_token!(code)
     logger.debug "Connecting team=#{team_id}, user=#{user_name}, user_id=#{id}, #{response}"
-    create_athlete(Athlete.attrs_from_strava(response['athlete']))
+    create_athlete(Athlete.attrs_from_strava(response.athlete))
     update_attributes!(
-      token_type: response['token_type'],
-      access_token: response['access_token'],
-      refresh_token: response['refresh_token'],
-      token_expires_at: Time.at(response['expires_at']),
+      token_type: response.token_type,
+      access_token: response.access_token,
+      refresh_token: response.refresh_token,
+      token_expires_at: Time.at(response.expires_at),
       connected_to_strava_at: DateTime.now.utc
     )
     logger.info "Connected team=#{team_id}, user=#{user_name}, user_id=#{id}, athlete_id=#{athlete.athlete_id}"
@@ -159,7 +159,7 @@ class User
   def rebrag_last_activity!
     activity = latest_bragged_activity
     return unless activity
-    detailed_activity = strava_client.retrieve_an_activity(activity.strava_id)
+    detailed_activity = strava_client.activity(activity.strava_id)
     return if detailed_activity['private'] && !private_activities?
     activity = UserActivity.create_from_strava!(self, detailed_activity)
     return unless activity
@@ -171,15 +171,18 @@ class User
   end
 
   def sync_new_strava_activities!
-    sync_strava_activities!(after: activities_at || latest_activity_start_date || connected_to_strava_at || created_at)
+    dt = activities_at || latest_activity_start_date || connected_to_strava_at || created_at
+    options = {}
+    options[:after] = dt.to_i unless dt.nil?
+    sync_strava_activities!(options)
   end
 
   def athlete_clubs_to_slack(channel_id)
     result = { text: '', channel: channel_id, attachments: [] }
     clubs = team.clubs.where(channel_id: channel_id).to_a
     if connected_to_strava?
-      strava_client.paginate(:list_athlete_clubs) do |row|
-        strava_id = row['id'].to_s
+      strava_client.athlete_clubs do |row|
+        strava_id = row.id.to_s
         next if clubs.detect { |club| club.strava_id == strava_id }
         clubs << Club.new(Club.attrs_from_strava(row).merge(team: team))
       end
@@ -209,11 +212,11 @@ class User
   end
 
   def sync_strava_activities!(options = {})
-    strava_client.paginate(:list_athlete_activities, options) do |activity|
-      next if activity['private'] && !private_activities?
+    strava_client.athlete_activities(options) do |activity|
+      next if activity.private && !private_activities?
       UserActivity.create_from_strava!(self, activity)
     end
-  rescue Strava::Api::V3::ClientError => e
+  rescue Strava::Errors::Fault => e
     handle_strava_error e
   end
 

@@ -167,16 +167,16 @@ class Activity
 
   def self.attrs_from_strava(response)
     {
-      strava_id: response['id'],
-      name: response['name'],
-      distance: response['distance'],
-      moving_time: response['moving_time'],
-      elapsed_time: response['elapsed_time'],
-      average_speed: response['average_speed'],
-      type: response['type'],
-      total_elevation_gain: response['total_elevation_gain'],
-      private: response['private'],
-      description: response['description']
+      strava_id: response.id,
+      name: response.name,
+      distance: response.distance,
+      moving_time: response.moving_time,
+      elapsed_time: response.elapsed_time,
+      average_speed: response.average_speed,
+      type: response.type,
+      total_elevation_gain: response.total_elevation_gain,
+      private: response.private,
+      description: response.description
     }
   end
 
