@@ -249,6 +249,45 @@ describe Api::Endpoints::SlackEndpoint do
         response = JSON.parse(last_response.body)
         expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
+      it 'provides a connect link' do
+        post '/api/slack/command',
+             command: '/slava',
+             text: 'connect',
+             channel_id: 'channel',
+             user_id: user.user_id,
+             team_id: team.team_id,
+             token: token
+        expect(last_response.status).to eq 201
+        url = "https://www.strava.com/oauth/authorize?client_id=client-id&redirect_uri=https://slava.playplay.io/connect&response_type=code&scope=activity:read_all&state=#{user.id}"
+        expect(last_response.body).to eq({
+          text: 'Please connect your Strava account.',
+          attachments: [{
+            fallback: "Please connect your Strava account at #{url}.",
+            actions: [{
+              type: 'button',
+              text: 'Click Here',
+              url: url
+            }]
+          }],
+          user: user.user_id,
+          channel: 'channel'
+        }.to_json)
+      end
+      it 'attempts to disconnect' do
+        post '/api/slack/command',
+             command: '/slava',
+             text: 'disconnect',
+             channel_id: 'channel',
+             user_id: user.user_id,
+             team_id: team.team_id,
+             token: token
+        expect(last_response.status).to eq 201
+        expect(last_response.body).to eq({
+          text: 'Your Strava account is not connected.',
+          user: user.user_id,
+          channel: 'channel'
+        }.to_json)
+      end
     end
     after do
       ENV.delete('SLACK_VERIFICATION_TOKEN')

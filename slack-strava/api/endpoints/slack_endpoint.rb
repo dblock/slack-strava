@@ -20,17 +20,28 @@ module Api
           channel_id = params['channel_id']
           user_id = params['user_id']
           team_id = params['team_id']
+          text = params['text']
 
           user = ::User.find_create_or_update_by_team_and_slack_id!(team_id, user_id)
 
-          Api::Middleware.logger.info "CLUBS: #{channel_id}, #{user}, #{user.team}."
-
-          result = if channel_id[0] == 'D'
-                     user.team.clubs_to_slack
-                   elsif !user.team.bot_in_channel?(channel_id)
-                     { text: "Please invite #{user.team.bot_mention} to this channel before connecting a club." }
+          result = case text
+                   when 'clubs' then
+                     Api::Middleware.logger.info "CLUBS: #{channel_id}, #{user}, #{user.team}."
+                     if channel_id[0] == 'D'
+                       user.team.clubs_to_slack
+                     elsif !user.team.bot_in_channel?(channel_id)
+                       { text: "Please invite #{user.team.bot_mention} to this channel before connecting a club." }
+                     else
+                       user.athlete_clubs_to_slack(channel_id)
+                     end
+                   when 'connect' then
+                     Api::Middleware.logger.info "CONNECT: #{channel_id}, #{user}, #{user.team}."
+                     user.connect_to_strava
+                   when 'disconnect' then
+                     Api::Middleware.logger.info "DISCONNECT: #{channel_id}, #{user}, #{user.team}."
+                     user.disconnect_from_strava
                    else
-                     user.athlete_clubs_to_slack(channel_id)
+                     error!("I don't understand the `#{text}` command.", 400)
                    end
 
           result.merge(

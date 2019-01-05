@@ -5,17 +5,17 @@ module SlackStrava
         ```
         I am your friendly bot powered by Strava.
 
-        DM
-        -------
+        DM or /slava
+        ------------
         connect                  - connect your Strava account
         disconnect               - disconnect your Strava account
 
         Clubs
-        --------
+        ------------
         /slava clubs             - connect/disconnect clubs
 
         Settings
-        --------
+        ------------
         set units mi|km          - use miles or kilometers
         set fields all|none|...  - display all, none or certain activity fields
         set maps off|full|thumb  - change the way maps are displayed
@@ -23,7 +23,7 @@ module SlackStrava
         set private true|false   - sync private activities (default is false)
 
         General
-        -------
+        ------------
         help                     - get this helpful message
         subscription             - show subscription info
         info                     - bot info

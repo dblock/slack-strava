@@ -109,19 +109,23 @@ class User
     inform!(text: "New Strava account connected for #{slack_mention}.")
   end
 
-  def disconnect!
+  def disconnect_from_strava
     if access_token
       logger.info "Disconnected team=#{team_id}, user=#{user_name}, user_id=#{id}"
       reset_access_tokens!(connected_to_strava_at: nil)
-      dm!(text: 'Your Strava account has been successfully disconnected.')
+      { text: 'Your Strava account has been successfully disconnected.' }
     else
-      dm!(text: 'Your Strava account is not connected.')
+      { text: 'Your Strava account is not connected.' }
     end
   end
 
-  def dm_connect!(message = 'Please connect your Strava account')
+  def disconnect!
+    dm!(disconnect_from_strava)
+  end
+
+  def connect_to_strava(message = 'Please connect your Strava account')
     url = connect_to_strava_url
-    dm!(
+    {
       text: "#{message}.", attachments: [
         fallback: "#{message} at #{url}.",
         actions: [
@@ -130,7 +134,11 @@ class User
           url: url
         ]
       ]
-    )
+    }
+  end
+
+  def dm_connect!(message = 'Please connect your Strava account')
+    dm!(connect_to_strava(message))
   end
 
   def dm!(message)

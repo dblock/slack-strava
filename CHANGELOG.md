@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2019/01/05: Added `/slava connect` and `/slava disconnect` - [@dblock](https://github.com/dblock).
 * 2019/01/05: Added `set sync` to enable/disable sync - [@dblock](https://github.com/dblock).
 * 2018/11/27: Do not duplicate notifications from users and clubs - [@dblock](https://github.com/dblock).
 * 2018/12/8: Update activities in Slack during the next 24 hours - [@dblock](https://github.com/dblock).
