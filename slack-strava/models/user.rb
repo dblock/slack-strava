@@ -92,6 +92,9 @@ class User
   def connect!(code)
     response = get_access_token!(code)
     logger.debug "Connecting team=#{team_id}, user=#{user_name}, user_id=#{id}, #{response}"
+    raise 'Missing access_token in OAuth response.' unless response.access_token
+    raise 'Missing refresh_token in OAuth response.' unless response.refresh_token
+    raise 'Missing expires_at in OAuth response.' unless response.expires_at
     create_athlete(Athlete.attrs_from_strava(response.athlete))
     update_attributes!(
       token_type: response.token_type,
