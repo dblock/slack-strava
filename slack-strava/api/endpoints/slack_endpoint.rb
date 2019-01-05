@@ -23,6 +23,8 @@ module Api
 
           user = ::User.find_create_or_update_by_team_and_slack_id!(team_id, user_id)
 
+          Api::Middleware.logger.info "CLUBS: #{channel_id}, #{user}, #{user.team}."
+
           result = if channel_id[0] == 'D'
                      user.team.clubs_to_slack
                    elsif !user.team.bot_in_channel?(channel_id)
