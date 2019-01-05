@@ -24,8 +24,35 @@ describe SlackStrava::Commands::Set do
           "Activities for team #{team.name} display *miles*.",
           'Activity fields are *displayed as available*.',
           "Maps for team #{team.name} are *displayed in full*.",
+          'Your activities will sync.',
           'Your private activities will not be posted.'
         ].join("\n"))
+      end
+      context 'sync' do
+        it 'shows default value of sync' do
+          expect(message: "#{SlackRubyBot.config.user} set sync").to respond_with_slack_message(
+            'Your activities will sync.'
+          )
+        end
+        it 'shows current value of sync set to true' do
+          user.update_attributes!(sync_activities: true)
+          expect(message: "#{SlackRubyBot.config.user} set sync").to respond_with_slack_message(
+            'Your activities will sync.'
+          )
+        end
+        it 'sets sync to false' do
+          user.update_attributes!(sync_activities: true)
+          expect(message: "#{SlackRubyBot.config.user} set sync false").to respond_with_slack_message(
+            'Your activities will no longer sync.'
+          )
+          expect(user.reload.sync_activities).to be false
+        end
+        it 'sets sync to true' do
+          expect(message: "#{SlackRubyBot.config.user} set sync true").to respond_with_slack_message(
+            'Your activities will now sync.'
+          )
+          expect(user.reload.sync_activities).to be true
+        end
       end
       context 'private' do
         it 'shows current value of private' do
@@ -95,7 +122,7 @@ describe SlackStrava::Commands::Set do
           )
         end
         it 'sets maps to thumb' do
-          user.update_attributes!(private_activities: true)
+          team.update_attributes!(maps: 'off')
           expect(message: "#{SlackRubyBot.config.user} set maps thumb").to respond_with_slack_message(
             "Maps for team #{team.name} are now *displayed as thumbnails*."
           )

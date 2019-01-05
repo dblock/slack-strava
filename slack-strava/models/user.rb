@@ -10,6 +10,7 @@ class User
   field :connected_to_strava_at, type: DateTime
   field :is_bot, type: Boolean
   field :private_activities, type: Boolean, default: false
+  field :sync_activities, type: Boolean, default: true
 
   embeds_one :athlete
 
@@ -215,6 +216,7 @@ class User
   end
 
   def sync_strava_activities!(options = {})
+    return unless sync_activities?
     strava_client.athlete_activities(options) do |activity|
       next if activity.private && !private_activities?
       UserActivity.create_from_strava!(self, activity)

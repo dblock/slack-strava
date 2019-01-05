@@ -11,13 +11,19 @@ module SlackStrava
             "Activities for team #{team.name} display *#{team.units_s}*.",
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps for team #{team.name} are *#{team.maps_s}*.",
-            "Your private activities will #{user.private_activities? ? '' : 'not'} be posted."
+            "Your activities will #{user.sync_activities? ? '' : 'not '}sync.",
+            "Your private activities will #{user.private_activities? ? '' : 'not '}be posted."
           ]
           client.say(channel: data.channel, text: messages.join("\n"))
           logger.info "SET: #{team}, user=#{data.user} - set"
         else
           k, v = match['expression'].split(/\W+/, 2)
           case k
+          when 'sync' then
+            changed = v && user.sync_activities != v
+            user.update_attributes!(sync_activities: v) unless v.nil?
+            client.say(channel: data.channel, text: "Your activities will#{changed ? (user.sync_activities? ? ' now' : ' no longer') : (user.sync_activities? ? '' : ' not')} sync.")
+            logger.info "SET: #{team}, user=#{data.user} - sync set to #{user.sync_activities}"
           when 'private' then
             changed = v && user.private_activities != v
             user.update_attributes!(private_activities: v) unless v.nil?

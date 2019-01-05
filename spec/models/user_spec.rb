@@ -211,6 +211,14 @@ describe User do
         end
       end
     end
+    context 'with sync_activities set to false' do
+      let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer', sync_activities: false) }
+      it 'does not retrieve any activities' do
+        expect {
+          user.sync_new_strava_activities!
+        }.to_not change(user.activities, :count)
+      end
+    end
   end
   context 'brag!' do
     let!(:user) { Fabricate(:user) }
