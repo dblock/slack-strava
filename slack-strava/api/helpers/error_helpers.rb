@@ -5,7 +5,7 @@ module Api
 
       included do
         rescue_from :all, backtrace: true do |e|
-          backtrace = e.backtrace[0..10].join("\n  ")
+          backtrace = e.backtrace.join("\n  ")
           Api::Middleware.logger.error "#{e.class.name}: #{e.message}\n  #{backtrace}"
           error = { type: 'other_error', message: e.message }
           error[:backtrace] = backtrace
@@ -13,7 +13,7 @@ module Api
         end
         # rescue document validation errors into detail json
         rescue_from Mongoid::Errors::Validations do |e|
-          backtrace = e.backtrace[0..10].join("\n  ")
+          backtrace = e.backtrace.join("\n  ")
           Api::Middleware.logger.warn "#{e.class.name}: #{e.message}\n  #{backtrace}"
           rack_response({
             type: 'param_error',
@@ -24,7 +24,7 @@ module Api
           }.to_json, 400)
         end
         rescue_from Grape::Exceptions::Validation do |e|
-          backtrace = e.backtrace[0..10].join("\n  ")
+          backtrace = e.backtrace.join("\n  ")
           Api::Middleware.logger.warn "#{e.class.name}: #{e.message}\n  #{backtrace}"
           rack_response({
             type: 'param_error',
@@ -33,7 +33,7 @@ module Api
           }.to_json, 400)
         end
         rescue_from Grape::Exceptions::ValidationErrors do |e|
-          backtrace = e.backtrace[0..10].join("\n  ")
+          backtrace = e.backtrace.join("\n  ")
           Api::Middleware.logger.warn "#{e.class.name}: #{e.message}\n  #{backtrace}"
           rack_response({
             type: 'param_error',
