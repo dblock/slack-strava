@@ -117,6 +117,7 @@ describe Api::Endpoints::SlackEndpoint do
                  command: '/slava',
                  text: 'clubs',
                  channel_id: 'channel',
+                 channel_name: 'channel_name',
                  user_id: user.user_id,
                  team_id: team.team_id,
                  token: token
@@ -149,6 +150,7 @@ describe Api::Endpoints::SlackEndpoint do
                  command: '/slava',
                  text: 'clubs',
                  channel_id: 'channel',
+                 channel_name: 'channel_name',
                  user_id: user.user_id,
                  team_id: team.team_id,
                  token: token
@@ -165,6 +167,7 @@ describe Api::Endpoints::SlackEndpoint do
                    command: '/slava',
                    text: 'clubs',
                    channel_id: 'channel',
+                   channel_name: 'channel_name',
                    user_id: user.user_id,
                    team_id: team.team_id,
                    token: token
@@ -185,6 +188,7 @@ describe Api::Endpoints::SlackEndpoint do
                  command: '/slava',
                  text: 'clubs',
                  channel_id: 'channel',
+                 channel_name: 'channel_name',
                  user_id: user.user_id,
                  team_id: team.team_id,
                  token: token
@@ -198,6 +202,7 @@ describe Api::Endpoints::SlackEndpoint do
                  command: '/slava',
                  text: 'clubs',
                  channel_id: 'D1234',
+                 channel_name: 'channel_name',
                  user_id: user.user_id,
                  team_id: team.team_id,
                  token: token
@@ -217,6 +222,7 @@ describe Api::Endpoints::SlackEndpoint do
                    command: '/slava',
                    text: 'clubs',
                    channel_id: 'D1234',
+                   channel_name: 'channel_name',
                    user_id: user.user_id,
                    team_id: team.team_id,
                    token: token
@@ -242,6 +248,7 @@ describe Api::Endpoints::SlackEndpoint do
              command: '/slava',
              text: 'clubs',
              channel_id: 'C1',
+             channel_name: 'channel_1',
              user_id: 'user_id',
              team_id: 'team_id',
              token: 'invalid-token'
@@ -254,6 +261,7 @@ describe Api::Endpoints::SlackEndpoint do
              command: '/slava',
              text: 'connect',
              channel_id: 'channel',
+             channel_name: 'channel_1',
              user_id: user.user_id,
              team_id: team.team_id,
              token: token
@@ -278,6 +286,7 @@ describe Api::Endpoints::SlackEndpoint do
              command: '/slava',
              text: 'disconnect',
              channel_id: 'channel',
+             channel_name: 'channel_name',
              user_id: user.user_id,
              team_id: team.team_id,
              token: token

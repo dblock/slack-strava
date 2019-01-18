@@ -1,3 +1,5 @@
+require_relative 'command'
+
 module Api
   module Endpoints
     class SlackEndpoint < Grape::API
@@ -11,42 +13,23 @@ module Api
           requires :token, type: String
           requires :user_id, type: String
           requires :channel_id, type: String
+          requires :channel_name, type: String
           requires :team_id, type: String
         end
         post '/command' do
-          token = params['token']
-          error!('Message token is not coming from Slack.', 401) if ENV.key?('SLACK_VERIFICATION_TOKEN') && token != ENV['SLACK_VERIFICATION_TOKEN']
+          command = SlackEndpointCommands::Command.new(params)
+          command.slack_verification_token!
 
-          channel_id = params['channel_id']
-          user_id = params['user_id']
-          team_id = params['team_id']
-          text = params['text']
-
-          user = ::User.find_create_or_update_by_team_and_slack_id!(team_id, user_id)
-
-          result = case text
-                   when 'clubs' then
-                     Api::Middleware.logger.info "CLUBS: #{channel_id}, #{user}, #{user.team}."
-                     if channel_id[0] == 'D'
-                       user.team.clubs_to_slack
-                     elsif !user.team.bot_in_channel?(channel_id)
-                       { text: "Please invite #{user.team.bot_mention} to this channel before connecting a club." }
-                     else
-                       user.athlete_clubs_to_slack(channel_id)
-                     end
-                   when 'connect' then
-                     Api::Middleware.logger.info "CONNECT: #{channel_id}, #{user}, #{user.team}."
-                     user.connect_to_strava
-                   when 'disconnect' then
-                     Api::Middleware.logger.info "DISCONNECT: #{channel_id}, #{user}, #{user.team}."
-                     user.disconnect_from_strava
-                   else
-                     error!("I don't understand the `#{text}` command.", 400)
-                   end
-
-          result.merge(
-            user: user_id, channel: channel_id
-          )
+          case command.text
+          when 'clubs' then
+            command.clubs!
+          when 'connect' then
+            command.connect!
+          when 'disconnect' then
+            command.disconnect!
+          else
+            { message: "I don't understand the `#{command.text}` command." }
+          end
         end
 
         desc 'Respond to interactive slack buttons and actions.'
@@ -54,71 +37,43 @@ module Api
           requires :payload, type: JSON do
             requires :token, type: String
             requires :callback_id, type: String
+            optional :type, type: String
+            optional :trigger_id, type: String
+            optional :response_url, type: String
             requires :channel, type: Hash do
               requires :id, type: String
+              optional :name, type: String
             end
             requires :user, type: Hash do
               requires :id, type: String
+              optional :name, type: String
             end
             requires :team, type: Hash do
               requires :id, type: String
+              optional :domain, type: String
             end
-            requires :actions, type: Array do
+            optional :actions, type: Array do
               requires :value, type: String
+            end
+            optional :message, type: Hash do
+              requires :type, type: String
+              requires :user, type: String
+              requires :ts, type: String
+              requires :text, type: String
             end
           end
         end
         post '/action' do
-          payload = params['payload']
-          token = payload['token']
-          error!('Message token is not coming from Slack.', 401) if ENV.key?('SLACK_VERIFICATION_TOKEN') && token != ENV['SLACK_VERIFICATION_TOKEN']
+          command = SlackEndpointCommands::Command.new(params)
+          command.slack_verification_token!
 
-          callback_id = payload['callback_id']
-          channel_id = payload['channel']['id']
-          channel_name = payload['channel']['name']
-          user_id = payload['user']['id']
-          team_id = payload['team']['id']
-
-          user = ::User.find_create_or_update_by_team_and_slack_id!(team_id, user_id)
-
-          case callback_id
+          case command.action
           when 'club-connect-channel' then
-            raise 'User not connected to Strava.' unless user.connected_to_strava?
-            strava_id = payload['actions'][0]['value']
-            strava_club = Club.attrs_from_strava(user.strava_client.club(strava_id))
-            club = Club.create!(
-              strava_club.merge(
-                access_token: user.access_token,
-                refresh_token: user.refresh_token,
-                token_expires_at: user.token_expires_at,
-                token_type: user.token_type,
-                team: user.team,
-                channel_id: channel_id,
-                channel_name: channel_name
-              )
-            )
-            Api::Middleware.logger.info "Connected #{club}, #{user}, #{user.team}."
-            user.team.slack_client.chat_postMessage(
-              club.to_slack.merge(
-                as_user: true, channel: channel_id, text: "A club has been connected by #{user.slack_mention}."
-              )
-            )
-            club.sync_last_strava_activity!
-            user.athlete_clubs_to_slack(channel_id).merge(user: user_id, channel: channel_id)
+            command.club_connect_channel!
           when 'club-disconnect-channel' then
-            strava_id = payload['actions'][0]['value']
-            club = Club.where(team: user.team, channel_id: channel_id).first
-            raise "Club #{strava_id} not connected to #{channel_id}." unless club
-            club.destroy
-            Api::Middleware.logger.info "Disconnected #{club}, #{user}, #{user.team}."
-            user.team.slack_client.chat_postMessage(
-              club.to_slack.merge(
-                as_user: true, channel: channel_id, text: "A club has been disconnected by #{user.slack_mention}."
-              )
-            )
-            user.athlete_clubs_to_slack(channel_id).merge(user: user_id, channel: channel_id)
+            command.club_disconnect_channel!
           else
-            error!("Callback #{callback_id} is not supported.", 404)
+            error!("Callback #{command.action} is not supported.", 404)
           end
         end
       end
