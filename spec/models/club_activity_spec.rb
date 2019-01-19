@@ -48,7 +48,10 @@ describe ClubActivity do
       end
       it 'does not re-brag the activity' do
         expect(club.team.slack_client).to_not receive(:chat_postMessage)
-        expect(activity.brag!).to be nil
+        expect {
+          expect(activity.brag!).to be nil
+        }.to change(club.activities.unbragged, :count).by(-1)
+        expect(activity.bragged_at).to_not be_nil
       end
     end
   end

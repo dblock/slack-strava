@@ -14,6 +14,7 @@ class ClubActivity < Activity
       logger.info "Already bragged about #{club}, #{self}"
       nil
     elsif bragged_in?(club.channel_id)
+      update_attributes!(bragged_at: Time.now.utc)
       logger.info "Already bragged about #{club} in #{club.channel_id}, #{self}"
       nil
     else
