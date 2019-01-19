@@ -1,10 +1,15 @@
 module Api
   module Endpoints
-    class SlackEndpointCommands
-      class Command
-        attr_reader :action, :arg, :channel_id, :channel_name, :user_id, :team_id, :text, :image_url, :token, :response_url, :trigger_id, :type, :submission, :message_ts
+    module Requests
+      class Command < Request
+        attr_reader :action, :arg, :type
+        attr_reader :channel_id, :channel_name
+        attr_reader :user_id, :team_id
+        attr_reader :text, :image_url, :response_url
+        attr_reader :trigger_id, :submission, :message_ts
 
         def initialize(params)
+          super(params)
           if params.key?(:payload)
             payload = params[:payload]
             @action = payload[:callback_id]
@@ -47,17 +52,6 @@ module Api
             team_id,
             user_id
           )
-        end
-
-        def slack_verification_token!
-          return unless ENV.key?('SLACK_VERIFICATION_TOKEN')
-          return if token == ENV['SLACK_VERIFICATION_TOKEN']
-
-          throw :error, status: 401, message: 'Message token is not coming from Slack.'
-        end
-
-        def logger
-          Api::Middleware.logger
         end
 
         def clubs!

@@ -1,13 +1,13 @@
 module Api
   module Endpoints
-    class SlackEndpointCommands
-      class Event
-        attr_reader :token, :challenge, :type
+    module Requests
+      class Event < Request
+        attr_reader :challenge, :type
         attr_reader :team_id, :api_app_id
         attr_reader :event
 
         def initialize(params)
-          @token = params[:token]
+          super(params)
           @challenge = params[:challenge]
           if params.key?(:event)
             @event = Hashie::Mash.new(params[:event])
@@ -19,19 +19,8 @@ module Api
           end
         end
 
-        def slack_verification_token!
-          return unless ENV.key?('SLACK_VERIFICATION_TOKEN') || ENV.key?('SLACK_VERIFICATION_TOKEN_DEV')
-          return if token == ENV['SLACK_VERIFICATION_TOKEN'] || token == ENV['SLACK_VERIFICATION_TOKEN_DEV']
-
-          throw :error, status: 401, message: 'Message token is not coming from Slack.'
-        end
-
         def challenge!
           { challenge: challenge }
-        end
-
-        def logger
-          Api::Middleware.logger
         end
 
         def team

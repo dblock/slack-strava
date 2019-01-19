@@ -1,5 +1,4 @@
-require_relative 'command'
-require_relative 'event'
+require_relative 'requests'
 
 module Api
   module Endpoints
@@ -18,7 +17,7 @@ module Api
           requires :team_id, type: String
         end
         post '/command' do
-          command = SlackEndpointCommands::Command.new(params)
+          command = Requests::Command.new(params)
           command.slack_verification_token!
 
           case command.text
@@ -65,7 +64,7 @@ module Api
           end
         end
         post '/action' do
-          command = SlackEndpointCommands::Command.new(params)
+          command = Requests::Command.new(params)
           command.slack_verification_token!
 
           case command.action
@@ -85,7 +84,7 @@ module Api
           optional :challenge, type: String
         end
         post '/event' do
-          event = SlackEndpointCommands::Event.new(params)
+          event = Requests::Event.new(params)
           event.slack_verification_token!
 
           case event.type
