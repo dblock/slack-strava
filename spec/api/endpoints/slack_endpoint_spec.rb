@@ -363,4 +363,35 @@ describe Api::Endpoints::SlackEndpoint do
       ENV.delete('SLACK_VERIFICATION_TOKEN')
     end
   end
+  context 'with a dev slack verification token' do
+    let(:token) { 'slack-verification-token' }
+    let(:team) { Fabricate(:team) }
+    before do
+      ENV['SLACK_VERIFICATION_TOKEN_DEV'] = token
+    end
+    after do
+      ENV.delete('SLACK_VERIFICATION_TOKEN_DEV')
+    end
+    context 'slack events' do
+      let(:user) { Fabricate(:user, team: team) }
+      it 'returns an error with a non-matching verification token' do
+        post '/api/slack/event',
+             type: 'url_verification',
+             challenge: 'challenge',
+             token: 'invalid-token'
+        expect(last_response.status).to eq 401
+        response = JSON.parse(last_response.body)
+        expect(response['error']).to eq 'Message token is not coming from Slack.'
+      end
+      it 'performs event challenge' do
+        post '/api/slack/event',
+             type: 'url_verification',
+             challenge: 'challenge',
+             token: token
+        expect(last_response.status).to eq 201
+        response = JSON.parse(last_response.body)
+        expect(response).to eq('challenge' => 'challenge')
+      end
+    end
+  end
 end
