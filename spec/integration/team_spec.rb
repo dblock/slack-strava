@@ -4,10 +4,12 @@ describe 'Teams', js: true, type: :feature do
   before do
     ENV['SLACK_CLIENT_ID'] = 'client_id'
     ENV['SLACK_CLIENT_SECRET'] = 'client_secret'
+    ENV['SLACK_OAUTH_SCOPE'] = 'bot,commands,links:read,links:write'
   end
   after do
     ENV.delete 'SLACK_CLIENT_ID'
     ENV.delete 'SLACK_CLIENT_SECRET'
+    ENV.delete 'SLACK_OAUTH_SCOPE'
   end
   context 'oauth', vcr: { cassette_name: 'auth_test' } do
     it 'registers a team' do
@@ -29,7 +31,7 @@ describe 'Teams', js: true, type: :feature do
       expect(title).to eq('Slava: Strava integration with Slack')
     end
     it 'includes a link to add to slack with the client id' do
-      expect(find("a[href='https://slack.com/oauth/authorize?scope=bot,commands&client_id=#{ENV['SLACK_CLIENT_ID']}']"))
+      expect(find("a[href='https://slack.com/oauth/authorize?scope=#{ENV['SLACK_OAUTH_SCOPE']}&client_id=#{ENV['SLACK_CLIENT_ID']}']"))
     end
   end
 end
