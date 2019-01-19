@@ -19,6 +19,7 @@ describe Api::Endpoints::TeamsEndpoint do
             'bot_access_token' => 'token',
             'bot_user_id' => 'bot_user_id'
           },
+          'access_token' => 'activated_user_access_token',
           'user_id' => 'activated_user_id',
           'team_id' => 'team_id',
           'team_name' => 'team_name'
@@ -59,6 +60,7 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.token).to eq 'token'
           expect(team.bot_user_id).to eq 'bot_user_id'
           expect(team.activated_user_id).to eq 'activated_user_id'
+          expect(team.activated_user_access_token).to eq 'activated_user_access_token'
         }.to change(Team, :count).by(1)
       end
       it 'reactivates a deactivated team' do
@@ -79,10 +81,16 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.active).to be true
           expect(team.bot_user_id).to eq 'bot_user_id'
           expect(team.activated_user_id).to eq 'activated_user_id'
+          expect(team.activated_user_access_token).to eq 'activated_user_access_token'
         }.to_not change(Team, :count)
       end
       it 'returns a useful error when team already exists' do
         existing_team = Fabricate(:team, token: 'token')
+        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+          text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
+          channel: 'C1',
+          as_user: true
+        )
         expect { client.teams._post(code: 'code') }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])
           expect(json['message']).to eq "Team #{existing_team.name} is already registered."

@@ -17,6 +17,7 @@ describe Api do
         '/api/subscriptions',
         '/api/credit_cards',
         '/api/maps/{id}',
+        '/api/slack/event',
         '/api/slack/action',
         '/api/slack/command'
       ]

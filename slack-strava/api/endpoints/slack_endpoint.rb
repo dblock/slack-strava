@@ -1,4 +1,5 @@
 require_relative 'command'
+require_relative 'event'
 
 module Api
   module Endpoints
@@ -74,6 +75,26 @@ module Api
             command.club_disconnect_channel!
           else
             error!("Callback #{command.action} is not supported.", 404)
+          end
+        end
+
+        desc 'Handle Slack events.'
+        params do
+          requires :token, type: String
+          requires :type, type: String
+          optional :challenge, type: String
+        end
+        post '/event' do
+          event = SlackEndpointCommands::Event.new(params)
+          event.slack_verification_token!
+
+          case event.type
+          when 'url_verification' then
+            event.challenge!
+          when 'link_shared'
+            event.unfurl!
+          else
+            error!("Event #{event.type} is not supported.", 404)
           end
         end
       end

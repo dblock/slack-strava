@@ -189,6 +189,15 @@ class User
     sync_strava_activities!(options)
   end
 
+  def sync_strava_activity!(strava_id)
+    detailed_activity = strava_client.activity(strava_id)
+    return if detailed_activity['private'] && !private_activities?
+    raise 'Activity athlete ID do not match.' if detailed_activity.athlete.id.to_s != athlete.athlete_id
+    UserActivity.create_from_strava!(self, detailed_activity) || activities.where(strava_id: detailed_activity.id).first
+  rescue Strava::Errors::Fault => e
+    handle_strava_error e
+  end
+
   def athlete_clubs_to_slack(channel_id)
     result = { text: '', channel: channel_id, attachments: [] }
     clubs = team.clubs.where(channel_id: channel_id).to_a

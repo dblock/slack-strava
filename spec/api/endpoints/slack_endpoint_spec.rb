@@ -298,6 +298,67 @@ describe Api::Endpoints::SlackEndpoint do
         }.to_json)
       end
     end
+    context 'slack events' do
+      let(:user) { Fabricate(:user, team: team) }
+      it 'returns an error with a non-matching verification token' do
+        post '/api/slack/event',
+             type: 'url_verification',
+             challenge: 'challenge',
+             token: 'invalid-token'
+        expect(last_response.status).to eq 401
+        response = JSON.parse(last_response.body)
+        expect(response['error']).to eq 'Message token is not coming from Slack.'
+      end
+      it 'performs event challenge' do
+        post '/api/slack/event',
+             type: 'url_verification',
+             challenge: 'challenge',
+             token: token
+        expect(last_response.status).to eq 201
+        response = JSON.parse(last_response.body)
+        expect(response).to eq('challenge' => 'challenge')
+      end
+      context 'with an activity' do
+        let(:activity) { Fabricate(:user_activity, user: user) }
+        before do
+          allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
+        end
+        it 'unfurls a strava URL' do
+          expect_any_instance_of(User).to receive(:sync_strava_activity!)
+            .with(activity.strava_id)
+            .and_return(activity)
+
+          expect_any_instance_of(Slack::Web::Client).to receive(:chat_unfurl).with(
+            channel: 'C1',
+            ts: '1547842100.001400',
+            unfurls: {
+              activity.strava_url => activity.to_slack_attachment
+            }.to_json
+          )
+
+          post '/api/slack/event',
+               token: token,
+               team_id: team.team_id,
+               api_app_id: 'A19GAJ72T',
+               event: {
+                 type: 'link_shared',
+                 user: user.user_id,
+                 channel: 'C1',
+                 message_ts: '1547842100.001400',
+                 links: [{
+                   url: activity.strava_url,
+                   domain: 'strava.com'
+                 }]
+               },
+               type: 'event_callback',
+               event_id: 'EvFGTNRKLG',
+               event_time: 1_547_842_101,
+               authed_users: ['U04KB5WQR']
+          expect(last_response.status).to eq 201
+          response = JSON.parse(last_response.body)
+        end
+      end
+    end
     after do
       ENV.delete('SLACK_VERIFICATION_TOKEN')
     end

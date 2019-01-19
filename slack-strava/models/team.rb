@@ -16,6 +16,7 @@ class Team
   field :subscription_expired_at, type: DateTime
   field :bot_user_id, type: String
   field :activated_user_id, type: String
+  field :activated_user_access_token, type: String
 
   field :trial_informed_at, type: DateTime
 
@@ -73,6 +74,10 @@ class Team
 
   def slack_client
     @slack_client ||= Slack::Web::Client.new(token: token)
+  end
+
+  def activated_user_slack_client
+    @activated_user_slack_client ||= Slack::Web::Client.new(token: activated_user_access_token)
   end
 
   def slack_channels
