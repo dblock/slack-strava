@@ -185,7 +185,7 @@ describe Team do
           'BOT' => 'Slava'
         },
         name: nil,
-        tags: ['slava', 'activated trial', 'activated team'],
+        tags: ['slava', 'trial'],
         unique_email_id: "#{team.team_id}-activated_user_id"
       )
       team.send(:signup_to_mailing_list!)

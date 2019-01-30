@@ -273,9 +273,7 @@ EOS
       unique_email_id: "#{team_id}-#{activated_user_id}",
       tags: [
         'slava',
-        'activated trial',
-        'activated team',
-        subscribed? ? 'subscribed' : nil,
+        subscribed? ? 'subscribed' : 'trial',
         stripe_customer_id? ? 'paid' : nil
       ].compact,
       merge_fields: {
