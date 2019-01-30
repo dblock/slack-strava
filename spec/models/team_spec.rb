@@ -185,7 +185,6 @@ describe Team do
           'BOT' => 'Slava'
         },
         name: nil,
-        status: 'pending',
         tags: ['slava', 'activated trial', 'activated team'],
         unique_email_id: "#{team.team_id}-activated_user_id"
       )

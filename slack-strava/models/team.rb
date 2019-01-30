@@ -270,7 +270,6 @@ EOS
     mailchimp_list.members.create_or_update(
       name: profile.name,
       email_address: profile.email,
-      status: 'pending',
       unique_email_id: "#{team_id}-#{activated_user_id}",
       tags: [
         'slava',
@@ -280,8 +279,8 @@ EOS
         stripe_customer_id? ? 'paid' : nil
       ].compact,
       merge_fields: {
-        'FNAME' => profile.first_name,
-        'LNAME' => profile.last_name,
+        'FNAME' => profile.first_name.to_s,
+        'LNAME' => profile.last_name.to_s,
         'BOT' => 'Slava'
       }
     )
