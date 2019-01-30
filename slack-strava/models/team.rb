@@ -284,8 +284,8 @@ EOS
         'BOT' => 'Slava'
       }
     )
+    logger.info "Subscribed #{profile.email} to #{ENV['MAILCHIMP_LIST_ID']}, #{self}."
   rescue StandardError => e
     logger.error "Error subscribing #{self} to #{ENV['MAILCHIMP_LIST_ID']}: #{e.message}, #{e.errors}"
-    raise e
   end
 end
