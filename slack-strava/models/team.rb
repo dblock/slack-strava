@@ -200,6 +200,31 @@ EOS
     update_attributes!(trial_informed_at: Time.now.utc)
   end
 
+  def signup_to_mailing_list!
+    return unless activated_user_id
+    profile ||= Hashie::Mash.new(slack_client.users_info(user: activated_user_id)).user.profile
+    return unless profile
+    return unless mailchimp_list
+    member = mailchimp_list.members.where(email_address: profile.email).first
+    tags = ['slava', subscribed? ? 'subscribed' : 'trial', stripe_customer_id? ? 'paid' : nil].compact
+    tags = member.tags.map { |tag| tag['name'] }.concat(tags).uniq if member
+    mailchimp_list.members.create_or_update(
+      name: profile.name,
+      email_address: profile.email,
+      unique_email_id: "#{team_id}-#{activated_user_id}",
+      status: member ? member.status : 'pending',
+      tags: tags,
+      merge_fields: {
+        'FNAME' => profile.first_name.to_s,
+        'LNAME' => profile.last_name.to_s,
+        'BOT' => 'Slava'
+      }
+    )
+    logger.info "Subscribed #{profile.email} to #{ENV['MAILCHIMP_LIST_ID']}, #{self}."
+  rescue StandardError => e
+    logger.error "Error subscribing #{self} to #{ENV['MAILCHIMP_LIST_ID']}: #{e.message}, #{e.errors}"
+  end
+
   private
 
   def trial_expired_text
@@ -260,30 +285,5 @@ EOS
     return unless mailchimp_client
     rerurn unless ENV.key?('MAILCHIMP_LIST_ID')
     @mailchimp_list ||= mailchimp_client.lists(ENV['MAILCHIMP_LIST_ID'])
-  end
-
-  def signup_to_mailing_list!
-    return unless activated_user_id
-    profile ||= Hashie::Mash.new(slack_client.users_info(user: activated_user_id)).user.profile
-    return unless profile
-    return unless mailchimp_list
-    mailchimp_list.members.create_or_update(
-      name: profile.name,
-      email_address: profile.email,
-      unique_email_id: "#{team_id}-#{activated_user_id}",
-      tags: [
-        'slava',
-        subscribed? ? 'subscribed' : 'trial',
-        stripe_customer_id? ? 'paid' : nil
-      ].compact,
-      merge_fields: {
-        'FNAME' => profile.first_name.to_s,
-        'LNAME' => profile.last_name.to_s,
-        'BOT' => 'Slava'
-      }
-    )
-    logger.info "Subscribed #{profile.email} to #{ENV['MAILCHIMP_LIST_ID']}, #{self}."
-  rescue StandardError => e
-    logger.error "Error subscribing #{self} to #{ENV['MAILCHIMP_LIST_ID']}: #{e.message}, #{e.errors}"
   end
 end

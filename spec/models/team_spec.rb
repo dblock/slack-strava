@@ -177,8 +177,10 @@ describe Team do
       )
       list = double(Mailchimp::List, members: double(Mailchimp::List::Members))
       expect(team.send(:mailchimp_client)).to receive(:lists).with('list-id').and_return(list)
+      expect(list.members).to receive(:where).with(email_address: 'user@example.com').and_return([])
       expect(list.members).to receive(:create_or_update).with(
         email_address: 'user@example.com',
+        status: 'pending',
         merge_fields: {
           'FNAME' => 'First',
           'LNAME' => 'Last',
