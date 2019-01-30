@@ -270,7 +270,7 @@ EOS
     mailchimp_list.members.create_or_update(
       name: profile.name,
       email_address: profile.email,
-      status: 'subscribed',
+      status: 'pending',
       unique_email_id: "#{team_id}-#{activated_user_id}",
       tags: [
         'slava',
