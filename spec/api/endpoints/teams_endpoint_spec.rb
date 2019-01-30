@@ -52,6 +52,7 @@ describe Api::Endpoints::TeamsEndpoint do
           channel: 'C1',
           as_user: true
         )
+        expect_any_instance_of(Team).to receive(:signup_to_mailing_list!)
         expect {
           team = client.teams._post(code: 'code')
           expect(team.team_id).to eq 'team_id'
@@ -70,6 +71,7 @@ describe Api::Endpoints::TeamsEndpoint do
           channel: 'C1',
           as_user: true
         )
+        expect_any_instance_of(Team).to receive(:signup_to_mailing_list!)
         existing_team = Fabricate(:team, token: 'token', active: false)
         expect {
           team = client.teams._post(code: 'code')
@@ -91,6 +93,7 @@ describe Api::Endpoints::TeamsEndpoint do
           channel: 'C1',
           as_user: true
         )
+        expect_any_instance_of(Team).to receive(:signup_to_mailing_list!)
         expect { client.teams._post(code: 'code') }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])
           expect(json['message']).to eq "Team #{existing_team.name} is already registered."
@@ -98,6 +101,7 @@ describe Api::Endpoints::TeamsEndpoint do
       end
       it 'reactivates a deactivated team with a different code' do
         expect(SlackStrava::Service.instance).to receive(:start!)
+        expect_any_instance_of(Team).to receive(:signup_to_mailing_list!)
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
           channel: 'C1',
