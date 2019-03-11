@@ -138,7 +138,8 @@ class Team
 
   def subscription_expired?
     return false if subscribed?
-    (created_at + 2.weeks) < Time.now
+    time_limit = Time.now - 2.weeks
+    created_at < time_limit
   end
 
   def subscribe_text
