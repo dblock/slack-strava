@@ -47,11 +47,33 @@ describe SlackStrava::Commands::Set do
           )
           expect(user.reload.sync_activities).to be false
         end
-        it 'sets sync to true' do
-          expect(message: "#{SlackRubyBot.config.user} set sync true").to respond_with_slack_message(
-            'Your activities will now sync.'
-          )
-          expect(user.reload.sync_activities).to be true
+        context 'with sync set to false' do
+          before do
+            user.update_attributes!(sync_activities: false)
+          end
+          it 'sets sync to true' do
+            expect(message: "#{SlackRubyBot.config.user} set sync true").to respond_with_slack_message(
+              'Your activities will now sync.'
+            )
+            expect(user.reload.sync_activities).to be true
+          end
+          context 'with prior activities' do
+            before do
+              allow_any_instance_of(Map).to receive(:update_png!)
+              allow_any_instance_of(User).to receive(:inform!).and_return([{ ts: 'ts', channel: 'C1' }])
+              2.times { Fabricate(:user_activity, user: user) }
+              user.brag!
+            end
+            it 'resets all activities' do
+              expect {
+                expect {
+                  expect(message: "#{SlackRubyBot.config.user} set sync true").to respond_with_slack_message(
+                    'Your activities will now sync.'
+                  )
+                }.to change(user.activities, :count).by(-2)
+              }.to change(user, :activities_at)
+            end
+          end
         end
       end
       context 'private' do

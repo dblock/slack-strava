@@ -24,6 +24,9 @@ class User
 
   scope :connected_to_strava, -> { where(:access_token.ne => nil) }
 
+  after_update :connected_to_strava_changed
+  after_update :sync_activities_changed
+
   def connected_to_strava?
     !access_token.nil?
   end
@@ -250,5 +253,17 @@ class User
       reset_access_tokens!(connected_to_strava_at: nil)
     end
     raise e
+  end
+
+  def connected_to_strava_changed
+    return unless connected_to_strava_at? && connected_to_strava_at_changed?
+    activities.destroy_all
+    set activities_at: nil
+  end
+
+  def sync_activities_changed
+    return unless sync_activities? && sync_activities_changed?
+    activities.destroy_all
+    set activities_at: Time.now.utc
   end
 end

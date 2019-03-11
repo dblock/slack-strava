@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2019/03/11: Don't sync old activities when reconnecting or toggling sync - [@dblock](https://github.com/dblock).
 * 2019/01/18: Unfurl Strava URLs - [@dblock](https://github.com/dblock).
 * 2019/01/05: Added `/slava connect` and `/slava disconnect` - [@dblock](https://github.com/dblock).
 * 2019/01/05: Added `set sync` to enable/disable sync - [@dblock](https://github.com/dblock).
