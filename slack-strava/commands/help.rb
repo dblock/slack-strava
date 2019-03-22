@@ -26,13 +26,14 @@ module SlackStrava
         ------------
         help                     - get this helpful message
         subscription             - show subscription info
+        unsubscribe              - turn off subscription auto-renew
         info                     - bot info
         ```
 EOS
       def self.call(client, data, _match)
         client.say(channel: data.channel, text: [
           HELP,
-          client.owner.reload.subscribed? ? nil : client.owner.subscribe_text
+          client.owner.reload.subscribed? ? nil : client.owner.trial_message
         ].compact.join("\n"))
         logger.info "HELP: #{client.owner}, user=#{data.user}"
       end

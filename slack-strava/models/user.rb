@@ -218,6 +218,10 @@ class User
     result
   end
 
+  def activated_user?
+    team.activated_user_id && team.activated_user_id == user_id
+  end
+
   private
 
   def latest_bragged_activity(dt = 12.hours)

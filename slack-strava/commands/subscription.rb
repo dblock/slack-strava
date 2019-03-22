@@ -4,23 +4,23 @@ module SlackStrava
       include SlackStrava::Commands::Mixins::Subscribe
 
       subscribe_command 'subscription' do |client, data, _match|
-        if client.owner.stripe_customer_id
-          customer = Stripe::Customer.retrieve(client.owner.stripe_customer_id)
-          customer_info = "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}."
-          customer.subscriptions.each do |subscription|
-            customer_info += "\nSubscribed to #{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)})"
+        user = ::User.find_create_or_update_by_slack_id!(client, data.user)
+        team = ::Team.find(client.owner.id)
+        subscription_info = []
+        if team.active_stripe_subscription?
+          subscription_info << team.stripe_customer_text
+          subscription_info.concat(team.stripe_customer_subscriptions_info)
+          if user.activated_user?
+            subscription_info.concat(team.stripe_customer_invoices_info)
+            subscription_info.concat(team.stripe_customer_sources_info)
+            subscription_info << team.update_cc_text
           end
-          customer.invoices.each do |invoice|
-            customer_info += "\nInvoice for #{ActiveSupport::NumberHelper.number_to_currency(invoice.amount_due.to_f / 100)} on #{Time.at(invoice.date).strftime('%B %d, %Y')}, #{invoice.paid ? 'paid' : 'unpaid'}."
-          end
-          customer.sources.each do |source|
-            customer_info += "\nOn file #{source.brand} #{source.object}, #{source.name} ending with #{source.last4}, expires #{source.exp_month}/#{source.exp_year}."
-          end
-          customer_info += "\n#{client.owner.update_cc_text}"
-          client.say(channel: data.channel, text: customer_info)
+        elsif team.subscribed && team.subscribed_at
+          subscription_info << team.subscriber_text
         else
-          client.say(channel: data.channel, text: "Not a subscriber. #{client.owner.subscribe_text}")
+          subscription_info << team.trial_message
         end
+        client.say(channel: data.channel, text: subscription_info.compact.join("\n"))
         logger.info "SUBSCRIPTION: #{client.owner} - #{data.user}"
       end
     end

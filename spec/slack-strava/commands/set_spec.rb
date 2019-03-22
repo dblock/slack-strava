@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe SlackStrava::Commands::Set do
-  let!(:team) { Fabricate(:team) }
+  let!(:team) { Fabricate(:team, created_at: 2.weeks.ago) }
   let(:app) { SlackStrava::Server.new(team: team) }
   let(:client) { app.send(:client) }
   let(:user) { Fabricate(:user, team: team) }
@@ -10,7 +10,7 @@ describe SlackStrava::Commands::Set do
   end
   context 'units' do
     it 'requires a subscription' do
-      expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(team.subscribe_text)
+      expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(team.trial_message)
     end
     context 'subscribed team' do
       let(:team) { Fabricate(:team, subscribed: true) }

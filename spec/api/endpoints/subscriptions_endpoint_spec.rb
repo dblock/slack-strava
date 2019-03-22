@@ -59,6 +59,7 @@ describe Api::Endpoints::SubscriptionsEndpoint do
         ).and_return('id' => 'customer_id')
         expect_any_instance_of(Team).to receive(:inform!).once
         expect_any_instance_of(Team).to receive(:inform_admin!).once
+        expect_any_instance_of(Team).to receive(:signup_to_mailing_list!)
         client.subscriptions._post(
           team_id: team.team_id,
           stripe_token: 'token',

@@ -16,7 +16,7 @@ describe SlackStrava::Commands::Info do
     it 'help' do
       expect(client).to receive(:say).with(channel: 'channel', text: [
         SlackStrava::INFO,
-        [team.send(:trial_expired_text), team.send(:subscribe_team_text)].join(' ')
+        team.trial_message
       ].join("\n"))
       message_hook.call(client, Hashie::Mash.new(channel: 'channel', text: "#{SlackRubyBot.config.user} info"))
     end
@@ -26,7 +26,7 @@ describe SlackStrava::Commands::Info do
     it 'help' do
       expect(client).to receive(:say).with(channel: 'channel', text: [
         SlackStrava::INFO,
-        team.send(:subscribe_team_text)
+        team.trial_message
       ].join("\n"))
       message_hook.call(client, Hashie::Mash.new(channel: 'channel', text: "#{SlackRubyBot.config.user} info"))
     end

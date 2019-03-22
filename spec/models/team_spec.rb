@@ -89,6 +89,7 @@ describe Team do
       before do
         expect(team).to receive(:inform!).with(text: team.subscribed_text)
         expect(team).to receive(:inform_admin!).with(text: team.subscribed_text)
+        expect(team).to receive(:signup_to_mailing_list!)
         team.update_attributes!(subscribed: true)
       end
       it 'resets subscription_expired_at' do
