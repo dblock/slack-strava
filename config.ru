@@ -19,7 +19,7 @@ SlackStrava::App.instance.prepare!
 Thread.abort_on_exception = true
 
 Thread.new do
-  SlackStrava::Service.instance.start_from_database!
+  SlackRubyBotServer::Service.instance.start_from_database!
   SlackStrava::App.instance.after_start!
 end
 

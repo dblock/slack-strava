@@ -14,9 +14,6 @@ class Team
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
   field :subscription_expired_at, type: DateTime
-  field :bot_user_id, type: String
-  field :activated_user_id, type: String
-  field :activated_user_access_token, type: String
 
   field :trial_informed_at, type: DateTime
 
@@ -31,6 +28,13 @@ class Team
   before_validation :update_subscription_expired_at
   after_update :subscribed!
   after_save :activated!
+
+  def tags
+    [
+      subscribed? ? 'subscribed' : 'trial',
+      stripe_customer_id? ? 'paid' : nil
+    ].compact
+  end
 
   def units_s
     case units
@@ -144,7 +148,7 @@ class Team
   end
 
   def update_cc_text
-    "Update your credit card info at #{SlackStrava::Service.url}/update_cc?team_id=#{team_id}."
+    "Update your credit card info at #{SlackRubyBotServer::Service.url}/update_cc?team_id=#{team_id}."
   end
 
   def subscribed_text
@@ -215,7 +219,7 @@ EOS
   end
 
   def subscribe_text
-    "Subscribe your team for $9.99 a year at #{SlackStrava::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds go to NYRR."
+    "Subscribe your team for $9.99 a year at #{SlackRubyBotServer::Service.url}/subscribe?team_id=#{team_id} to continue receiving Strava activities in Slack. All proceeds go to NYRR."
   end
 
   def stripe_customer_subscriptions_info(with_unsubscribe = false)
@@ -254,41 +258,11 @@ EOS
     end
   end
 
-  def signup_to_mailing_list!
-    return unless activated_user_id
-    profile ||= Hashie::Mash.new(slack_client.users_info(user: activated_user_id)).user.profile
-    return unless profile
-    return unless mailchimp_list
-    tags = ['slava', subscribed? ? 'subscribed' : 'trial', stripe_customer_id? ? 'paid' : nil].compact
-    member = mailchimp_list.members.where(email_address: profile.email).first
-    if member
-      member_tags = member.tags.map { |tag| tag['name'] }.sort
-      tags = (member_tags + tags).uniq
-      return if tags == member_tags
-    end
-    mailchimp_list.members.create_or_update(
-      name: profile.name,
-      email_address: profile.email,
-      unique_email_id: "#{team_id}-#{activated_user_id}",
-      status: member ? member.status : 'pending',
-      tags: tags,
-      merge_fields: {
-        'FNAME' => profile.first_name.to_s,
-        'LNAME' => profile.last_name.to_s,
-        'BOT' => 'Slava'
-      }
-    )
-    logger.info "Subscribed #{profile.email} to #{ENV['MAILCHIMP_LIST_ID']}, #{self}."
-  rescue StandardError => e
-    logger.error "Error subscribing #{self} to #{ENV['MAILCHIMP_LIST_ID']}: #{e.message}, #{e.errors}"
-  end
-
   private
 
   def subscribed!
     return unless subscribed? && subscribed_changed?
     inform_everyone!(text: subscribed_text)
-    signup_to_mailing_list!
   end
 
   def bot_mention
@@ -307,7 +281,6 @@ EOS
     return unless active? && activated_user_id && bot_user_id
     return unless active_changed? || activated_user_id_changed?
     inform_activated!
-    signup_to_mailing_list!
   end
 
   def inform_activated!
@@ -329,18 +302,5 @@ EOS
     return unless subscribed? && subscription_expired_at?
 
     self.subscription_expired_at = nil
-  end
-
-  # mailing list management
-
-  def mailchimp_client
-    return unless ENV.key?('MAILCHIMP_API_KEY')
-    @mailchimp_client ||= Mailchimp.connect(ENV['MAILCHIMP_API_KEY'])
-  end
-
-  def mailchimp_list
-    return unless mailchimp_client
-    rerurn unless ENV.key?('MAILCHIMP_LIST_ID')
-    @mailchimp_list ||= mailchimp_client.lists(ENV['MAILCHIMP_LIST_ID'])
   end
 end

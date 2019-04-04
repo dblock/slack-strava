@@ -5,7 +5,7 @@ module SlackStrava
     © 2018 Daniel Doubrovkine & Contributors, MIT License
     https://twitter.com/dblockdotorg
 
-    Service at #{SlackStrava::Service.url}
+    Service at #{SlackRubyBotServer::Service.url}
     Open-Source at https://github.com/dblock/slack-strava
   EOS
 end

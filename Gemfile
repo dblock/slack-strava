@@ -1,12 +1,11 @@
 source 'http://rubygems.org'
 
-ruby '2.5.3'
+ruby '2.6.2'
 
 gem 'giphy'
 gem 'grape'
 gem 'hashie'
 gem 'httparty'
-gem 'mailchimp_api_v3'
 gem 'mongoid'
 gem 'mongoid-scroll'
 gem 'newrelic_rpm'
@@ -16,6 +15,7 @@ gem 'rack-robotz'
 gem 'rack-server-pages'
 gem 'ruby-enum'
 gem 'slack-ruby-bot-server'
+gem 'slack-ruby-bot-server-mailchimp'
 gem 'slack-ruby-client'
 gem 'strava-ruby-client'
 gem 'stripe', '~> 1.58.0'
@@ -24,7 +24,7 @@ gem 'wannabe_bool'
 group :development, :test do
   gem 'foreman'
   gem 'rake', '~> 10.4'
-  gem 'rubocop', '0.49.1'
+  gem 'rubocop'
 end
 
 group :development do

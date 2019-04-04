@@ -32,7 +32,7 @@ class User
   end
 
   def connect_to_strava_url
-    redirect_uri = "#{SlackStrava::Service.url}/connect"
+    redirect_uri = "#{SlackRubyBotServer::Service.url}/connect"
     "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=activity:read_all&state=#{id}"
   end
 

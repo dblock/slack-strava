@@ -34,7 +34,7 @@ class Map
   end
 
   def proxy_image_url
-    "#{SlackStrava::Service.url}/api/maps/#{id}.png"
+    "#{SlackRubyBotServer::Service.url}/api/maps/#{id}.png"
   end
 
   def png_size

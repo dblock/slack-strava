@@ -89,7 +89,6 @@ describe Team do
       before do
         expect(team).to receive(:inform!).with(text: team.subscribed_text)
         expect(team).to receive(:inform_admin!).with(text: team.subscribed_text)
-        expect(team).to receive(:signup_to_mailing_list!)
         team.update_attributes!(subscribed: true)
       end
       it 'resets subscription_expired_at' do
@@ -158,87 +157,6 @@ describe Team do
     end
     after do
       Timecop.return
-    end
-  end
-  context '#signup_to_mailing_list!' do
-    let(:team) { Fabricate(:team, activated_user_id: 'activated_user_id') }
-    let(:list) { double(Mailchimp::List, members: double(Mailchimp::List::Members)) }
-    before do
-      ENV['MAILCHIMP_LIST_ID'] = 'list-id'
-      ENV['MAILCHIMP_API_KEY'] = 'api-key'
-
-      expect(team.slack_client).to receive(:users_info).with(user: 'activated_user_id').and_return(
-        user: {
-          profile: {
-            email: 'user@example.com',
-            first_name: 'First',
-            last_name: 'Last'
-          }
-        }
-      )
-
-      expect(team.send(:mailchimp_client)).to receive(:lists).with('list-id').and_return(list)
-    end
-    it 'subscribes the activating user' do
-      expect(list.members).to receive(:where).with(email_address: 'user@example.com').and_return([])
-      expect(list.members).to receive(:create_or_update).with(
-        email_address: 'user@example.com',
-        merge_fields: {
-          'FNAME' => 'First',
-          'LNAME' => 'Last',
-          'BOT' => 'Slava'
-        },
-        status: 'pending',
-        name: nil,
-        tags: %w[slava trial],
-        unique_email_id: "#{team.team_id}-activated_user_id"
-      )
-      team.send(:signup_to_mailing_list!)
-    end
-    it 'merges tags' do
-      expect(list.members).to receive(:where).with(email_address: 'user@example.com').and_return(
-        [
-          double(
-            Mailchimp::List::Member,
-            tags: [{ 'id' => 1513, 'name' => 'subscribed' }, { 'id' => 1525, 'name' => 'something' }],
-            status: 'subscribed'
-          )
-        ]
-      )
-      expect(list.members).to receive(:create_or_update).with(
-        email_address: 'user@example.com',
-        merge_fields: {
-          'FNAME' => 'First',
-          'LNAME' => 'Last',
-          'BOT' => 'Slava'
-        },
-        status: 'subscribed',
-        name: nil,
-        tags: %w[something subscribed slava trial],
-        unique_email_id: "#{team.team_id}-activated_user_id"
-      )
-      team.send(:signup_to_mailing_list!)
-    end
-    it 'does not attempt to create a new pending subscription' do
-      expect(list.members).to receive(:where).with(email_address: 'user@example.com').and_return(
-        [
-          double(
-            Mailchimp::List::Member,
-            tags: [
-              { 'id' => 1234, 'name' => 'trial' },
-              { 'id' => 1513, 'name' => 'subscribed' },
-              { 'id' => 1525, 'name' => 'slava' }
-            ],
-            status: 'pending'
-          )
-        ]
-      )
-      expect(list.members).to_not receive(:create_or_update)
-      team.send(:signup_to_mailing_list!)
-    end
-    after do
-      ENV.delete 'MAILCHIMP_API_KEY'
-      ENV.delete 'MAILCHIMP_LIST_ID'
     end
   end
 end

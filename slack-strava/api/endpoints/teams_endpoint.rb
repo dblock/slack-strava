@@ -50,6 +50,7 @@ module Api
           access_token = rc['access_token']
           team = Team.where(token: token).first
           team ||= Team.where(team_id: rc['team_id']).first
+
           if team
             team.update_attributes!(
               activated_user_id: user_id,
@@ -57,6 +58,7 @@ module Api
               bot_user_id: bot_user_id
             )
             raise "Team #{team.name} is already registered." if team.active?
+
             team.activate!(token)
           else
             team = Team.create!(
@@ -69,7 +71,7 @@ module Api
             )
           end
 
-          SlackStrava::Service.instance.start!(team)
+          SlackRubyBotServer::Service.instance.create!(team)
           present team, with: Api::Presenters::TeamPresenter
         end
       end
