@@ -99,12 +99,34 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.activated_user_id).to eq 'activated_user_id'
         }.to_not change(Team, :count)
       end
+      it 'reactivates a team deactivated on slack' do
+        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+          text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
+          channel: 'C1',
+          as_user: true
+        )
+        expect(SlackRubyBotServer::Service.instance).to receive(:start!)
+        existing_team = Fabricate(:team, token: 'token')
+        expect {
+          expect_any_instance_of(Team).to receive(:ping!) { raise Slack::Web::Api::Errors::SlackError, 'invalid_auth' }
+          team = client.teams._post(code: 'code')
+          expect(team.team_id).to eq existing_team.team_id
+          expect(team.name).to eq existing_team.name
+          expect(team.active).to be true
+          team = Team.find(team.id)
+          expect(team.token).to eq 'token'
+          expect(team.active).to be true
+          expect(team.bot_user_id).to eq 'bot_user_id'
+          expect(team.activated_user_id).to eq 'activated_user_id'
+        }.to_not change(Team, :count)
+      end
       it 'returns a useful error when team already exists' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
           channel: 'C1',
           as_user: true
         )
+        expect_any_instance_of(Team).to receive(:ping_if_active!)
         existing_team = Fabricate(:team, token: 'token')
         expect { client.teams._post(code: 'code') }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])

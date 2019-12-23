@@ -52,6 +52,8 @@ module Api
           team ||= Team.where(team_id: rc['team_id']).first
 
           if team
+            team.ping_if_active!
+
             team.update_attributes!(
               token: token,
               activated_user_id: user_id,
