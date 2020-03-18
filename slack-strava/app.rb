@@ -25,6 +25,7 @@ module SlackStrava
 
     def log_info_without_repeat(message)
       return if message == @log_message
+
       @log_message = message
       logger.info message
     end
@@ -42,7 +43,10 @@ module SlackStrava
       log_info_without_repeat "Checking trials for #{Team.active.trials.count} team(s)."
       Team.active.trials.each do |team|
         logger.info "Team #{team} has #{team.remaining_trial_days} trial days left."
-        next unless team.remaining_trial_days > 0 && team.remaining_trial_days <= 3
+        unless team.remaining_trial_days > 0 && team.remaining_trial_days <= 3
+          next
+        end
+
         team.inform_trial!
       rescue StandardError => e
         logger.warn "Error checking team #{team} trial, #{e.message}."
@@ -66,6 +70,7 @@ module SlackStrava
       log_info_without_repeat "Checking subscriptions for #{Team.active.count} team(s)."
       Team.active.each do |team|
         next unless team.subscription_expired?
+
         team.subscription_expired!
       rescue StandardError => e
         backtrace = e.backtrace.join("\n")
@@ -77,6 +82,7 @@ module SlackStrava
       log_info_without_repeat "Checking activities for #{Team.active.count} team(s)."
       Team.active.each do |team|
         next if team.subscription_expired?
+
         begin
           team.users.connected_to_strava.each(&:sync_and_brag!)
           team.clubs.connected_to_strava.each(&:sync_and_brag!)
@@ -91,6 +97,7 @@ module SlackStrava
       log_info_without_repeat "Editing activities for #{Team.active.count} team(s)."
       Team.active.each do |team|
         next if team.subscription_expired?
+
         begin
           team.users.connected_to_strava.each(&:rebrag!)
         rescue StandardError => e
@@ -104,6 +111,7 @@ module SlackStrava
       log_info_without_repeat "Checking inactivity for #{Team.active.count} team(s)."
       Team.active.each do |team|
         next unless team.asleep?
+
         begin
           team.deactivate!
           purge_message = "Your subscription expired more than 2 weeks ago, deactivating. Reactivate at #{SlackRubyBotServer::Service.url}. Your data will be purged in another 2 weeks."

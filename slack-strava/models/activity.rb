@@ -27,7 +27,8 @@ class Activity
   end
 
   def distance_in_miles_s
-    return unless distance && distance.positive?
+    return unless distance&.positive?
+
     format('%gmi', format('%.2f', distance_in_miles))
   end
 
@@ -36,12 +37,14 @@ class Activity
   end
 
   def distance_in_yards_s
-    return unless distance && distance.positive?
+    return unless distance&.positive?
+
     format('%gyd', format('%.1f', distance_in_yards))
   end
 
   def distance_in_meters_s
-    return unless distance && distance.positive?
+    return unless distance&.positive?
+
     format('%gm', format('%d', distance))
   end
 
@@ -50,7 +53,8 @@ class Activity
   end
 
   def distance_in_kilometers_s
-    return unless distance && distance.positive?
+    return unless distance&.positive?
+
     format('%gkm', format('%.2f', distance_in_kilometers))
   end
 
@@ -93,12 +97,14 @@ class Activity
   end
 
   def kilometer_per_hour_s
-    return unless average_speed && average_speed.positive?
+    return unless average_speed&.positive?
+
     format('%.1fkm/h', average_speed * 3.6)
   end
 
   def miles_per_hour_s
-    return unless average_speed && average_speed.positive?
+    return unless average_speed&.positive?
+
     format('%.1fmph', average_speed * 2.23694)
   end
 
@@ -111,12 +117,14 @@ class Activity
   end
 
   def total_elevation_gain_in_meters_s
-    return unless total_elevation_gain && total_elevation_gain.positive?
+    return unless total_elevation_gain&.positive?
+
     format('%gm', format('%.1f', total_elevation_gain_in_meters))
   end
 
   def total_elevation_gain_in_feet_s
-    return unless total_elevation_gain && total_elevation_gain.positive?
+    return unless total_elevation_gain&.positive?
+
     format('%gft', format('%.1f', total_elevation_gain_in_feet))
   end
 
@@ -246,6 +254,7 @@ class Activity
 
   def time_in_hours_s(time)
     return unless time
+
     hours = time / 3600 % 24
     minutes = time / 60 % 60
     seconds = time % 60
@@ -259,16 +268,19 @@ class Activity
   def slack_fields
     activity_fields = team.activity_fields
     return if activity_fields == ['None']
+
     activity_fields = ActivityFields.values if activity_fields == ['All']
 
     fields = []
     activity_fields.each do |activity_field|
       case activity_field
-      when 'Type' then
+      when 'Type'
         fields << { title: 'Type', value: type_with_emoji, short: true }
-      when 'Distance' then
-        fields << { title: 'Distance', value: distance_s, short: true } if distance && distance.positive?
-      when 'Time' then
+      when 'Distance'
+        if distance&.positive?
+          fields << { title: 'Distance', value: distance_s, short: true }
+        end
+      when 'Time'
         if elapsed_time && moving_time
           if elapsed_time == moving_time
             fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
@@ -278,20 +290,24 @@ class Activity
         elsif elapsed_time
           fields << { title: 'Time', value: elapsed_time_in_hours_s, short: true }
         end
-      when 'Moving Time' then
+      when 'Moving Time'
         if elapsed_time && moving_time && elapsed_time != moving_time
           fields << { title: 'Moving Time', value: moving_time_in_hours_s, short: true }
         end
-      when 'Elapsed Time' then
+      when 'Elapsed Time'
         if elapsed_time && moving_time && elapsed_time != moving_time
           fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true }
         end
-      when 'Pace' then
+      when 'Pace'
         fields << { title: 'Pace', value: pace_s, short: true } if average_speed
-      when 'Speed' then
-        fields << { title: 'Speed', value: speed_s, short: true } if average_speed
-      when 'Elevation' then
-        fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain && total_elevation_gain.positive?
+      when 'Speed'
+        if average_speed
+          fields << { title: 'Speed', value: speed_s, short: true }
+        end
+      when 'Elevation'
+        if total_elevation_gain&.positive?
+          fields << { title: 'Elevation', value: total_elevation_gain_s, short: true }
+        end
       end
     end
     fields
@@ -300,7 +316,8 @@ class Activity
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
   # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby
   def convert_meters_per_second_to_pace(speed, unit = :mi)
-    return unless speed && speed.positive?
+    return unless speed&.positive?
+
     total_seconds = case unit
                     when :mi then 1609.344 / speed
                     when :km then 1000 / speed

@@ -21,11 +21,11 @@ module Api
           command.slack_verification_token!
 
           case command.text
-          when 'clubs' then
+          when 'clubs'
             command.clubs!
-          when 'connect' then
+          when 'connect'
             command.connect!
-          when 'disconnect' then
+          when 'disconnect'
             command.disconnect!
           else
             { message: "I don't understand the `#{command.text}` command." }
@@ -68,9 +68,9 @@ module Api
           command.slack_verification_token!
 
           case command.action
-          when 'club-connect-channel' then
+          when 'club-connect-channel'
             command.club_connect_channel!
-          when 'club-disconnect-channel' then
+          when 'club-disconnect-channel'
             command.club_disconnect_channel!
           else
             error!("Callback #{command.action} is not supported.", 404)
@@ -88,7 +88,7 @@ module Api
           event.slack_verification_token!
 
           case event.type
-          when 'url_verification' then
+          when 'url_verification'
             event.challenge!
           when 'link_shared'
             event.unfurl!

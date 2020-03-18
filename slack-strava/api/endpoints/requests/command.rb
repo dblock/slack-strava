@@ -81,6 +81,7 @@ module Api
 
         def club_connect_channel!
           raise 'User not connected to Strava.' unless user.connected_to_strava?
+
           strava_id = arg
           strava_club = Club.attrs_from_strava(user.strava_client.club(strava_id))
           club = Club.create!(
@@ -108,6 +109,7 @@ module Api
           strava_id = arg
           club = Club.where(team: user.team, channel_id: channel_id).first
           raise "Club #{strava_id} not connected to #{channel_id}." unless club
+
           club.destroy
           logger.info "Disconnected #{club}, #{user}, #{user.team}."
           user.team.slack_client.chat_postMessage(

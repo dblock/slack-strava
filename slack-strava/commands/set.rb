@@ -37,7 +37,9 @@ module SlackStrava
           when 'fields' then
             parsed_fields = ActivityFields.parse_s(v) if v
             changed = parsed_fields && team.activity_fields != parsed_fields
-            team.update_attributes!(activity_fields: parsed_fields) if parsed_fields && parsed_fields.any?
+            if parsed_fields&.any?
+              team.update_attributes!(activity_fields: parsed_fields)
+            end
             client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{changed ? ' now' : ''} *#{team.activity_fields_s}*.")
             logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
           when 'maps' then

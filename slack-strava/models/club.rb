@@ -36,8 +36,10 @@ class Club
   def brag!
     activity = activities.unbragged.asc(:_id).first
     return unless activity
+
     results = activity.brag!
     return unless results
+
     results.map do |result|
       result.merge(activity: activity)
     end
@@ -119,6 +121,7 @@ class Club
     strava_client.club_activities(strava_id, options).each do |activity|
       club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(club: self))
       break if ClubActivity.where(strava_id: club_activity.strava_id).exists?
+
       club_activity.save!
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
     end
@@ -129,7 +132,7 @@ class Club
   def handle_strava_error(e)
     logger.error e
     case e.message
-    when /Authorization Error/ then
+    when /Authorization Error/
       reset_access_tokens!
     end
     raise e

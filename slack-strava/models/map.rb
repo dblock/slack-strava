@@ -27,6 +27,7 @@ class Map
 
   def image_url
     return unless decoded_summary_polyline
+
     google_maps_api_key = ENV['GOOGLE_STATIC_MAPS_API_KEY']
     start_latlng = decoded_summary_polyline[0]
     end_latlng = decoded_summary_polyline[-1]
@@ -38,7 +39,7 @@ class Map
   end
 
   def png_size
-    return png.data.size if png && png.data
+    return png.data.size if png&.data
   end
 
   def to_s
@@ -52,18 +53,23 @@ class Map
   private
 
   def update_decoded_summary_polyline
-    return unless summary_polyline && (summary_polyline_changed? || decoded_summary_polyline.nil?)
+    unless summary_polyline && (summary_polyline_changed? || decoded_summary_polyline.nil?)
+      return
+    end
+
     update_decoded_summary_polyline!
   end
 
   def update_decoded_summary_polyline!
     return unless summary_polyline
+
     self.decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
   end
 
   def update_png!
     url = image_url
     return unless url
+
     body = HTTParty.get(url).body
     self.png = BSON::Binary.new(body)
   end
@@ -71,6 +77,7 @@ class Map
   def update_png
     return if png_changed?
     return unless summary_polyline_changed? || png.nil?
+
     update_png!
   end
 end

@@ -18,9 +18,7 @@ module Api
           rack_response({
             type: 'param_error',
             message: e.document.errors.full_messages.uniq.join(', ') + '.',
-            detail: e.document.errors.messages.each_with_object({}) do |(k, v), h|
-              h[k] = v.uniq
-            end
+            detail: e.document.errors.messages.transform_values(&:uniq)
           }.to_json, 400)
         end
         rescue_from Grape::Exceptions::Validation do |e|
@@ -38,9 +36,9 @@ module Api
           rack_response({
             type: 'param_error',
             message: 'Invalid parameters.',
-            detail: e.errors.each_with_object({}) do |(k, v), h|
+            detail: e.errors.transform_keys do |k|
               # JSON does not permit having a key of type Array
-              h[k.count == 1 ? k.first : k.join(', ')] = v
+              k.count == 1 ? k.first : k.join(', ')
             end
           }.to_json, 400)
         end

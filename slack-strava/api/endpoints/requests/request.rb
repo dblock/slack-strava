@@ -9,8 +9,12 @@ module Api
         end
 
         def slack_verification_token!
-          return unless ENV.key?('SLACK_VERIFICATION_TOKEN') || ENV.key?('SLACK_VERIFICATION_TOKEN_DEV')
-          return if token == ENV['SLACK_VERIFICATION_TOKEN'] || token == ENV['SLACK_VERIFICATION_TOKEN_DEV']
+          unless ENV.key?('SLACK_VERIFICATION_TOKEN') || ENV.key?('SLACK_VERIFICATION_TOKEN_DEV')
+            return
+          end
+          if token == ENV['SLACK_VERIFICATION_TOKEN'] || token == ENV['SLACK_VERIFICATION_TOKEN_DEV']
+            return
+          end
 
           throw :error, status: 401, message: 'Message token is not coming from Slack.'
         end

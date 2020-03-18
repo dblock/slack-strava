@@ -13,11 +13,13 @@ class UserActivity < Activity
 
   def start_date_local_s
     return unless start_date_local
+
     start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')
   end
 
   def brag!
     return if bragged_at
+
     logger.info "Bragging about #{user}, #{self}"
     rc = user.inform!(to_slack)
     update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
@@ -26,6 +28,7 @@ class UserActivity < Activity
 
   def rebrag!
     return unless channel_messages
+
     logger.info "Rebragging about #{user}, #{self}"
     rc = user.update!(to_slack, channel_messages)
     update_attributes!(channel_messages: rc)
@@ -51,6 +54,7 @@ class UserActivity < Activity
     activity ||= UserActivity.new(strava_id: response.id, user_id: user.id)
     activity.update_from_strava(response)
     return unless activity.changed?
+
     activity.map.update!
     activity.save!
     activity

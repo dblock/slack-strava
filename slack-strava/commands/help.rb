@@ -29,7 +29,7 @@ module SlackStrava
         unsubscribe              - turn off subscription auto-renew
         info                     - bot info
         ```
-EOS
+      EOS
       def self.call(client, data, _match)
         client.say(channel: data.channel, text: [
           HELP,

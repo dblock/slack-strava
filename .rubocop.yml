@@ -16,4 +16,13 @@ Style/BlockDelimiters:
   FunctionalMethods:
     - expect
 
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
 inherit_from: .rubocop_todo.yml

@@ -18,6 +18,7 @@ module Api
       def ping
         team = Team.asc(:_id).first
         return unless team
+
         team.ping!
       end
 
@@ -39,7 +40,8 @@ module Api
 
       def total_distance_in_miles_s
         distance = total_distance_in_miles
-        return unless distance && distance.positive?
+        return unless distance&.positive?
+
         format('%g miles', format('%.2f', distance))
       end
 

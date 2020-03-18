@@ -39,7 +39,9 @@ module StravaTokens
     )
 
     raise 'Missing access_token in OAuth response.' unless response.access_token
-    raise 'Missing refresh_token in OAuth response.' unless response.refresh_token
+    unless response.refresh_token
+      raise 'Missing refresh_token in OAuth response.'
+    end
 
     update_attributes!(
       token_type: response.token_type,
@@ -53,6 +55,7 @@ module StravaTokens
     @strava_client ||= begin
       refresh_access_token!
       raise 'Missing access_token' unless access_token
+
       Strava::Api::Client.new(access_token: access_token)
     end
   end

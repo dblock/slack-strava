@@ -6,10 +6,13 @@ module Api
       def sort_order(options = {})
         params[:sort] = options[:default_sort_order] unless params[:sort]
         return [] unless params[:sort]
+
         sort_order = params[:sort].to_s
         unless options[:default_sort_order] == sort_order
           supported_sort_orders = route_sort
-          error!("This API doesn't support sorting", 400) if supported_sort_orders.blank?
+          if supported_sort_orders.blank?
+            error!("This API doesn't support sorting", 400)
+          end
           unless supported_sort_orders.include?(sort_order)
             error!("Invalid sort order: #{sort_order}, must be#{supported_sort_orders.count == 1 ? '' : ' one of'} '#{supported_sort_orders.join('\', \'')}'", 400)
           end
@@ -23,7 +26,9 @@ module Api
             sort_order[:direction] = :asc
             sort_order[:column] = sort_entry
           end
-          error!("Invalid sort: #{sort_entry}", 400) if sort_order[:column].blank?
+          if sort_order[:column].blank?
+            error!("Invalid sort: #{sort_entry}", 400)
+          end
           sort_order
         end
         sort_order

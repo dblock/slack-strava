@@ -49,11 +49,11 @@ class Team
 
   def maps_s
     case maps
-    when 'off' then
+    when 'off'
       'not displayed'
-    when 'full' then
+    when 'full'
       'displayed in full'
-    when 'thumb' then
+    when 'thumb'
       'displayed as thumbnails'
     else
       raise ArgumentError
@@ -62,9 +62,9 @@ class Team
 
   def activity_fields_s
     case activity_fields
-    when ['All'] then
+    when ['All']
       'displayed as available'
-    when ['None'] then
+    when ['None']
       'not displayed'
     else
       activity_fields.and
@@ -73,6 +73,7 @@ class Team
 
   def asleep?(dt = 2.weeks)
     return false unless subscription_expired?
+
     time_limit = Time.now - dt
     created_at <= time_limit
   end
@@ -118,6 +119,7 @@ class Team
   # returns DM channel
   def inform_admin!(message)
     return unless activated_user_id
+
     channel = slack_client.im_open(user: activated_user_id)
     message_with_channel = message.merge(channel: channel.channel.id, as_user: true)
     logger.info "Sending DM '#{message_with_channel.to_json}' to #{activated_user_id}."
@@ -137,12 +139,14 @@ class Team
   def subscription_expired!
     return unless subscription_expired?
     return if subscription_expired_at
+
     inform_everyone!(text: subscribe_text)
     update_attributes!(subscription_expired_at: Time.now.utc)
   end
 
   def subscription_expired?
     return false if subscribed?
+
     time_limit = Time.now - 2.weeks
     created_at < time_limit
   end
@@ -155,7 +159,7 @@ class Team
     <<~EOS.freeze
       Your team has been subscribed. All proceeds go to NYRR. Thank you!
       Follow https://twitter.com/playplayio for news and updates.
-EOS
+    EOS
   end
 
   def clubs_to_slack
@@ -180,11 +184,13 @@ EOS
 
   def trial_ends_at
     raise 'Team is subscribed.' if subscribed?
+
     created_at + 2.weeks
   end
 
   def remaining_trial_days
     raise 'Team is subscribed.' if subscribed?
+
     [0, (trial_ends_at.to_date - Time.now.utc.to_date).to_i].max
   end
 
@@ -198,6 +204,7 @@ EOS
   def inform_trial!
     return if subscribed? || subscription_expired?
     return if trial_informed_at && (Time.now.utc < trial_informed_at + 7.days)
+
     inform_everyone!(text: trial_message)
     update_attributes!(trial_informed_at: Time.now.utc)
   end
@@ -265,7 +272,7 @@ EOS
   rescue Slack::Web::Api::Errors::SlackError => e
     logger.warn "Active team #{self} ping, #{e.message}."
     case e.message
-    when 'account_inactive', 'invalid_auth' then
+    when 'account_inactive', 'invalid_auth'
       deactivate!
     end
   end
@@ -274,6 +281,7 @@ EOS
 
   def subscribed!
     return unless subscribed? && subscribed_changed?
+
     inform_everyone!(text: subscribed_text)
   end
 
@@ -286,12 +294,13 @@ EOS
       Welcome to Slava!
       Invite #{bot_mention} to a channel to publish activities to it.
       Type \"*connect*\" to connect your Strava account."
-EOS
+    EOS
   end
 
   def activated!
     return unless active? && activated_user_id && bot_user_id
     return unless active_changed? || activated_user_id_changed?
+
     inform_activated!
   end
 

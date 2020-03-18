@@ -22,7 +22,9 @@ class ClubActivity < Activity
       message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)
       logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
       channel_message = club.team.slack_client.chat_postMessage(message_with_channel)
-      channel_message = { ts: channel_message['ts'], channel: club.channel_id } if channel_message
+      if channel_message
+        channel_message = { ts: channel_message['ts'], channel: club.channel_id }
+      end
       update_attributes!(bragged_at: Time.now.utc, channel_messages: [channel_message])
       [channel_message]
     end

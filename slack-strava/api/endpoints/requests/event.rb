@@ -29,18 +29,22 @@ module Api
 
         def user
           return unless team && event && event.user
+
           @user ||= team.users.where(user_id: event.user).first
         end
 
         def unfurl!
-          return unless event && event.links && user
+          return unless event&.links && user
 
           event.links.each do |link|
             next unless link.domain == 'strava.com'
-            m = link.url.match(/strava\.com\/activities\/(?<strava_id>\d+)\b/)
+
+            m = link.url.match(%r{strava\.com/activities/(?<strava_id>\d+)\b})
             next unless m && m[:strava_id]
+
             activity = user.sync_strava_activity!(m[:strava_id])
             next unless activity
+
             logger.info "UNFURL: #{link.url}, #{activity}"
             team.activated_user_slack_client.chat_unfurl(
               channel: event.channel,

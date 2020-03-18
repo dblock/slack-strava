@@ -7,8 +7,12 @@ class MapTypes
 
   def self.parse_s(s)
     return unless s
+
     value = parse(s)
-    raise SlackStrava::Error, "Invalid value: #{s}, possible values are #{MapTypes.values.and}." unless value
+    unless value
+      raise SlackStrava::Error, "Invalid value: #{s}, possible values are #{MapTypes.values.and}."
+    end
+
     value
   end
 end

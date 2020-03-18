@@ -44,6 +44,7 @@ class User
     query = user_name =~ /^<@(.*)>$/ ? { user_id: ::Regexp.last_match[1] } : { user_name: ::Regexp.new("^#{user_name}$", 'i') }
     user = User.where(query.merge(team: team)).first
     raise SlackStrava::Error, "I don't know who #{user_name} is!" unless user
+
     user
   end
 
@@ -57,7 +58,9 @@ class User
   def self.find_create_or_update_by_slack_id!(client, slack_id)
     instance = User.where(team: client.owner, user_id: slack_id).first
     instance_info = Hashie::Mash.new(client.web_client.users_info(user: slack_id)).user
-    instance.update_attributes!(user_name: instance_info.name, is_bot: instance_info.is_bot) if instance && (instance.user_name != instance_info.name || instance.is_bot != instance_info.is_bot)
+    if instance && (instance.user_name != instance_info.name || instance.is_bot != instance_info.is_bot)
+      instance.update_attributes!(user_name: instance_info.name, is_bot: instance_info.is_bot)
+    end
     instance ||= User.create!(team: client.owner, user_id: slack_id, user_name: instance_info.name, is_bot: instance_info.is_bot)
     instance
   end
@@ -65,6 +68,7 @@ class User
   def inform!(message)
     team.slack_channels.map { |channel|
       next if user_id && !user_in_channel?(channel['id'])
+
       message_with_channel = message.merge(channel: channel['id'], as_user: true)
       logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
       rc = team.slack_client.chat_postMessage(message_with_channel)
@@ -97,8 +101,11 @@ class User
     response = get_access_token!(code)
     logger.debug "Connecting team=#{team_id}, user=#{user_name}, user_id=#{id}, #{response}"
     raise 'Missing access_token in OAuth response.' unless response.access_token
-    raise 'Missing refresh_token in OAuth response.' unless response.refresh_token
+    unless response.refresh_token
+      raise 'Missing refresh_token in OAuth response.'
+    end
     raise 'Missing expires_at in OAuth response.' unless response.expires_at
+
     create_athlete(Athlete.attrs_from_strava(response.athlete))
     update_attributes!(
       token_type: response.token_type,
@@ -162,9 +169,11 @@ class User
   def brag_new_activities!
     activity = activities.unbragged.asc(:start_date).first
     return unless activity
+
     update_attributes!(activities_at: activity.start_date)
     results = activity.brag!
     return unless results
+
     results.map do |result|
       result.merge(activity: activity)
     end
@@ -174,12 +183,16 @@ class User
   def rebrag_last_activity!
     activity = latest_bragged_activity
     return unless activity
+
     detailed_activity = strava_client.activity(activity.strava_id)
     return if detailed_activity['private'] && !private_activities?
+
     activity = UserActivity.create_from_strava!(self, detailed_activity)
     return unless activity
+
     results = activity.rebrag!
     return unless results
+
     results.map do |result|
       result.merge(activity: activity)
     end
@@ -195,7 +208,10 @@ class User
   def sync_strava_activity!(strava_id)
     detailed_activity = strava_client.activity(strava_id)
     return if detailed_activity['private'] && !private_activities?
-    raise 'Activity athlete ID do not match.' if detailed_activity.athlete.id.to_s != athlete.athlete_id
+    if detailed_activity.athlete.id.to_s != athlete.athlete_id
+      raise 'Activity athlete ID do not match.'
+    end
+
     UserActivity.create_from_strava!(self, detailed_activity) || activities.where(strava_id: detailed_activity.id).first
   rescue Strava::Errors::Fault => e
     handle_strava_error e
@@ -208,6 +224,7 @@ class User
       strava_client.athlete_clubs do |row|
         strava_id = row.id.to_s
         next if clubs.detect { |club| club.strava_id == strava_id }
+
         clubs << Club.new(Club.attrs_from_strava(row).merge(team: team))
       end
     end
@@ -241,8 +258,10 @@ class User
 
   def sync_strava_activities!(options = {})
     return unless sync_activities?
+
     strava_client.athlete_activities(options) do |activity|
       next if activity.private && !private_activities?
+
       UserActivity.create_from_strava!(self, activity)
     end
   rescue Strava::Errors::Fault => e
@@ -261,12 +280,14 @@ class User
 
   def connected_to_strava_changed
     return unless connected_to_strava_at? && connected_to_strava_at_changed?
+
     activities.destroy_all
     set activities_at: nil
   end
 
   def sync_activities_changed
     return unless sync_activities? && sync_activities_changed?
+
     activities.destroy_all
     set activities_at: Time.now.utc
   end

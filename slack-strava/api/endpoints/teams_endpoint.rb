@@ -36,7 +36,9 @@ module Api
         post do
           client = Slack::Web::Client.new
 
-          raise 'Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET.' unless ENV.key?('SLACK_CLIENT_ID') && ENV.key?('SLACK_CLIENT_SECRET')
+          unless ENV.key?('SLACK_CLIENT_ID') && ENV.key?('SLACK_CLIENT_SECRET')
+            raise 'Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET.'
+          end
 
           rc = client.oauth_access(
             client_id: ENV['SLACK_CLIENT_ID'],
