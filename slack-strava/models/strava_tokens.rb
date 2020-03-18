@@ -38,6 +38,9 @@ module StravaTokens
       grant_type: 'refresh_token'
     )
 
+    raise 'Missing access_token in OAuth response.' unless response.access_token
+    raise 'Missing refresh_token in OAuth response.' unless response.refresh_token
+
     update_attributes!(
       token_type: response.token_type,
       access_token: response.access_token,
