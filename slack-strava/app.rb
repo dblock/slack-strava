@@ -56,7 +56,7 @@ module SlackStrava
     def prune_pngs!
       activities = UserActivity.where(
         'map.png_retrieved_at' => {
-          '$lt' => Time.now - 1.month
+          '$lt' => Time.now - 2.weeks
         },
         'map.png' => { '$ne' => nil }
       )
