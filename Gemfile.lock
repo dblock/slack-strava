@@ -256,7 +256,7 @@ GEM
       gli
       hashie
       websocket-driver
-    strava-ruby-client (0.3.1)
+    strava-ruby-client (0.3.2)
       activesupport
       faraday (>= 0.9)
       faraday_middleware

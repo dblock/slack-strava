@@ -23,6 +23,10 @@ class Athlete
     [firstname, lastname].compact.join(' ') if firstname || lastname
   end
 
+  def to_s
+    "athlete_id=#{athlete_id}, username=#{username}"
+  end
+
   def strava_url
     "https://www.strava.com/athletes/#{username || athlete_id}"
   end

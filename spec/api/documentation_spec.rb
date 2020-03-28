@@ -19,7 +19,8 @@ describe Api do
         '/api/maps/{id}',
         '/api/slack/event',
         '/api/slack/action',
-        '/api/slack/command'
+        '/api/slack/command',
+        '/api/strava/event'
       ]
     end
   end

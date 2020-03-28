@@ -2,6 +2,7 @@ module SlackStrava
   class App < SlackRubyBotServer::App
     def after_start!
       ::Async::Reactor.run do
+        ensure_strava_webhook!
         logger.info 'Starting crons.'
         once_and_every 60 * 60 * 24 do
           check_subscribed_teams!
@@ -12,12 +13,7 @@ module SlackStrava
         once_and_every 60 * 60 do
           expire_subscriptions!
         end
-        once_and_every 30 * 60 do
-          brag!
-        end
-        once_and_every 3 * 60 * 60 do
-          rebrag!
-        end
+        brag_and_rebrag!
       end
     end
 
@@ -37,6 +33,13 @@ module SlackStrava
           task.sleep tt
         end
       end
+    end
+
+    def ensure_strava_webhook!
+      return if SlackRubyBotServer::Service.localhost?
+
+      logger.info 'Ensuring Strava webhook.'
+      StravaWebhook.instance.ensure!
     end
 
     def check_trials!
@@ -78,31 +81,30 @@ module SlackStrava
       end
     end
 
-    def brag!
-      log_info_without_repeat "Checking activities for #{Team.active.count} team(s)."
-      Team.active.each do |team|
-        next if team.subscription_expired?
+    def brag_and_rebrag!
+      ::Async::Reactor.run do |task|
+        loop do
+          log_info_without_repeat "Checking activities for #{Team.active.count} team(s)."
+          Team.active.each do |team|
+            log_info_without_repeat "Checking activities for #{team}, #{team.users.connected_to_strava.count} user(s), #{team.clubs.connected_to_strava.count} club(s)."
+            next if team.subscription_expired?
 
-        begin
-          team.users.connected_to_strava.each(&:sync_and_brag!)
-          team.clubs.connected_to_strava.each(&:sync_and_brag!)
-        rescue StandardError => e
-          backtrace = e.backtrace.join("\n")
-          logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
-        end
-      end
-    end
-
-    def rebrag!
-      log_info_without_repeat "Editing activities for #{Team.active.count} team(s)."
-      Team.active.each do |team|
-        next if team.subscription_expired?
-
-        begin
-          team.users.connected_to_strava.each(&:rebrag!)
-        rescue StandardError => e
-          backtrace = e.backtrace.join("\n")
-          logger.warn "Error in rebrag cron for team #{team}, #{e.message}, #{backtrace}."
+            begin
+              team.users.connected_to_strava.each do |user|
+                user.sync_and_brag!
+                task.sleep 30
+                user.rebrag!
+                task.sleep 30
+              end
+              team.clubs.connected_to_strava.each do |club|
+                club.sync_and_brag!
+                task.sleep 30
+              end
+            rescue StandardError => e
+              backtrace = e.backtrace.join("\n")
+              logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
+            end
+          end
         end
       end
     end

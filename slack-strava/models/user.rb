@@ -13,6 +13,7 @@ class User
   field :sync_activities, type: Boolean, default: true
 
   embeds_one :athlete
+  index('athlete.athlete_id' => 1)
 
   belongs_to :team, index: true
   validates_presence_of :team
