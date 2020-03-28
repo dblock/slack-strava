@@ -89,8 +89,10 @@ module SlackStrava
         loop do
           log_info_without_repeat "Checking user activities for #{Team.active.count} team(s)."
           Team.active.each do |team|
-            log_info_without_repeat "Checking user activities for #{team}, #{team.users.connected_to_strava.count} user(s)."
             next if team.subscription_expired?
+            next unless team.users.connected_to_strava.any?
+
+            log_info_without_repeat "Checking user activities for #{team}, #{team.users.connected_to_strava.count} user(s)."
 
             begin
               team.users.connected_to_strava.each do |user|
@@ -114,8 +116,10 @@ module SlackStrava
         loop do
           log_info_without_repeat "Checking club activities for #{Team.active.count} team(s)."
           Team.active.each do |team|
-            log_info_without_repeat "Checking club activities for #{team}, #{team.clubs.connected_to_strava.count} club(s)."
             next if team.subscription_expired?
+            next unless team.clubs.connected_to_strava.any?
+
+            log_info_without_repeat "Checking club activities for #{team}, #{team.clubs.connected_to_strava.count} club(s)."
 
             begin
               team.clubs.connected_to_strava.each do |club|
