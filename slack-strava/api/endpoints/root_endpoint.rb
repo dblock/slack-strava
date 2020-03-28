@@ -18,6 +18,7 @@ module Api
       mount Api::Endpoints::CreditCardsEndpoint
       mount Api::Endpoints::MapsEndpoint
       mount Api::Endpoints::SlackEndpoint
+      mount Api::Endpoints::StravaEndpoint
 
       add_swagger_documentation
     end
