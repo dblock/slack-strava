@@ -1,8 +1,5 @@
 module SlackStrava
   class App < SlackRubyBotServer::App
-    USER_SLEEP_INTERVAL = 15
-    CLUB_SLEEP_INTERVAL = 30
-
     def after_start!
       ::Async::Reactor.run do
         ensure_strava_webhook!
@@ -16,8 +13,12 @@ module SlackStrava
         once_and_every 60 * 60 do
           expire_subscriptions!
         end
-        users_brag_and_rebrag!
-        clubs_brag_and_rebrag!
+        continuously 15 do |task, tt|
+          users_brag_and_rebrag!(task, tt)
+        end
+        continuously 60 do |task, tt|
+          clubs_brag_and_rebrag!(task, tt)
+        end
       end
     end
 
@@ -30,10 +31,22 @@ module SlackStrava
       logger.info message
     end
 
-    def once_and_every(tt)
+    def once_and_every(tt, &_block)
       ::Async::Reactor.run do |task|
         loop do
           yield
+          task.sleep tt
+        end
+      end
+    end
+
+    def continuously(tt, &_block)
+      ::Async::Reactor.run do |task|
+        loop do
+          yield task, tt
+        rescue StandardError => e
+          logger.error e
+        ensure
           task.sleep tt
         end
       end
@@ -85,54 +98,44 @@ module SlackStrava
       end
     end
 
-    def users_brag_and_rebrag!
-      ::Async::Reactor.run do |task|
-        loop do
-          log_info_without_repeat "Checking user activities for #{Team.active.count} team(s)."
-          Team.no_timeout.active.each do |team|
-            next if team.subscription_expired?
-            next unless team.users.connected_to_strava.any?
+    def users_brag_and_rebrag!(task, tt)
+      log_info_without_repeat "Checking user activities for #{Team.active.count} team(s)."
+      Team.no_timeout.active.each do |team|
+        next if team.subscription_expired?
+        next unless team.users.connected_to_strava.any?
 
-            log_info_without_repeat "Checking user activities for #{team}, #{team.users.connected_to_strava.count} user(s)."
+        log_info_without_repeat "Checking user activities for #{team}, #{team.users.connected_to_strava.count} user(s)."
 
-            begin
-              team.users.connected_to_strava.each do |user|
-                user.sync_and_brag!
-                task.sleep USER_SLEEP_INTERVAL
-                user.rebrag!
-                task.sleep USER_SLEEP_INTERVAL
-              end
-            rescue StandardError => e
-              backtrace = e.backtrace.join("\n")
-              logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
-            end
+        begin
+          team.users.connected_to_strava.each do |user|
+            user.sync_and_brag!
+            task.sleep tt
+            user.rebrag!
+            task.sleep tt
           end
-          task.sleep USER_SLEEP_INTERVAL
+        rescue StandardError => e
+          backtrace = e.backtrace.join("\n")
+          logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
         end
       end
     end
 
-    def clubs_brag_and_rebrag!
-      ::Async::Reactor.run do |task|
-        loop do
-          log_info_without_repeat "Checking club activities for #{Team.active.count} team(s)."
-          Team.no_timeout.active.each do |team|
-            next if team.subscription_expired?
-            next unless team.clubs.connected_to_strava.any?
+    def clubs_brag_and_rebrag!(task, tt)
+      log_info_without_repeat "Checking club activities for #{Team.active.count} team(s)."
+      Team.no_timeout.active.each do |team|
+        next if team.subscription_expired?
+        next unless team.clubs.connected_to_strava.any?
 
-            log_info_without_repeat "Checking club activities for #{team}, #{team.clubs.connected_to_strava.count} club(s)."
+        log_info_without_repeat "Checking club activities for #{team}, #{team.clubs.connected_to_strava.count} club(s)."
 
-            begin
-              team.clubs.connected_to_strava.each do |club|
-                club.sync_and_brag!
-                task.sleep CLUB_SLEEP_INTERVAL
-              end
-            rescue StandardError => e
-              backtrace = e.backtrace.join("\n")
-              logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
-            end
+        begin
+          team.clubs.connected_to_strava.each do |club|
+            club.sync_and_brag!
+            task.sleep tt
           end
-          task.sleep CLUB_SLEEP_INTERVAL
+        rescue StandardError => e
+          backtrace = e.backtrace.join("\n")
+          logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
         end
       end
     end
