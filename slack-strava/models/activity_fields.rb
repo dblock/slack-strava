@@ -1,6 +1,7 @@
 class ActivityFields
   include Ruby::Enum
 
+  define :DEFAULT, 'Default'
   define :ALL, 'All'
   define :NONE, 'None'
   define :TYPE, 'Type'
@@ -11,6 +12,13 @@ class ActivityFields
   define :PACE, 'Pace'
   define :SPEED, 'Speed'
   define :ELEVATION, 'Elevation'
+  define :MAX_SPEED, 'Max Speed'
+  define :HEART_RATE, 'Heart Rate'
+  define :MAX_HEART_RATE, 'Max Heart Rate'
+  define :PR_COUNT, 'PR Count'
+  define :CALORIES, 'Calories'
+
+  DEFAULT_VALUES = ['Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation'].freeze
 
   def self.parse_s(values)
     return unless values
@@ -26,16 +34,22 @@ class ActivityFields
         errors << v
       end
     end
+
     fields.uniq!
     errors.uniq!
+
     if errors.any?
       raise SlackStrava::Error, "Invalid field#{errors.count == 1 ? '' : 's'}: #{errors.and}, possible values are #{ActivityFields.values.and}."
     end
-    if fields.include?('None') && fields.count != 1
-      raise SlackStrava::Error, 'None cannot be used with other fields.'
-    end
-    if fields.include?('All') && fields.count != 1
-      raise SlackStrava::Error, 'All cannot be used with other fields.'
+
+    if fields.count > 1
+      if fields.include?('None')
+        raise SlackStrava::Error, 'None cannot be used with other fields.'
+      elsif fields.include?('Default')
+        raise SlackStrava::Error, 'Default cannot be used with other fields.'
+      elsif fields.include?('All')
+        raise SlackStrava::Error, 'All cannot be used with other fields.'
+      end
     end
 
     fields

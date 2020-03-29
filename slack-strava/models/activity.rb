@@ -9,6 +9,11 @@ class Activity
   field :moving_time, type: Float
   field :elapsed_time, type: Float
   field :average_speed, type: Float
+  field :max_speed, type: Float
+  field :average_heartrate, type: Float
+  field :max_heartrate, type: Float
+  field :pr_count, type: Integer
+  field :calories, type: Float
   field :bragged_at, type: DateTime
   field :total_elevation_gain, type: Float
   field :private, type: Boolean
@@ -102,10 +107,22 @@ class Activity
     format('%.1fkm/h', average_speed * 3.6)
   end
 
+  def max_kilometer_per_hour_s
+    return unless max_speed&.positive?
+
+    format('%.1fkm/h', max_speed * 3.6)
+  end
+
   def miles_per_hour_s
     return unless average_speed&.positive?
 
     format('%.1fmph', average_speed * 2.23694)
+  end
+
+  def max_miles_per_hour_s
+    return unless max_speed&.positive?
+
+    format('%.1fmph', max_speed * 2.23694)
   end
 
   def total_elevation_gain_in_feet
@@ -157,6 +174,37 @@ class Activity
     end
   end
 
+  def max_speed_s
+    case team.units
+    when 'km' then max_kilometer_per_hour_s
+    when 'mi' then max_miles_per_hour_s
+    end
+  end
+
+  def max_heartrate_s
+    return unless max_heartrate&.positive?
+
+    format('%.1fbpm', max_heartrate)
+  end
+
+  def average_heartrate_s
+    return unless average_heartrate&.positive?
+
+    format('%.1fbpm', average_heartrate)
+  end
+
+  def pr_count_s
+    return unless pr_count&.positive?
+
+    format('%d', pr_count)
+  end
+
+  def calories_s
+    return unless calories&.positive?
+
+    format('%.1f', calories)
+  end
+
   def to_s
     "name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, speed=#{speed_s}"
   end
@@ -181,6 +229,10 @@ class Activity
       moving_time: response.moving_time,
       elapsed_time: response.elapsed_time,
       average_speed: response.average_speed,
+      max_speed: response.max_speed,
+      average_heartrate: response.average_heartrate,
+      max_heartrate: response.max_heartrate,
+      pr_count: response.pr_count,
       type: response.type,
       total_elevation_gain: response.total_elevation_gain,
       private: response.private,
@@ -267,9 +319,15 @@ class Activity
 
   def slack_fields
     activity_fields = team.activity_fields
-    return if activity_fields == ['None']
 
-    activity_fields = ActivityFields.values if activity_fields == ['All']
+    case activity_fields
+    when ['All']
+      activity_fields = ActivityFields.values
+    when ['Default']
+      activity_fields = ActivityFields::DEFAULT_VALUES
+    when ['None']
+      return
+    end
 
     fields = []
     activity_fields.each do |activity_field|
@@ -304,13 +362,33 @@ class Activity
         if average_speed
           fields << { title: 'Speed', value: speed_s, short: true }
         end
+      when 'Max Speed'
+        if max_speed
+          fields << { title: 'Max Speed', value: max_speed_s, short: true }
+        end
       when 'Elevation'
         if total_elevation_gain&.positive?
           fields << { title: 'Elevation', value: total_elevation_gain_s, short: true }
         end
+      when 'Heart Rate'
+        if average_heartrate&.positive?
+          fields << { title: 'Heart Rate', value: average_heartrate_s, short: true }
+        end
+      when 'Max Heart Rate'
+        if max_heartrate&.positive?
+          fields << { title: 'Max Heart Rate', value: max_heartrate_s, short: true }
+        end
+      when 'PR Count'
+        if pr_count&.positive?
+          fields << { title: 'PR Count', value: pr_count_s, short: true }
+        end
+      when 'Calories'
+        if calories&.positive?
+          fields << { title: 'Calories', value: calories_s, short: true }
+        end
       end
     end
-    fields
+    fields.any? ? fields : nil
   end
 
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'

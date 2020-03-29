@@ -22,7 +22,7 @@ describe SlackStrava::Commands::Set do
       it 'shows current settings' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles*.",
-          'Activity fields are *displayed as available*.',
+          'Activity fields are *set to default*.',
           "Maps for team #{team.name} are *displayed in full*.",
           'Your activities will sync.',
           'Your private activities will not be posted.'
@@ -167,7 +167,7 @@ describe SlackStrava::Commands::Set do
         context 'fields' do
           it 'shows current value of fields' do
             expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
-              "Activity fields for team #{team.name} are *displayed as available*."
+              "Activity fields for team #{team.name} are *set to default*."
             )
           end
           it 'shows current value of fields set to Time and Elapsed Time' do
@@ -193,16 +193,24 @@ describe SlackStrava::Commands::Set do
           it 'sets fields to all' do
             team.update_attributes!(activity_fields: ['None'])
             expect(message: "#{SlackRubyBot.config.user} set fields all").to respond_with_slack_message(
-              "Activity fields for team #{team.name} are now *displayed as available*."
+              "Activity fields for team #{team.name} are now *all displayed if available*."
             )
             expect(client.owner.activity_fields).to eq(['All'])
             expect(team.reload.activity_fields).to eq(['All'])
           end
+          it 'sets fields to default' do
+            team.update_attributes!(activity_fields: ['All'])
+            expect(message: "#{SlackRubyBot.config.user} set fields default").to respond_with_slack_message(
+              "Activity fields for team #{team.name} are now *set to default*."
+            )
+            expect(client.owner.activity_fields).to eq(['Default'])
+            expect(team.reload.activity_fields).to eq(['Default'])
+          end
           it 'sets to invalid fields' do
             expect(message: "#{SlackRubyBot.config.user} set fields Time, Foo, Bar").to respond_with_slack_message(
-              'Invalid fields: Foo and Bar, possible values are All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed and Elevation.'
+              'Invalid fields: Foo and Bar, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count and Calories.'
             )
-            expect(team.reload.activity_fields).to eq ['All']
+            expect(team.reload.activity_fields).to eq ['Default']
           end
         end
         context 'not as a team admin' do
@@ -238,7 +246,7 @@ describe SlackStrava::Commands::Set do
           context 'fields' do
             it 'shows current value of fields' do
               expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
-                "Activity fields for team #{team.name} are *displayed as available*."
+                "Activity fields for team #{team.name} are *set to default*."
               )
             end
             it 'cannot set fields' do

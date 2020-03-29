@@ -4,7 +4,7 @@ class Team
   field :units, type: String, default: 'mi'
   validates_inclusion_of :units, in: %w[mi km]
 
-  field :activity_fields, type: Array, default: ['All']
+  field :activity_fields, type: Array, default: ['Default']
   validates :activity_fields, array: { presence: true, inclusion: { in: ActivityFields.values } }
 
   field :maps, type: String, default: 'full'
@@ -63,7 +63,9 @@ class Team
   def activity_fields_s
     case activity_fields
     when ['All']
-      'displayed as available'
+      'all displayed if available'
+    when ['Default']
+      'set to default'
     when ['None']
       'not displayed'
     else

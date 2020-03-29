@@ -10,6 +10,11 @@ Fabricator(:user_activity) do
   elapsed_time 7686
   average_speed 2.971
   total_elevation_gain 144.9
+  max_speed 9.3
+  average_heartrate 140.3
+  max_heartrate 178
+  pr_count 3
+  calories 870.2
   map { Fabricate.build(:map) }
   after_create do
     map&.save!

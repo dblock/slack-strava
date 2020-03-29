@@ -1,5 +1,9 @@
 ### Changelog
 
+* 2020/03/29: Added Default fields setting - [@dblock](https://github.com/dblock).
+* 2020/03/29: Prevent non-admins from changing global team settings - [@dblock](https://github.com/dblock).
+* 2020/03/29: Added Max Speed, Elevation, Heart Rate, Max Heart Rate, PR Count and Calories - [@dblock](https://github.com/dblock).
+* 2020/03/28: Sync Strava events in near-real-time - [@dblock](https://github.com/dblock).
 * 2019/03/22: Added unsubscribe - [@dblock](https://github.com/dblock).
 * 2019/03/11: Don't sync old activities when reconnecting or toggling sync - [@dblock](https://github.com/dblock).
 * 2019/01/18: Unfurl Strava URLs - [@dblock](https://github.com/dblock).
