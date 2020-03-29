@@ -37,7 +37,7 @@ module Api
                 Api::Middleware.logger.info "Updating team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
                 user.rebrag!
               else
-                Api::Middleware.logger.info "Skipping team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
+                Api::Middleware.logger.info "Skipping team #{user.team}, user #{user}, #{user.athlete}, aspect_type=#{params['aspect_type']}, #{params['object_type']}=#{params['object_id']}."
               end
             end
             { ok: true }
