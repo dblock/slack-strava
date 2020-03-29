@@ -1,6 +1,7 @@
 module SlackStrava
   class App < SlackRubyBotServer::App
-    SLEEP_INTERVAL = 15
+    USER_SLEEP_INTERVAL = 15
+    CLUB_SLEEP_INTERVAL = 30
 
     def after_start!
       ::Async::Reactor.run do
@@ -97,16 +98,16 @@ module SlackStrava
             begin
               team.users.connected_to_strava.each do |user|
                 user.sync_and_brag!
-                task.sleep SLEEP_INTERVAL
+                task.sleep USER_SLEEP_INTERVAL
                 user.rebrag!
-                task.sleep SLEEP_INTERVAL
+                task.sleep USER_SLEEP_INTERVAL
               end
             rescue StandardError => e
               backtrace = e.backtrace.join("\n")
               logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
             end
           end
-          task.sleep SLEEP_INTERVAL
+          task.sleep USER_SLEEP_INTERVAL
         end
       end
     end
@@ -124,14 +125,14 @@ module SlackStrava
             begin
               team.clubs.connected_to_strava.each do |club|
                 club.sync_and_brag!
-                task.sleep SLEEP_INTERVAL
+                task.sleep CLUB_SLEEP_INTERVAL
               end
             rescue StandardError => e
               backtrace = e.backtrace.join("\n")
               logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
             end
           end
-          task.sleep SLEEP_INTERVAL
+          task.sleep CLUB_SLEEP_INTERVAL
         end
       end
     end
