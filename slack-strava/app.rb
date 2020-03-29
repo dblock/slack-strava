@@ -89,7 +89,7 @@ module SlackStrava
       ::Async::Reactor.run do |task|
         loop do
           log_info_without_repeat "Checking user activities for #{Team.active.count} team(s)."
-          Team.active.each do |team|
+          Team.no_timeout.active.each do |team|
             next if team.subscription_expired?
             next unless team.users.connected_to_strava.any?
 
@@ -116,7 +116,7 @@ module SlackStrava
       ::Async::Reactor.run do |task|
         loop do
           log_info_without_repeat "Checking club activities for #{Team.active.count} team(s)."
-          Team.active.each do |team|
+          Team.no_timeout.active.each do |team|
             next if team.subscription_expired?
             next unless team.clubs.connected_to_strava.any?
 
