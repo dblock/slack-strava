@@ -2,7 +2,6 @@ source 'http://rubygems.org'
 
 ruby '2.6.5'
 
-gem 'giphy'
 gem 'grape'
 gem 'hashie'
 gem 'httparty'
