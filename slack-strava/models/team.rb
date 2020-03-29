@@ -102,6 +102,19 @@ class Team
     false
   end
 
+  def activated_user
+    return unless activated_user_id
+
+    users.where(user_id: activated_user_id).first
+  end
+
+  def admins
+    User.and(
+      users.selector,
+      User.any_of({ is_admin: true }, { is_owner: true }, { user_id: activated_user_id }).selector
+    )
+  end
+
   # returns channels that were sent to
   def inform!(message)
     slack_channels.map do |channel|

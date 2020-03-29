@@ -4,7 +4,7 @@ describe SlackStrava::Commands::Set do
   let!(:team) { Fabricate(:team, created_at: 2.weeks.ago) }
   let(:app) { SlackStrava::Server.new(team: team) }
   let(:client) { app.send(:client) }
-  let(:user) { Fabricate(:user, team: team) }
+  let(:user) { Fabricate(:user, team: team, is_admin: true) }
   before do
     allow(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
   end
@@ -102,106 +102,153 @@ describe SlackStrava::Commands::Set do
           expect(user.reload.private_activities).to be true
         end
       end
-      context 'units' do
-        it 'shows current value of units' do
-          expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
-            "Activities for team #{team.name} display *miles*."
-          )
+      context 'as team admin' do
+        context 'units' do
+          it 'shows current value of units' do
+            expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
+              "Activities for team #{team.name} display *miles*."
+            )
+          end
+          it 'shows current value of units set to km' do
+            team.update_attributes!(units: 'km')
+            expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
+              "Activities for team #{team.name} display *kilometers*."
+            )
+          end
+          it 'sets units to mi' do
+            team.update_attributes!(units: 'km')
+            expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
+              "Activities for team #{team.name} now display *miles*."
+            )
+            expect(client.owner.units).to eq 'mi'
+            expect(team.reload.units).to eq 'mi'
+          end
+          it 'changes units' do
+            team.update_attributes!(units: 'mi')
+            expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(
+              "Activities for team #{team.name} now display *kilometers*."
+            )
+            expect(client.owner.units).to eq 'km'
+            expect(team.reload.units).to eq 'km'
+          end
         end
-        it 'shows current value of units set to km' do
-          team.update_attributes!(units: 'km')
-          expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
-            "Activities for team #{team.name} display *kilometers*."
-          )
+        context 'maps' do
+          it 'shows current value of maps' do
+            expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
+              "Maps for team #{team.name} are *displayed in full*."
+            )
+          end
+          it 'shows current value of maps set to thumb' do
+            team.update_attributes!(maps: 'thumb')
+            expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
+              "Maps for team #{team.name} are *displayed as thumbnails*."
+            )
+          end
+          it 'sets maps to thumb' do
+            team.update_attributes!(maps: 'off')
+            expect(message: "#{SlackRubyBot.config.user} set maps thumb").to respond_with_slack_message(
+              "Maps for team #{team.name} are now *displayed as thumbnails*."
+            )
+            expect(team.reload.maps).to eq 'thumb'
+          end
+          it 'sets maps to off' do
+            expect(message: "#{SlackRubyBot.config.user} set maps off").to respond_with_slack_message(
+              "Maps for team #{team.name} are now *not displayed*."
+            )
+            expect(team.reload.maps).to eq 'off'
+          end
+          it 'displays an error for an invalid maps value' do
+            expect(message: "#{SlackRubyBot.config.user} set maps foobar").to respond_with_slack_message(
+              'Invalid value: foobar, possible values are full, off and thumb.'
+            )
+            expect(team.reload.maps).to eq 'full'
+          end
         end
-        it 'sets units to mi' do
-          team.update_attributes!(units: 'km')
-          expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
-            "Activities for team #{team.name} now display *miles*."
-          )
-          expect(client.owner.units).to eq 'mi'
-          expect(team.reload.units).to eq 'mi'
+        context 'fields' do
+          it 'shows current value of fields' do
+            expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
+              "Activity fields for team #{team.name} are *displayed as available*."
+            )
+          end
+          it 'shows current value of fields set to Time and Elapsed Time' do
+            team.update_attributes!(activity_fields: ['Time', 'Elapsed Time'])
+            expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
+              "Activity fields for team #{team.name} are *Time and Elapsed Time*."
+            )
+          end
+          it 'changes fields' do
+            expect(message: "#{SlackRubyBot.config.user} set fields Time, Elapsed Time").to respond_with_slack_message(
+              "Activity fields for team #{team.name} are now *Time and Elapsed Time*."
+            )
+            expect(client.owner.activity_fields).to eq(['Time', 'Elapsed Time'])
+            expect(team.reload.activity_fields).to eq(['Time', 'Elapsed Time'])
+          end
+          it 'sets fields to none' do
+            expect(message: "#{SlackRubyBot.config.user} set fields none").to respond_with_slack_message(
+              "Activity fields for team #{team.name} are now *not displayed*."
+            )
+            expect(client.owner.activity_fields).to eq(['None'])
+            expect(team.reload.activity_fields).to eq(['None'])
+          end
+          it 'sets fields to all' do
+            team.update_attributes!(activity_fields: ['None'])
+            expect(message: "#{SlackRubyBot.config.user} set fields all").to respond_with_slack_message(
+              "Activity fields for team #{team.name} are now *displayed as available*."
+            )
+            expect(client.owner.activity_fields).to eq(['All'])
+            expect(team.reload.activity_fields).to eq(['All'])
+          end
+          it 'sets to invalid fields' do
+            expect(message: "#{SlackRubyBot.config.user} set fields Time, Foo, Bar").to respond_with_slack_message(
+              'Invalid fields: Foo and Bar, possible values are All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed and Elevation.'
+            )
+            expect(team.reload.activity_fields).to eq ['All']
+          end
         end
-        it 'changes units' do
-          team.update_attributes!(units: 'mi')
-          expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(
-            "Activities for team #{team.name} now display *kilometers*."
-          )
-          expect(client.owner.units).to eq 'km'
-          expect(team.reload.units).to eq 'km'
-        end
-      end
-      context 'maps' do
-        it 'shows current value of maps' do
-          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
-            "Maps for team #{team.name} are *displayed in full*."
-          )
-        end
-        it 'shows current value of maps set to thumb' do
-          team.update_attributes!(maps: 'thumb')
-          expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
-            "Maps for team #{team.name} are *displayed as thumbnails*."
-          )
-        end
-        it 'sets maps to thumb' do
-          team.update_attributes!(maps: 'off')
-          expect(message: "#{SlackRubyBot.config.user} set maps thumb").to respond_with_slack_message(
-            "Maps for team #{team.name} are now *displayed as thumbnails*."
-          )
-          expect(team.reload.maps).to eq 'thumb'
-        end
-        it 'sets maps to off' do
-          expect(message: "#{SlackRubyBot.config.user} set maps off").to respond_with_slack_message(
-            "Maps for team #{team.name} are now *not displayed*."
-          )
-          expect(team.reload.maps).to eq 'off'
-        end
-        it 'displays an error for an invalid maps value' do
-          expect(message: "#{SlackRubyBot.config.user} set maps foobar").to respond_with_slack_message(
-            'Invalid value: foobar, possible values are full, off and thumb.'
-          )
-          expect(team.reload.maps).to eq 'full'
-        end
-      end
-      context 'fields' do
-        it 'shows current value of fields' do
-          expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
-            "Activity fields for team #{team.name} are *displayed as available*."
-          )
-        end
-        it 'shows current value of fields set to Time and Elapsed Time' do
-          team.update_attributes!(activity_fields: ['Time', 'Elapsed Time'])
-          expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
-            "Activity fields for team #{team.name} are *Time and Elapsed Time*."
-          )
-        end
-        it 'changes fields' do
-          expect(message: "#{SlackRubyBot.config.user} set fields Time, Elapsed Time").to respond_with_slack_message(
-            "Activity fields for team #{team.name} are now *Time and Elapsed Time*."
-          )
-          expect(client.owner.activity_fields).to eq(['Time', 'Elapsed Time'])
-          expect(team.reload.activity_fields).to eq(['Time', 'Elapsed Time'])
-        end
-        it 'sets fields to none' do
-          expect(message: "#{SlackRubyBot.config.user} set fields none").to respond_with_slack_message(
-            "Activity fields for team #{team.name} are now *not displayed*."
-          )
-          expect(client.owner.activity_fields).to eq(['None'])
-          expect(team.reload.activity_fields).to eq(['None'])
-        end
-        it 'sets fields to all' do
-          team.update_attributes!(activity_fields: ['None'])
-          expect(message: "#{SlackRubyBot.config.user} set fields all").to respond_with_slack_message(
-            "Activity fields for team #{team.name} are now *displayed as available*."
-          )
-          expect(client.owner.activity_fields).to eq(['All'])
-          expect(team.reload.activity_fields).to eq(['All'])
-        end
-        it 'sets to invalid fields' do
-          expect(message: "#{SlackRubyBot.config.user} set fields Time, Foo, Bar").to respond_with_slack_message(
-            'Invalid fields: Foo and Bar, possible values are All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed and Elevation.'
-          )
-          expect(team.reload.activity_fields).to eq ['All']
+        context 'not as a team admin' do
+          let(:user) { Fabricate(:user, team: team) }
+          context 'units' do
+            it 'shows current value of units' do
+              expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
+                "Activities for team #{team.name} display *miles*."
+              )
+            end
+            it 'cannot set units' do
+              team.update_attributes!(units: 'km')
+              expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
+                "You must be an admin to change units. Activities for team #{team.name} display *kilometers*."
+              )
+              expect(team.reload.units).to eq 'km'
+            end
+          end
+          context 'maps' do
+            it 'shows current value of maps' do
+              expect(message: "#{SlackRubyBot.config.user} set maps").to respond_with_slack_message(
+                "Maps for team #{team.name} are *displayed in full*."
+              )
+            end
+            it 'cannot set maps' do
+              team.update_attributes!(maps: 'full')
+              expect(message: "#{SlackRubyBot.config.user} set maps off").to respond_with_slack_message(
+                "You must be an admin to change maps. Maps for team #{team.name} are *displayed in full*."
+              )
+              expect(team.reload.maps).to eq 'full'
+            end
+          end
+          context 'fields' do
+            it 'shows current value of fields' do
+              expect(message: "#{SlackRubyBot.config.user} set fields").to respond_with_slack_message(
+                "Activity fields for team #{team.name} are *displayed as available*."
+              )
+            end
+            it 'cannot set fields' do
+              team.update_attributes!(activity_fields: ['None'])
+              expect(message: "#{SlackRubyBot.config.user} set fields all").to respond_with_slack_message(
+                "You must be an admin to change fields. Activity fields for team #{team.name} are *not displayed*."
+              )
+              expect(client.owner.activity_fields).to eq(['None'])
+            end
+          end
         end
       end
     end

@@ -31,23 +31,36 @@ module SlackStrava
             logger.info "SET: #{team}, user=#{data.user} - private set to #{user.private_activities}"
           when 'units' then
             changed = v && team.units != v
-            team.update_attributes!(units: v) unless v.nil?
-            client.say(channel: data.channel, text: "Activities for team #{team.name}#{changed ? ' now' : ''} display *#{team.units_s}*.")
-            logger.info "SET: #{team} - units set to #{team.units}"
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "You must be an admin to change units. Activities for team #{team.name} display *#{team.units_s}*.")
+              logger.info "SET: #{team} - not admin, units remain set to #{team.units}"
+            else
+              team.update_attributes!(units: v) unless v.nil?
+              client.say(channel: data.channel, text: "Activities for team #{team.name}#{changed ? ' now' : ''} display *#{team.units_s}*.")
+              logger.info "SET: #{team} - units set to #{team.units}"
+            end
           when 'fields' then
             parsed_fields = ActivityFields.parse_s(v) if v
             changed = parsed_fields && team.activity_fields != parsed_fields
-            if parsed_fields&.any?
-              team.update_attributes!(activity_fields: parsed_fields)
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "You must be an admin to change fields. Activity fields for team #{team.name} are *#{team.activity_fields_s}*.")
+              logger.info "SET: #{team} - not admin, activity fields remain set to #{team.activity_fields.and}"
+            else
+              team.update_attributes!(activity_fields: parsed_fields) if changed && parsed_fields&.any?
+              client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{changed ? ' now' : ''} *#{team.activity_fields_s}*.")
+              logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
             end
-            client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{changed ? ' now' : ''} *#{team.activity_fields_s}*.")
-            logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
           when 'maps' then
             parsed_value = MapTypes.parse_s(v) if v
             changed = parsed_value && team.maps != parsed_value
-            team.update_attributes!(maps: parsed_value) if parsed_value
-            client.say(channel: data.channel, text: "Maps for team #{team.name} are#{changed ? ' now' : ''} *#{team.maps_s}*.")
-            logger.info "SET: #{team} - maps set to #{team.maps}"
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "You must be an admin to change maps. Maps for team #{team.name} are *#{team.maps_s}*.")
+              logger.info "SET: #{team} - not admin, maps remain set to #{team.maps}"
+            else
+              team.update_attributes!(maps: parsed_value) if parsed_value
+              client.say(channel: data.channel, text: "Maps for team #{team.name} are#{changed ? ' now' : ''} *#{team.maps_s}*.")
+              logger.info "SET: #{team} - maps set to #{team.maps}"
+            end
           else
             raise "Invalid setting #{k}, type `help` for instructions."
           end

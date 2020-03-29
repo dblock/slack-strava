@@ -8,7 +8,9 @@ class User
   field :user_name, type: String
   field :activities_at, type: DateTime
   field :connected_to_strava_at, type: DateTime
-  field :is_bot, type: Boolean
+  field :is_bot, type: Boolean, default: false
+  field :is_owner, type: Boolean, default: false
+  field :is_admin, type: Boolean, default: false
   field :private_activities, type: Boolean, default: false
   field :sync_activities, type: Boolean, default: true
 
@@ -59,8 +61,8 @@ class User
   def self.find_create_or_update_by_slack_id!(client, slack_id)
     instance = User.where(team: client.owner, user_id: slack_id).first
     instance_info = Hashie::Mash.new(client.web_client.users_info(user: slack_id)).user
-    if instance && (instance.user_name != instance_info.name || instance.is_bot != instance_info.is_bot)
-      instance.update_attributes!(user_name: instance_info.name, is_bot: instance_info.is_bot)
+    if instance && (instance.user_name != instance_info.name || instance.is_bot != instance_info.is_bot || is_admin != instance_info.is_admin || is_owner != instance_info.is_owner)
+      instance.update_attributes!(user_name: instance_info.name, is_bot: instance_info.is_bot, is_admin: instance_info.is_admin, is_owner: instance_info.is_owner)
     end
     instance ||= User.create!(team: client.owner, user_id: slack_id, user_name: instance_info.name, is_bot: instance_info.is_bot)
     instance
@@ -238,6 +240,10 @@ class User
 
   def activated_user?
     team.activated_user_id && team.activated_user_id == user_id
+  end
+
+  def team_admin?
+    activated_user? || is_admin? || is_owner?
   end
 
   private

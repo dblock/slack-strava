@@ -18,6 +18,25 @@ describe Team do
       expect(Team.find(inactive_team_a_month_ago.id)).to be nil
     end
   end
+  context '#admins' do
+    let!(:team) { Fabricate(:team) }
+    let!(:activated_user) { Fabricate(:user, team: team) }
+    let!(:random_user) { Fabricate(:user, team: team) }
+    let!(:another_team_user) { Fabricate(:user, team: Fabricate(:team)) }
+    let!(:admin_user) { Fabricate(:user, team: team, is_admin: true) }
+    let!(:owner_user) { Fabricate(:user, team: team, is_owner: true) }
+    before do
+      team.update_attributes!(activated_user_id: activated_user.user_id)
+    end
+    it 'returns slack admins, owners and user that has installed the bot' do
+      expect(team.admins.count).to eq 3
+      expect(team.admins.map(&:_id).sort).to eq [
+        admin_user,
+        owner_user,
+        team.activated_user
+      ].map(&:_id).sort
+    end
+  end
   context '#asleep?' do
     context 'default' do
       let(:team) { Fabricate(:team, created_at: Time.now.utc) }
