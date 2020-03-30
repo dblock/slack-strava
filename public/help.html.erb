@@ -73,8 +73,8 @@
       You can change <b>units</b> with <b>set units mi</b> (default) or <b>set units km</b>.
     </p>
     <p>
-      You can change displayed fields with <b>set fields</b>, eg. <b>set fields all</b> (default), <b>set fields none</b>.
-      <br>Choose from available fields with <b>set fields Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Max Speed, Elevation, Heart Rate, Max Heart Rate, PR Count</b> and <b>Calories</b>.
+      You can change displayed fields with <b>set fields</b>, eg. <b>set fields default</b>, <b>set fields all</b> or <b>set fields none</b>.
+      Available fields are <%= ActivityFields.values.and { |v| '<b>' + v + '</b>' } %>.
     </p>
     <p>
       Turn maps off with <b>set maps off</b>, display thumbnails with <b>set maps thumb</b> and full maps with <b>set maps full</b> (default).
