@@ -60,11 +60,32 @@ class User
   # Find an existing record, update the username if necessary, otherwise create a user record.
   def self.find_create_or_update_by_slack_id!(client, slack_id)
     instance = User.where(team: client.owner, user_id: slack_id).first
+
     instance_info = Hashie::Mash.new(client.web_client.users_info(user: slack_id)).user
-    if instance && (instance.user_name != instance_info.name || instance.is_bot != instance_info.is_bot || instance.is_admin != instance_info.is_admin || instance.is_owner != instance_info.is_owner)
-      instance.update_attributes!(user_name: instance_info.name, is_bot: instance_info.is_bot, is_admin: instance_info.is_admin, is_owner: instance_info.is_owner)
+
+    if instance && (
+      instance.user_name != instance_info.name ||
+      instance.is_bot != instance_info.is_bot ||
+      instance.is_admin != instance_info.is_admin ||
+      instance.is_owner != instance_info.is_owner
+    )
+      instance.update_attributes!(
+        user_name: instance_info.name,
+        is_bot: instance_info.is_bot,
+        is_admin: instance_info.is_admin,
+        is_owner: instance_info.is_owner
+      )
     end
-    instance ||= User.create!(team: client.owner, user_id: slack_id, user_name: instance_info.name, is_bot: instance_info.is_bot)
+
+    instance ||= User.create!(
+      team: client.owner,
+      user_id: slack_id,
+      user_name: instance_info.name,
+      is_bot: instance_info.is_bot,
+      is_admin: instance_info.is_admin,
+      is_owner: instance_info.is_owner
+    )
+
     instance
   end
 

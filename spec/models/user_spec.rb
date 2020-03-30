@@ -34,6 +34,9 @@ describe User do
           expect(user).to_not be_nil
           expect(user.user_id).to eq 'whatever'
           expect(user.user_name).to eq 'username'
+          expect(user.is_admin).to be true
+          expect(user.is_bot).to be false
+          expect(user.is_owner).to be true
         }.to change(User, :count).by(1)
       end
     end
@@ -49,6 +52,19 @@ describe User do
           User.find_create_or_update_by_slack_id!(client, user.user_id)
         }.to_not change(User, :count)
         expect(user.reload.user_name).to eq 'username'
+      end
+    end
+    context 'with a user that matches most fields coming from slack' do
+      let!(:user) { Fabricate(:user, team: team, is_admin: true, user_name: 'username') }
+      it 'updates the fields of the existing user' do
+        expect {
+          User.find_create_or_update_by_slack_id!(client, user.user_id)
+        }.to_not change(User, :count)
+        user.reload
+        expect(user.user_name).to eq 'username'
+        expect(user.is_admin).to be true
+        expect(user.is_bot).to be false
+        expect(user.is_owner).to be true
       end
     end
   end
