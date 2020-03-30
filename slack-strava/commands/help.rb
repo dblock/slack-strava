@@ -27,7 +27,7 @@ module SlackStrava
         help                     - get this helpful message
         subscription             - show subscription info
         unsubscribe              - turn off subscription auto-renew
-        info                     - bot info
+        info                     - bot info, contact, feature requests
         ```
       EOS
       def self.call(client, data, _match)

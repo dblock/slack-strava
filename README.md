@@ -11,6 +11,6 @@ Integrate Strava into Slack. Hosted at [slava.playplay.io](https://slava.playpla
 
 ### Copyright & License
 
-Copyright [Daniel Doubrovkine, Vestris LLC](https://www.vestris.com), 2018-2019
+Copyright [Daniel Doubrovkine, Vestris LLC](https://www.vestris.com), 2018-2020
 
 [MIT License](LICENSE)
