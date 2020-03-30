@@ -10,7 +10,7 @@ module SlackStrava
         if team.active_stripe_subscription?
           subscription_info << team.stripe_customer_text
           subscription_info.concat(team.stripe_customer_subscriptions_info)
-          if user.activated_user?
+          if user.team_admin?
             subscription_info.concat(team.stripe_customer_invoices_info)
             subscription_info.concat(team.stripe_customer_sources_info)
             subscription_info << team.update_cc_text

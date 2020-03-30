@@ -9,7 +9,7 @@ module SlackStrava
         if !team.stripe_customer_id
           client.say(channel: data.channel, text: "You don't have a paid subscription, all set.")
           logger.info "UNSUBSCRIBE: #{client.owner} - #{user.user_name} unsubscribe failed, no subscription"
-        elsif user.activated_user? && team.active_stripe_subscription?
+        elsif user.team_admin? && team.active_stripe_subscription?
           subscription_info = []
           subscription_id = match['expression']
           active_subscription = team.active_stripe_subscription
@@ -26,7 +26,7 @@ module SlackStrava
           client.say(channel: data.channel, text: subscription_info.compact.join("\n"))
           logger.info "UNSUBSCRIBE: #{client.owner} - #{data.user}"
         else
-          client.say(channel: data.channel, text: "Only <@#{team.activated_user_id}> can do that, sorry.")
+          client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can do that.")
           logger.info "UNSUBSCRIBE: #{client.owner} - #{user.user_name} unsubscribe failed, not captain"
         end
       end

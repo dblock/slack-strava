@@ -32,7 +32,7 @@ module SlackStrava
           when 'units' then
             changed = v && team.units != v
             if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "You must be an admin to change units. Activities for team #{team.name} display *#{team.units_s}*.")
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *#{team.units_s}*.")
               logger.info "SET: #{team} - not admin, units remain set to #{team.units}"
             else
               team.update_attributes!(units: v) unless v.nil?
@@ -43,7 +43,7 @@ module SlackStrava
             parsed_fields = ActivityFields.parse_s(v) if v
             changed = parsed_fields && team.activity_fields != parsed_fields
             if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "You must be an admin to change fields. Activity fields for team #{team.name} are *#{team.activity_fields_s}*.")
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change fields. Activity fields for team #{team.name} are *#{team.activity_fields_s}*.")
               logger.info "SET: #{team} - not admin, activity fields remain set to #{team.activity_fields.and}"
             else
               team.update_attributes!(activity_fields: parsed_fields) if changed && parsed_fields&.any?
@@ -54,7 +54,7 @@ module SlackStrava
             parsed_value = MapTypes.parse_s(v) if v
             changed = parsed_value && team.maps != parsed_value
             if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "You must be an admin to change maps. Maps for team #{team.name} are *#{team.maps_s}*.")
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change maps. Maps for team #{team.name} are *#{team.maps_s}*.")
               logger.info "SET: #{team} - not admin, maps remain set to #{team.maps}"
             else
               team.update_attributes!(maps: parsed_value) if parsed_value

@@ -224,7 +224,7 @@ describe SlackStrava::Commands::Set do
             it 'cannot set units' do
               team.update_attributes!(units: 'km')
               expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
-                "You must be an admin to change units. Activities for team #{team.name} display *kilometers*."
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *kilometers*."
               )
               expect(team.reload.units).to eq 'km'
             end
@@ -238,7 +238,7 @@ describe SlackStrava::Commands::Set do
             it 'cannot set maps' do
               team.update_attributes!(maps: 'full')
               expect(message: "#{SlackRubyBot.config.user} set maps off").to respond_with_slack_message(
-                "You must be an admin to change maps. Maps for team #{team.name} are *displayed in full*."
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change maps. Maps for team #{team.name} are *displayed in full*."
               )
               expect(team.reload.maps).to eq 'full'
             end
@@ -252,7 +252,7 @@ describe SlackStrava::Commands::Set do
             it 'cannot set fields' do
               team.update_attributes!(activity_fields: ['None'])
               expect(message: "#{SlackRubyBot.config.user} set fields all").to respond_with_slack_message(
-                "You must be an admin to change fields. Activity fields for team #{team.name} are *not displayed*."
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change fields. Activity fields for team #{team.name} are *not displayed*."
               )
               expect(client.owner.activity_fields).to eq(['None'])
             end
