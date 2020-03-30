@@ -4,6 +4,45 @@ describe UserActivity do
   before do
     allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
   end
+  context 'brag!' do
+    let(:team) { Fabricate(:team) }
+    let(:user) { Fabricate(:user, team: team) }
+    let!(:activity) { Fabricate(:user_activity, user: user) }
+    before do
+      allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+      allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
+      allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1503435956.000247')
+    end
+    it 'sends a message to the subscribed channel' do
+      expect(user.team.slack_client).to receive(:chat_postMessage).with(
+        activity.to_slack.merge(
+          as_user: true,
+          channel: 'channel_id'
+        )
+      ).and_return('ts' => 1)
+      expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+    end
+    it 'warns if the bot leaves the channel' do
+      expect {
+        expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)
+        expect(user.team.slack_client).to receive(:chat_postMessage) {
+          raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
+        }
+        expect(activity.brag!).to be nil
+      }.to_not change(User, :count)
+    end
+    it 'warns if the account goes inactive' do
+      expect {
+        expect {
+          expect_any_instance_of(Logger).to receive(:warn).with(/account_inactive/)
+          expect(user.team.slack_client).to receive(:chat_postMessage) {
+            raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
+          }
+          expect(activity.brag!).to be nil
+        }.to_not change(User, :count)
+      }.to_not change(UserActivity, :count)
+    end
+  end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:user) { Fabricate(:user, team: team) }

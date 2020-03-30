@@ -24,6 +24,14 @@ class UserActivity < Activity
     rc = user.inform!(to_slack)
     update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
     rc
+  rescue Slack::Web::Api::Errors::SlackError => e
+    case e.message
+    when 'not_in_channel', 'account_inactive' then
+      logger.warn "Bragging to #{user} failed, #{e.message}."
+      nil
+    else
+      raise e
+    end
   end
 
   def rebrag!

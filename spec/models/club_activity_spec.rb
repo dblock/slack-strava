@@ -14,25 +14,25 @@ describe ClubActivity do
       ).and_return('ts' => 1)
       expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
     end
-    it 'destroys the activity if the bot left the channel' do
+    it 'warns if the bot leaves the channel' do
       expect {
-        expect {
-          expect(club.team.slack_client).to receive(:chat_postMessage) {
-            raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
-          }
-          expect(activity.brag!).to be nil
-        }.to change(Club, :count).by(-1)
-      }.to change(ClubActivity, :count).by(-1)
+        expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)
+        expect(club.team.slack_client).to receive(:chat_postMessage) {
+          raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
+        }
+        expect(activity.brag!).to be nil
+      }.to_not change(Club, :count)
     end
-    it 'destroys the activity if account inactive' do
+    it 'warns if the account goes inactive' do
       expect {
         expect {
+          expect_any_instance_of(Logger).to receive(:warn).with(/account_inactive/)
           expect(club.team.slack_client).to receive(:chat_postMessage) {
             raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
           }
           expect(activity.brag!).to be nil
-        }.to change(Club, :count).by(-1)
-      }.to change(ClubActivity, :count).by(-1)
+        }.to_not change(Club, :count)
+      }.to_not change(ClubActivity, :count)
     end
     context 'having already bragged a user activity in the channel' do
       let!(:user_activity) do
