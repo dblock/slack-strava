@@ -69,12 +69,12 @@ class Activity
 
   alias eql? ==
 
-  def ==(rhs)
-    rhs.is_a?(Activity) &&
-      distance == rhs.distance &&
-      moving_time == rhs.moving_time &&
-      elapsed_time == rhs.elapsed_time &&
-      total_elevation_gain == rhs.total_elevation_gain
+  def ==(other)
+    other.is_a?(Activity) &&
+      distance == other.distance &&
+      moving_time == other.moving_time &&
+      elapsed_time == other.elapsed_time &&
+      total_elevation_gain == other.total_elevation_gain
   end
 
   # Have we recently bragged an identically looking activity?

@@ -355,7 +355,6 @@ describe Api::Endpoints::SlackEndpoint do
                event_time: 1_547_842_101,
                authed_users: ['U04KB5WQR']
           expect(last_response.status).to eq 201
-          response = JSON.parse(last_response.body)
         end
       end
     end
