@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2020/04/02: Added team `stats` - [@dblock](https://github.com/dblock).
 * 2020/03/29: Added Default fields setting - [@dblock](https://github.com/dblock).
 * 2020/03/29: Prevent non-admins from changing global team settings - [@dblock](https://github.com/dblock).
 * 2020/03/29: Added Max Speed, Elevation, Heart Rate, Max Heart Rate, PR Count and Calories - [@dblock](https://github.com/dblock).

@@ -1,5 +1,6 @@
 Fabricator(:club) do
   strava_id { Fabricate.sequence(:club_id) { |i| "1234#{i}" } }
+  team { Team.first || Fabricate(:team) }
   name { Faker::Company.name }
   logo { Faker::Avatar.image }
   city { Faker::Address.city }

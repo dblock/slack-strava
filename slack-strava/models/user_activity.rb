@@ -7,9 +7,7 @@ class UserActivity < Activity
 
   index(user_id: 1, start_date: 1)
 
-  def team
-    user.team
-  end
+  before_validation :validate_team
 
   def start_date_local_s
     return unless start_date_local
@@ -58,8 +56,8 @@ class UserActivity < Activity
   end
 
   def self.create_from_strava!(user, response)
-    activity = UserActivity.where(strava_id: response.id, user_id: user.id).first
-    activity ||= UserActivity.new(strava_id: response.id, user_id: user.id)
+    activity = UserActivity.where(strava_id: response.id, team_id: user.team.id, user_id: user.id).first
+    activity ||= UserActivity.new(strava_id: response.id, team_id: user.team.id, user_id: user.id)
     activity.update_from_strava(response)
     return unless activity.changed?
 
@@ -88,5 +86,11 @@ class UserActivity < Activity
 
   def to_s
     "name=#{name}, date=#{start_date_local_s}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
+  end
+
+  def validate_team
+    return if team_id && user.team_id == team_id
+
+    errors.add(:team, 'Activity must belong to the same team as the user.')
   end
 end

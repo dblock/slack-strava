@@ -23,6 +23,7 @@ class Team
 
   has_many :users, dependent: :destroy
   has_many :clubs, dependent: :destroy
+  has_many :activities
 
   before_validation :update_subscribed_at
   before_validation :update_subscription_expired_at
@@ -290,6 +291,10 @@ class Team
     when 'account_inactive', 'invalid_auth'
       deactivate!
     end
+  end
+
+  def stats
+    TeamStats.new(self)
   end
 
   private

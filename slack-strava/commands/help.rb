@@ -14,6 +14,10 @@ module SlackStrava
         ------------
         /slava clubs             - connect/disconnect clubs
 
+        Teams
+        ------------
+        stats                    - aggregate team and club stats
+
         Settings
         ------------
         set units mi|km          - use miles or kilometers

@@ -2,6 +2,7 @@ module SlackStrava
   class App < SlackRubyBotServer::App
     def after_start!
       ::Async::Reactor.run do
+        migrate_activity_team_id!
         ensure_strava_webhook!
         logger.info 'Starting crons.'
         once_and_every 60 * 60 * 24 do
@@ -49,6 +50,15 @@ module SlackStrava
         ensure
           task.sleep tt
         end
+      end
+    end
+
+    def migrate_activity_team_id!
+      UserActivity.where(:team_id.exists => false).each do |user_activity|
+        user_activity.set(team_id: user_activity.user.team_id)
+      end
+      ClubActivity.where(:team_id.exists => false).each do |club_activity|
+        club_activity.set(team_id: club_activity.club.team_id)
       end
     end
 

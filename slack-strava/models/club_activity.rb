@@ -5,9 +5,7 @@ class ClubActivity < Activity
 
   index(club_id: 1)
 
-  def team
-    club.team
-  end
+  before_validation :validate_team
 
   def brag!
     if bragged_at?
@@ -56,5 +54,11 @@ class ClubActivity < Activity
     result[:fields] = fields if fields
     result[:thumb_url] = club.logo
     result
+  end
+
+  def validate_team
+    return if team_id && club.team_id == team_id
+
+    errors.add(:team, 'Activity must belong to the same team as the club.')
   end
 end

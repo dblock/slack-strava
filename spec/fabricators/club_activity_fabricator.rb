@@ -9,4 +9,7 @@ Fabricator(:club_activity) do
   elapsed_time 7686
   total_elevation_gain 144.9
   average_speed 2.971
+  before_validation do
+    self.team ||= club.team
+  end
 end

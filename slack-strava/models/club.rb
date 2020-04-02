@@ -17,6 +17,8 @@ class Club
   field :sync_activities, type: Boolean, default: true
 
   belongs_to :team
+  validates_presence_of :team_id
+
   field :channel_id, type: String
   field :channel_name, type: String
 
@@ -122,7 +124,7 @@ class Club
     return unless sync_activities?
 
     strava_client.club_activities(strava_id, options).each do |activity|
-      club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(club: self))
+      club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(team: team, club: self))
       break if ClubActivity.where(strava_id: club_activity.strava_id).exists?
 
       club_activity.save!

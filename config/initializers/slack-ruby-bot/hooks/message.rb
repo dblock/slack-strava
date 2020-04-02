@@ -6,6 +6,7 @@ module SlackRubyBot
         [
           SlackStrava::Commands::Help,
           SlackStrava::Commands::Info,
+          SlackStrava::Commands::Stats,
           SlackStrava::Commands::Subscription,
           SlackStrava::Commands::Unsubscribe,
           SlackStrava::Commands::Connect,
