@@ -24,16 +24,19 @@ class TeamStats
       Activity.collection.aggregate(
         [
           { '$match' => { team_id: team.id } },
-          { '$group' => {
-            _id: { type: { '$ifNull' => ['$type', 'unknown'] } },
-            count: { '$sum' => 1 },
-            distance: { '$sum' => '$distance' },
-            elapsed_time: { '$sum' => '$elapsed_time' },
-            moving_time: { '$sum' => '$moving_time' },
-            pr_count: { '$sum' => '$pr_count' },
-            calories: { '$sum' => '$calories' },
-            total_elevation_gain: { '$sum' => '$total_elevation_gain' }
-          } }
+          {
+            '$group' => {
+              _id: { type: { '$ifNull' => ['$type', 'unknown'] } },
+              count: { '$sum' => 1 },
+              distance: { '$sum' => '$distance' },
+              elapsed_time: { '$sum' => '$elapsed_time' },
+              moving_time: { '$sum' => '$moving_time' },
+              pr_count: { '$sum' => '$pr_count' },
+              calories: { '$sum' => '$calories' },
+              total_elevation_gain: { '$sum' => '$total_elevation_gain' }
+            }
+          },
+          { '$sort' => { count: -1 } }
         ]
       ).map do |row|
         type = row['_id']['type']

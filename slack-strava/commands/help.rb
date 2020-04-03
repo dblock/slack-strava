@@ -29,7 +29,7 @@ module SlackStrava
         General
         ------------
         help                     - get this helpful message
-        subscription             - show subscription info
+        subscription             - show subscription info, update credit-card
         unsubscribe              - turn off subscription auto-renew
         info                     - bot info, contact, feature requests
         ```

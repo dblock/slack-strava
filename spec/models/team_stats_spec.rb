@@ -22,22 +22,25 @@ describe TeamStats do
     let!(:user1) { Fabricate(:user, team: team) }
     let!(:user2) { Fabricate(:user, team: team) }
     let!(:club) { Fabricate(:club, team: team) }
+    let!(:swim_activity) { Fabricate(:swim_activity, user: user2) }
+    let!(:ride_activity1) { Fabricate(:ride_activity, user: user1) }
+    let!(:ride_activity2) { Fabricate(:ride_activity, user: user1) }
+    let!(:club_activity) { Fabricate(:club_activity, club: club) }
     let!(:activity1) { Fabricate(:user_activity, user: user1) }
     let!(:activity2) { Fabricate(:user_activity, user: user1) }
     let!(:activity3) { Fabricate(:user_activity, user: user2) }
-    let!(:swim_activity) { Fabricate(:swim_activity, user: user2) }
-    let!(:ride_activity) { Fabricate(:ride_activity, user: user1) }
-    let!(:club_activity) { Fabricate(:club_activity, club: club) }
     context '#stats' do
       let(:stats) { team.stats }
+      it 'returns stats sorted by count' do
+        expect(stats.keys).to eq %w[Run Ride Swim]
+        expect(stats.values.map(&:count)).to eq [4, 2, 1]
+      end
       it 'aggregates stats' do
-        expect(stats.count).to eq 3
-        expect(stats.keys.sort).to eq %w[Ride Run Swim]
         expect(stats['Ride'].to_h).to eq(
           {
-            distance: ride_activity.distance,
-            moving_time: ride_activity.moving_time,
-            elapsed_time: ride_activity.elapsed_time,
+            distance: [ride_activity1, ride_activity2].map(&:distance).compact.sum,
+            moving_time: [ride_activity1, ride_activity2].map(&:moving_time).compact.sum,
+            elapsed_time: [ride_activity1, ride_activity2].map(&:elapsed_time).compact.sum,
             pr_count: 0,
             calories: 0,
             total_elevation_gain: 0
@@ -63,6 +66,13 @@ describe TeamStats do
             total_elevation_gain: 0
           }
         )
+      end
+      context 'with activities from another team' do
+        let!(:another_activity) { Fabricate(:user_activity, user: user1) }
+        let!(:another_team_activity) { Fabricate(:user_activity, user: Fabricate(:user, team: Fabricate(:team))) }
+        it 'does not include that activity' do
+          expect(stats.values.map(&:count)).to eq [5, 2, 1]
+        end
       end
     end
     context '#to_slack' do
