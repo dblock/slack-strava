@@ -21,6 +21,8 @@ module Api
           command.slack_verification_token!
 
           case command.text
+          when 'stats'
+            command.stats!
           when 'clubs'
             command.clubs!
           when 'connect'

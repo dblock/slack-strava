@@ -105,6 +105,25 @@ describe Api::Endpoints::SlackEndpoint do
     end
     context 'slash commands' do
       let(:user) { Fabricate(:user, team: team) }
+      context 'stats' do
+        it 'returns team stats' do
+          post '/api/slack/command',
+               command: '/slava',
+               text: 'stats',
+               channel_id: 'channel',
+               channel_name: 'channel_name',
+               user_id: user.user_id,
+               team_id: team.team_id,
+               token: token
+          expect(last_response.status).to eq 201
+          response = JSON.parse(last_response.body)
+          expect(response).to eq(
+            'text' => 'There are no activities.',
+            'user' => user.user_id,
+            'channel' => 'channel'
+          )
+        end
+      end
       context 'in channel' do
         before do
           allow_any_instance_of(Team).to receive(:bot_in_channel?).and_return(true)

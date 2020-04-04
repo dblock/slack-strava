@@ -69,6 +69,11 @@ module Api
           end
         end
 
+        def stats!
+          logger.info "STATS: #{channel_id}, #{user}, #{user.team}."
+          user.team.stats.to_slack.merge(user: user_id, channel: channel_id)
+        end
+
         def connect!
           logger.info "CONNECT: #{channel_id}, #{user}, #{user.team}."
           user.connect_to_strava.merge(user: user_id, channel: channel_id)
