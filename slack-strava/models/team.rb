@@ -293,8 +293,8 @@ class Team
     end
   end
 
-  def stats
-    TeamStats.new(self)
+  def stats(options = {})
+    TeamStats.new(self, options)
   end
 
   private

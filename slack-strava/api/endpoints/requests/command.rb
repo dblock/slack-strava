@@ -71,7 +71,12 @@ module Api
 
         def stats!
           logger.info "STATS: #{channel_id}, #{user}, #{user.team}."
-          user.team.stats.to_slack.merge(user: user_id, channel: channel_id)
+          options = {}
+          options.merge!(channel_id: channel_id) unless channel_id[0] == 'D'
+          user.team.stats(options).to_slack.merge(
+            user: user_id,
+            channel: channel_id
+          )
         end
 
         def connect!

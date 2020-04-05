@@ -24,6 +24,7 @@ class Activity
   index(distance: 1, moving_time: 1, elapsed_time: 1, total_elevation_gain: 1)
 
   embeds_many :channel_messages, inverse_of: nil
+  index('channel_messages.channel' => 1)
 
   scope :unbragged, -> { where(bragged_at: nil) }
   scope :bragged, -> { where(:bragged_at.ne => nil) }

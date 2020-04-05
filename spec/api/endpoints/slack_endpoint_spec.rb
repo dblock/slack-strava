@@ -118,10 +118,32 @@ describe Api::Endpoints::SlackEndpoint do
           expect(last_response.status).to eq 201
           response = JSON.parse(last_response.body)
           expect(response).to eq(
-            'text' => 'There are no activities.',
+            'text' => 'There are no activities in this channel.',
             'user' => user.user_id,
             'channel' => 'channel'
           )
+        end
+        it 'calls stats with channel' do
+          expect_any_instance_of(Team).to receive(:stats).with(channel_id: 'channel_id')
+          post '/api/slack/command',
+               command: '/slava',
+               text: 'stats',
+               channel_id: 'channel_id',
+               channel_name: 'channel_name',
+               user_id: user.user_id,
+               team_id: team.team_id,
+               token: token
+        end
+        it 'calls stats without channel on a DM' do
+          expect_any_instance_of(Team).to receive(:stats).with({})
+          post '/api/slack/command',
+               command: '/slava',
+               text: 'stats',
+               channel_id: 'DM',
+               channel_name: 'channel_name',
+               user_id: user.user_id,
+               team_id: team.team_id,
+               token: token
         end
       end
       context 'in channel' do
