@@ -291,6 +291,7 @@ class Team
     when 'account_inactive', 'invalid_auth'
       deactivate!
     end
+    NewRelic::Agent.notice_error(e, custom_params: { team: to_s })
   end
 
   def stats(options = {})

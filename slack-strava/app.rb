@@ -80,6 +80,7 @@ module SlackStrava
         team.inform_trial!
       rescue StandardError => e
         logger.warn "Error checking team #{team} trial, #{e.message}."
+        NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
       end
     end
 
@@ -105,6 +106,7 @@ module SlackStrava
       rescue StandardError => e
         backtrace = e.backtrace.join("\n")
         logger.warn "Error in expire subscriptions cron for team #{team}, #{e.message}, #{backtrace}."
+        NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
       end
     end
 
@@ -126,6 +128,7 @@ module SlackStrava
         rescue StandardError => e
           backtrace = e.backtrace.join("\n")
           logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
+          NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
         end
       end
     end
@@ -146,6 +149,7 @@ module SlackStrava
         rescue StandardError => e
           backtrace = e.backtrace.join("\n")
           logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
+          NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
         end
       end
     end
@@ -161,6 +165,7 @@ module SlackStrava
           team.inform_everyone!(text: purge_message)
         rescue StandardError => e
           logger.warn "Error informing team #{team}, #{e.message}."
+          NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
         end
       end
     end
@@ -184,6 +189,7 @@ module SlackStrava
         end
       rescue StandardError => e
         logger.warn "Error checking team #{team} subscription, #{e.message}."
+        NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
       end
     end
   end
