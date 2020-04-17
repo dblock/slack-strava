@@ -108,7 +108,7 @@ describe User do
           let(:authorization_error) { Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [{ 'resource' => 'Athlete', 'field' => 'access_token', 'code' => 'invalid' }] }) }
           it 'raises an exception and resets token' do
             allow(user.strava_client).to receive(:paginate).and_raise authorization_error
-            expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
+            expect(user).to receive(:dm_connect!).with('There was an authorization problem. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account')
             user.sync_and_brag!
             expect(user.access_token).to be nil
             expect(user.token_type).to be nil
@@ -121,7 +121,7 @@ describe User do
           let(:authorization_error) { Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [{ 'resource' => 'AccessToken', 'field' => 'activity:read_permission', 'code' => 'missing' }] }) }
           it 'raises an exception and resets token' do
             allow(user.strava_client).to receive(:paginate).and_raise authorization_error
-            expect(user).to receive(:dm_connect!).with('There was an authorization problem. Please reconnect your Strava account')
+            expect(user).to receive(:dm_connect!).with('There was an authorization problem. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account')
             user.sync_and_brag!
             expect(user.access_token).to be nil
             expect(user.token_type).to be nil

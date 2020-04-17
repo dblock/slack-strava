@@ -300,7 +300,7 @@ class User
     logger.error e
     case e.message
     when /Authorization Error/
-      dm_connect! 'There was an authorization problem. Please reconnect your Strava account'
+      dm_connect! 'There was an authorization problem. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account'
       reset_access_tokens!(connected_to_strava_at: nil)
     end
     raise e
