@@ -1,5 +1,8 @@
 ### Changelog
 
+* 2020/04/19: Inform admins and users on restricted channel errors - [@dblock](https://github.com/dblock).
+* 2020/04/18: Fix missing club activities - [@dblock](https://github.com/dblock).
+* 2020/04/16: Help users through authorization problems - [@dblock](https://github.com/dblock).
 * 2020/04/02: Added team `stats` that returns stats in channel - [@dblock](https://github.com/dblock).
 * 2020/03/29: Added Default fields setting - [@dblock](https://github.com/dblock).
 * 2020/03/29: Prevent non-admins from changing global team settings - [@dblock](https://github.com/dblock).

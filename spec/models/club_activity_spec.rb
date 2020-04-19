@@ -34,6 +34,16 @@ describe ClubActivity do
         }.to_not change(Club, :count)
       }.to_not change(ClubActivity, :count)
     end
+    it 'informs admin on restricted_action' do
+      expect {
+        expect_any_instance_of(Logger).to receive(:warn).with(/restricted_action/)
+        expect(club.team).to receive(:inform_admin!).with(text: "I wasn't allowed to post into <##{club.channel_id}> because of a Slack workspace preference, please contact your Slack admin.")
+        expect(club.team.slack_client).to receive(:chat_postMessage) {
+          raise Slack::Web::Api::Errors::SlackError, 'restricted_action'
+        }
+        expect(activity.brag!).to be nil
+      }.to_not change(Club, :count)
+    end
     context 'having already bragged a user activity in the channel' do
       let!(:user_activity) do
         Fabricate(:user_activity,

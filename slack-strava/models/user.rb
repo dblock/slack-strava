@@ -93,15 +93,33 @@ class User
     team.slack_channels.map { |channel|
       next if user_id && !user_in_channel?(channel['id'])
 
-      message_with_channel = message.merge(channel: channel['id'], as_user: true)
-      logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
-      rc = team.slack_client.chat_postMessage(message_with_channel)
-
-      {
-        ts: rc['ts'],
-        channel: channel['id']
-      }
+      inform_channel!(message, channel)
     }.compact
+  end
+
+  def inform_channel!(message, channel)
+    message_with_channel = message.merge(channel: channel['id'], as_user: true)
+    logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
+    rc = team.slack_client.chat_postMessage(message_with_channel)
+
+    {
+      ts: rc['ts'],
+      channel: channel['id']
+    }
+  rescue Slack::Web::Api::Errors::SlackError => e
+    case e.message
+    when 'restricted_action' then
+      logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
+      dm!(text: "I wasn't allowed to post into <##{channel['id']}> because of a Slack workspace preference, please contact your Slack admin.")
+      NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, self: to_s })
+      nil
+    when 'not_in_channel', 'account_inactive' then
+      logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
+      NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, self: to_s })
+      nil
+    else
+      raise e
+    end
   end
 
   def update!(message, channel_messages)
@@ -196,7 +214,7 @@ class User
 
     update_attributes!(activities_at: activity.start_date)
     results = activity.brag!
-    return unless results
+    return unless results&.any?
 
     results.map do |result|
       result.merge(activity: activity)

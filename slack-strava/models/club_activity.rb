@@ -28,6 +28,11 @@ class ClubActivity < Activity
     end
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
+    when 'restricted_action' then
+      logger.warn "Bragging to #{club} failed, #{e.message}."
+      club.team.inform_admin!(text: "I wasn't allowed to post into #{club.channel_mention} because of a Slack workspace preference, please contact your Slack admin.")
+      NewRelic::Agent.notice_error(e, custom_params: { team: club.team.to_s, self: club.to_s })
+      nil
     when 'not_in_channel', 'account_inactive' then
       logger.warn "Bragging to #{club} failed, #{e.message}."
       NewRelic::Agent.notice_error(e, custom_params: { team: club.team.to_s, self: club.to_s })

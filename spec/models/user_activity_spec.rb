@@ -28,7 +28,7 @@ describe UserActivity do
         expect(user.team.slack_client).to receive(:chat_postMessage) {
           raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
         }
-        expect(activity.brag!).to be nil
+        expect(activity.brag!).to eq []
       }.to_not change(User, :count)
     end
     it 'warns if the account goes inactive' do
@@ -38,9 +38,19 @@ describe UserActivity do
           expect(user.team.slack_client).to receive(:chat_postMessage) {
             raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
           }
-          expect(activity.brag!).to be nil
+          expect(activity.brag!).to eq []
         }.to_not change(User, :count)
       }.to_not change(UserActivity, :count)
+    end
+    it 'informs user on restricted_action' do
+      expect {
+        expect(user).to receive(:dm!).with(text: "I wasn't allowed to post into <#channel_id> because of a Slack workspace preference, please contact your Slack admin.")
+        expect_any_instance_of(Logger).to receive(:warn).with(/restricted_action/)
+        expect(user.team.slack_client).to receive(:chat_postMessage) {
+          raise Slack::Web::Api::Errors::SlackError, 'restricted_action'
+        }
+        expect(activity.brag!).to eq []
+      }.to_not change(User, :count)
     end
   end
   context 'miles' do

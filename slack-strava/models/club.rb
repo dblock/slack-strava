@@ -41,7 +41,7 @@ class Club
     return unless activity
 
     results = activity.brag!
-    return unless results
+    return unless results&.any?
 
     results.map do |result|
       result.merge(activity: activity)
