@@ -125,7 +125,7 @@ class Club
 
     strava_client.club_activities(strava_id, options).each do |activity|
       club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(team: team, club: self))
-      break if ClubActivity.where(strava_id: club_activity.strava_id).exists?
+      next if ClubActivity.where(strava_id: club_activity.strava_id).exists?
 
       club_activity.save!
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
