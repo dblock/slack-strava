@@ -115,7 +115,13 @@ class Club
   end
 
   def sync_new_strava_activities!
-    sync_strava_activities!(page: 1, per_page: 10)
+    current_page = 1
+    while current_page < 5
+      activities = sync_strava_activities!(page: current_page, per_page: 10)
+      break unless activities&.any?
+
+      current_page += 1
+    end
   end
 
   private
@@ -123,12 +129,13 @@ class Club
   def sync_strava_activities!(options = {})
     return unless sync_activities?
 
-    strava_client.club_activities(strava_id, options).each do |activity|
+    strava_client.club_activities(strava_id, options).map do |activity|
       club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(team: team, club: self))
       next if ClubActivity.where(strava_id: club_activity.strava_id).exists?
 
       club_activity.save!
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
+      club_activity
     end
   rescue Faraday::Error::ResourceNotFound => e
     handle_not_found_error e
