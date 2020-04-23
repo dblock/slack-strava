@@ -36,7 +36,7 @@ describe Api::Endpoints::StravaEndpoint do
                }
              ),
              'CONTENT_TYPE' => 'application/json'
-        expect(last_response.status).to eq 201
+        expect(last_response.status).to eq 200
         response = JSON.parse(last_response.body)
         expect(response['ok']).to be true
       end
@@ -57,7 +57,7 @@ describe Api::Endpoints::StravaEndpoint do
                  }
                ),
                'CONTENT_TYPE' => 'application/json'
-          expect(last_response.status).to eq 201
+          expect(last_response.status).to eq 200
           response = JSON.parse(last_response.body)
           expect(response['ok']).to be true
         end
@@ -76,7 +76,7 @@ describe Api::Endpoints::StravaEndpoint do
                  }
                ),
                'CONTENT_TYPE' => 'application/json'
-          expect(last_response.status).to eq 201
+          expect(last_response.status).to eq 200
           response = JSON.parse(last_response.body)
           expect(response['ok']).to be true
         end
@@ -96,7 +96,7 @@ describe Api::Endpoints::StravaEndpoint do
                  }
                ),
                'CONTENT_TYPE' => 'application/json'
-          expect(last_response.status).to eq 201
+          expect(last_response.status).to eq 200
           response = JSON.parse(last_response.body)
           expect(response['ok']).to be true
         end

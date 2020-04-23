@@ -40,6 +40,7 @@ module Api
                 Api::Middleware.logger.info "Skipping team #{user.team}, user #{user}, #{user.athlete}, aspect_type=#{params['aspect_type']}, #{params['object_type']}=#{params['object_id']}."
               end
             end
+            status 200
             { ok: true }
           end
         end
