@@ -1,24 +1,25 @@
 ### Changelog
 
-* 2020/04/19: Inform admins and users on restricted channel errors - [@dblock](https://github.com/dblock).
-* 2020/04/18: Fix missing club activities - [@dblock](https://github.com/dblock).
-* 2020/04/16: Help users through authorization problems - [@dblock](https://github.com/dblock).
-* 2020/04/02: Added team `stats` that returns stats in channel - [@dblock](https://github.com/dblock).
-* 2020/03/29: Added Default fields setting - [@dblock](https://github.com/dblock).
-* 2020/03/29: Prevent non-admins from changing global team settings - [@dblock](https://github.com/dblock).
-* 2020/03/29: Added Max Speed, Elevation, Heart Rate, Max Heart Rate, PR Count and Calories - [@dblock](https://github.com/dblock).
-* 2020/03/28: Sync Strava events in near-real-time - [@dblock](https://github.com/dblock).
-* 2019/03/22: Added unsubscribe - [@dblock](https://github.com/dblock).
-* 2019/03/11: Don't sync old activities when reconnecting or toggling sync - [@dblock](https://github.com/dblock).
-* 2019/01/18: Unfurl Strava URLs - [@dblock](https://github.com/dblock).
-* 2019/01/05: Added `/slava connect` and `/slava disconnect` - [@dblock](https://github.com/dblock).
-* 2019/01/05: Added `set sync` to enable/disable sync - [@dblock](https://github.com/dblock).
+* 2020/5/7: Do not post activities for users deactivated in Slack - [@dblock](https://github.com/dblock).
+* 2020/4/19: Inform admins and users on restricted channel errors - [@dblock](https://github.com/dblock).
+* 2020/4/18: Fix missing club activities - [@dblock](https://github.com/dblock).
+* 2020/4/16: Help users through authorization problems - [@dblock](https://github.com/dblock).
+* 2020/4/2: Added team `stats` that returns stats in channel - [@dblock](https://github.com/dblock).
+* 2020/3/29: Added Default fields setting - [@dblock](https://github.com/dblock).
+* 2020/3/29: Prevent non-admins from changing global team settings - [@dblock](https://github.com/dblock).
+* 2020/3/29: Added Max Speed, Elevation, Heart Rate, Max Heart Rate, PR Count and Calories - [@dblock](https://github.com/dblock).
+* 2020/3/28: Sync Strava events in near-real-time - [@dblock](https://github.com/dblock).
+* 2019/3/22: Added unsubscribe - [@dblock](https://github.com/dblock).
+* 2019/3/11: Don't sync old activities when reconnecting or toggling sync - [@dblock](https://github.com/dblock).
+* 2019/1/18: Unfurl Strava URLs - [@dblock](https://github.com/dblock).
+* 2019/1/5: Added `/slava connect` and `/slava disconnect` - [@dblock](https://github.com/dblock).
+* 2019/1/5: Added `set sync` to enable/disable sync - [@dblock](https://github.com/dblock).
 * 2018/11/27: Do not duplicate notifications from users and clubs - [@dblock](https://github.com/dblock).
 * 2018/12/8: Update activities in Slack during the next 24 hours - [@dblock](https://github.com/dblock).
 * 2018/10/8: Announce when someone connects to Strava - [@dblock](https://github.com/dblock).
 * 2018/10/8: Only send activities since user joined a channel - [@dblock](https://github.com/dblock).
-* 2018/6/05: Added `set fields` to choose which fields to display - [@dblock](https://github.com/dblock).
-* 2018/6/05: Display both speed and pace - [@dblock](https://github.com/dblock).
+* 2018/6/5: Added `set fields` to choose which fields to display - [@dblock](https://github.com/dblock).
+* 2018/6/5: Display both speed and pace - [@dblock](https://github.com/dblock).
 * 2018/5/28: Update activity labels according to the strava API - [@gmiossec](https://github.com/gmiossec).
 * 2018/5/28: Ride activities pace is displayed in km/h if units is km - [@gmiossec](https://github.com/gmiossec).
 * 2018/5/24: Swim activities are displayed in meters if units is km - [@gmiossec](https://github.com/gmiossec).

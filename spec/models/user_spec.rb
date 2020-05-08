@@ -266,6 +266,14 @@ describe User do
       ).and_return(ts: '1503425956.000247')
       expect(user.inform!(message: 'message').count).to eq(1)
     end
+    it 'does not send messages for a deleted user', vcr: { cassette_name: 'slack/users_info_deleted' } do
+      expect_any_instance_of(Slack::Web::Client).to_not receive(:chat_postMessage)
+      expect(user.inform!(message: 'message')).to be nil
+    end
+    it 'handles user not found', vcr: { cassette_name: 'slack/users_info_not_found' } do
+      expect_any_instance_of(Slack::Web::Client).to_not receive(:chat_postMessage)
+      expect(user.inform!(message: 'message')).to be nil
+    end
   end
   context '#dm_connect!' do
     let(:user) { Fabricate(:user) }

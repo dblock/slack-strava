@@ -90,6 +90,8 @@ class User
   end
 
   def inform!(message)
+    return if user_id && user_deleted?
+
     team.slack_channels.map { |channel|
       next if user_id && !user_in_channel?(channel['id'])
 
@@ -293,6 +295,12 @@ class User
 
   def latest_activity_start_date
     activities.desc(:start_date).first&.start_date
+  end
+
+  def user_deleted?
+    team.slack_client.users_info(user: user_id)&.user&.deleted
+  rescue Slack::Web::Api::Errors::UserNotFound
+    true
   end
 
   def user_in_channel?(channel_id)

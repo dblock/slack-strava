@@ -131,6 +131,7 @@ describe TeamStats do
       context 'in channel with bragged user activity' do
         before do
           allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => club1_activity.club.channel_id])
+          allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
           allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
           allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
           user_activity.brag!
@@ -155,6 +156,7 @@ describe TeamStats do
       context 'in channel with bragged user and club activities' do
         before do
           allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => club1_activity.club.channel_id])
+          allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
           allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
           allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
           club1_activity.brag!

@@ -10,6 +10,7 @@ describe UserActivity do
     let!(:activity) { Fabricate(:user_activity, user: user) }
     before do
       allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+      allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
       allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
       allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1503435956.000247')
     end
