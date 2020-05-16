@@ -1,0 +1,27 @@
+{
+  "lat": 60.99,
+  "lon": 30.9,
+  "timezone": "Europe/Moscow",
+  "current": {
+    "dt": 1586468027,
+    "sunrise": 1586487424,
+    "sunset": 1586538297,
+    "temp": 274.31,
+    "feels_like": 269.79,
+    "pressure": 1006,
+    "humidity": 72,
+    "dew_point": 270.21,
+    "clouds": 0,
+    "visibility": 10000,
+    "wind_speed": 3,
+    "wind_deg": 260,
+    "weather": [
+      {
+        "id": 800,
+        "main": "Clear",
+        "description": "clear sky",
+        "icon": "01n"
+      }
+    ]
+  }
+}

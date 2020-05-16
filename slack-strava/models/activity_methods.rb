@@ -294,6 +294,8 @@ module ActivityMethods
         fields << { title: 'PR Count', value: pr_count_s, short: true } if pr_count&.positive?
       when 'Calories'
         fields << { title: 'Calories', value: calories_s, short: true } if calories&.positive?
+      when 'Weather'
+        fields << { title: 'Weather', value: weather_s, short: true } if respond_to?(:weather) && weather.present?
       end
     end
     fields.any? ? fields : nil

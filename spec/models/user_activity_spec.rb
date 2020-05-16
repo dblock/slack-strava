@@ -74,7 +74,8 @@ describe UserActivity do
               { title: 'Elapsed Time', value: '2h8m6s', short: true },
               { title: 'Pace', value: '9m02s/mi', short: true },
               { title: 'Speed', value: '6.6mph', short: true },
-              { title: 'Elevation', value: '475.4ft', short: true }
+              { title: 'Elevation', value: '475.4ft', short: true },
+              { title: 'Weather', value: '70° Rain', short: true }
             ],
             author_name: user.athlete.name,
             author_link: user.athlete.strava_url,
@@ -108,7 +109,8 @@ describe UserActivity do
                 { title: 'Heart Rate', value: '140.3bpm', short: true },
                 { title: 'Max Heart Rate', value: '178.0bpm', short: true },
                 { title: 'PR Count', value: '3', short: true },
-                { title: 'Calories', value: '870.2', short: true }
+                { title: 'Calories', value: '870.2', short: true },
+                { title: 'Weather', value: '70° Rain', short: true }
               ],
               author_name: user.athlete.name,
               author_link: user.athlete.strava_url,
@@ -138,7 +140,8 @@ describe UserActivity do
                 { title: 'Elapsed Time', value: '2h8m6s', short: true },
                 { title: 'Pace', value: '9m02s/mi', short: true },
                 { title: 'Speed', value: '6.6mph', short: true },
-                { title: 'Elevation', value: '475.4ft', short: true }
+                { title: 'Elevation', value: '475.4ft', short: true },
+                { title: 'Weather', value: '70° Rain', short: true }
               ]
             }
           ]
@@ -166,7 +169,8 @@ describe UserActivity do
               { title: 'Elapsed Time', value: '2h8m6s', short: true },
               { title: 'Pace', value: '5m37s/km', short: true },
               { title: 'Speed', value: '10.7km/h', short: true },
-              { title: 'Elevation', value: '144.9m', short: true }
+              { title: 'Elevation', value: '144.9m', short: true },
+              { title: 'Weather', value: '21° Rain', short: true }
             ],
             author_name: user.athlete.name,
             author_link: user.athlete.strava_url,

@@ -16,6 +16,7 @@ Fabricator(:user_activity) do
   pr_count 3
   calories 870.2
   map { Fabricate.build(:map) }
+  weather { Fabricate.build(:weather) }
   before_validation do
     self.team ||= user.team
   end

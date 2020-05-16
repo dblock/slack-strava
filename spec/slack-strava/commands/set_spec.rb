@@ -208,7 +208,7 @@ describe SlackStrava::Commands::Set do
           end
           it 'sets to invalid fields' do
             expect(message: "#{SlackRubyBot.config.user} set fields Time, Foo, Bar").to respond_with_slack_message(
-              'Invalid fields: Foo and Bar, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count and Calories.'
+              'Invalid fields: Foo and Bar, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories and Weather.'
             )
             expect(team.reload.activity_fields).to eq ['Default']
           end

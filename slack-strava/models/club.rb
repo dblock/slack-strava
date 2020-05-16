@@ -137,7 +137,7 @@ class Club
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
       club_activity
     end
-  rescue Faraday::Error::ResourceNotFound => e
+  rescue Faraday::ResourceNotFound => e
     handle_not_found_error e
   rescue Strava::Errors::Fault => e
     handle_strava_error e

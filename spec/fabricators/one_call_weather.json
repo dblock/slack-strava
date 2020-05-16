@@ -1,0 +1,37 @@
+{
+  "lat": 33.44,
+  "lon": -94.04,
+  "timezone": "America/Chicago",
+  "current": {
+    "dt": 1588935779,
+    "sunrise": 1588936856,
+    "sunset": 1588986260,
+    "temp": 294.31,
+    "feels_like": 293.21,
+    "pressure": 1009,
+    "humidity": 93,
+    "dew_point": 254.21,
+    "uvi": 8.97,
+    "clouds": 90,
+    "visibility": 12874,
+    "wind_speed": 3.6,
+    "wind_deg": 280,
+    "weather": [
+      {
+        "id": 501,
+        "main": "Rain",
+        "description": "moderate rain",
+        "icon": "10n"
+      },
+      {
+        "id": 200,
+        "main": "Thunderstorm",
+        "description": "thunderstorm with light rain",
+        "icon": "11n"
+      }
+    ],
+    "rain": {
+      "1h": 2.79
+    }
+  }
+}

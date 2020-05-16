@@ -17,8 +17,9 @@ class ActivityFields
   define :MAX_HEART_RATE, 'Max Heart Rate'
   define :PR_COUNT, 'PR Count'
   define :CALORIES, 'Calories'
+  define :WEATHER, 'Weather'
 
-  DEFAULT_VALUES = ['Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation'].freeze
+  DEFAULT_VALUES = ['Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Weather'].freeze
 
   def self.parse_s(values)
     return unless values

@@ -4,6 +4,7 @@ class UserActivity < Activity
 
   belongs_to :user, inverse_of: :activities
   embeds_one :map
+  embeds_one :weather
 
   index(user_id: 1, start_date: 1)
 
@@ -18,7 +19,7 @@ class UserActivity < Activity
   def brag!
     return if bragged_at
 
-    logger.info "Bragging about #{user}, #{self}"
+    logger.info "Bragging about #{user}, #{self}."
     rc = user.inform!(to_slack)
     update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
     rc
@@ -36,7 +37,7 @@ class UserActivity < Activity
   def rebrag!
     return unless channel_messages
 
-    logger.info "Rebragging about #{user}, #{self}"
+    logger.info "Rebragging about #{user}, #{self}."
     rc = user.update!(to_slack, channel_messages)
     update_attributes!(channel_messages: rc)
     rc
@@ -63,6 +64,7 @@ class UserActivity < Activity
     return unless activity.changed?
 
     activity.map.update!
+    activity.update_weather!
     activity.save!
     activity
   end
@@ -93,5 +95,54 @@ class UserActivity < Activity
     return if team_id && user.team_id == team_id
 
     errors.add(:team, 'Activity must belong to the same team as the user.')
+  end
+
+  def finished_at
+    Time.at(start_date.to_i + elapsed_time.to_i)
+  end
+
+  def start_latlng
+    map&.start_latlng
+  end
+
+  def update_weather!
+    return if weather.present?
+    return unless start_latlng
+
+    dt = (Time.now - finished_at).to_i
+
+    weather_options = { lat: start_latlng[0], lon: start_latlng[1] }
+
+    if dt > 5.days.to_i
+      return # OneCall Api does not return data that old
+    elsif dt > 9.hours.to_i
+      weather_options.merge!(dt: finished_at, exclude: ['hourly'])
+    else
+      weather_options.merge!(exclude: %w[minutely hourly daily])
+    end
+
+    current_weather = OpenWeather::Client.new.one_call(weather_options).current
+    current_weather.weather.each do |w|
+      w.icon_uri = w.icon_uri.to_s
+    end
+
+    build_weather(current_weather.to_h) if current_weather
+  rescue StandardError => e
+    logger.warn "Error getting weather at #{start_latlng.join(', ')} on #{finished_at.to_i} for #{user}, #{self}, #{e.message}."
+  end
+
+  def weather_s
+    return unless weather.present?
+
+    current_weather = OpenWeather::Models::OneCall::CurrentWeather.new(
+      weather.attributes.except('_id', 'updated_at', 'created_at')
+    )
+
+    temp = case team.units
+           when 'km' then current_weather.temp_c.to_i
+           when 'mi' then current_weather.temp_f.to_i
+           end
+
+    ["#{temp}°", current_weather.weather&.first&.main].join(' ')
   end
 end

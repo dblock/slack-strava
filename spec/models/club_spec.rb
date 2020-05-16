@@ -49,7 +49,7 @@ describe Club do
     it 'disables sync on 404' do
       expect(club.sync_activities?).to be true
       allow(club.strava_client).to receive(:club_activities).and_raise(
-        Faraday::Error::ResourceNotFound.new(404, body: { 'message' => 'Not Found', 'errors' => [] })
+        Faraday::ResourceNotFound.new(404, body: { 'message' => 'Not Found', 'errors' => [] })
       )
       expect(club.team.slack_client).to receive(:chat_postMessage).with(
         club.to_slack.merge(
@@ -58,7 +58,7 @@ describe Club do
           as_user: true
         )
       ).and_return('ts' => 1)
-      expect { club.sync_last_strava_activity! }.to raise_error Faraday::Error::ResourceNotFound
+      expect { club.sync_last_strava_activity! }.to raise_error Faraday::ResourceNotFound
       expect(club.sync_activities?).to be false
     end
     context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
