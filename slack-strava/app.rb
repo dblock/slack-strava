@@ -91,7 +91,7 @@ module SlackStrava
         },
         'map.png' => { '$ne' => nil }
       )
-      log_info_without_repeat "Pruning #{activities.count} PNGs for #{Team.active.trials.count} team(s)."
+      log_info_without_repeat "Pruning #{activities.count} PNGs for #{Team.active.count} team(s)."
       activities.each do |activity|
         activity.map.delete_png!
       end
