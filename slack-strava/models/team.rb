@@ -29,6 +29,7 @@ class Team
   before_validation :update_subscription_expired_at
   after_update :subscribed!
   after_save :activated!
+  before_destroy :destroy_subscribed_team
 
   def tags
     [
@@ -289,6 +290,7 @@ class Team
     logger.warn "Active team #{self} ping, #{e.message}."
     case e.message
     when 'account_inactive', 'invalid_auth'
+      logger.warn "Active team #{self} ping failed auth, deactivating."
       deactivate!
     end
     NewRelic::Agent.notice_error(e, custom_params: { team: to_s })
@@ -299,6 +301,10 @@ class Team
   end
 
   private
+
+  def destroy_subscribed_team
+    raise 'cannot destroy a subscribed team' if subscribed?
+  end
 
   def subscribed!
     return unless subscribed? && subscribed_changed?

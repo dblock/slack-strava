@@ -17,6 +17,16 @@ describe Team do
       expect(Team.find(inactive_team_two_weeks_ago.id)).to be nil
       expect(Team.find(inactive_team_a_month_ago.id)).to be nil
     end
+    context 'with a subscribed team' do
+      before do
+        inactive_team_a_month_ago.set(subscribed: true)
+      end
+      it 'does not destroy team' do
+        expect {
+          Team.purge!
+        }.to raise_error StandardError, 'cannot destroy a subscribed team'
+      end
+    end
   end
   context '#admins' do
     let!(:team) { Fabricate(:team) }
