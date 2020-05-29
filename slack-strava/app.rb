@@ -7,6 +7,7 @@ module SlackStrava
         logger.info 'Starting crons.'
         once_and_every 60 * 60 * 24 do
           check_subscribed_teams!
+          check_stripe_subscribers!
           deactivate_asleep_teams!
           check_trials!
           prune_pngs!
@@ -190,6 +191,28 @@ module SlackStrava
       rescue StandardError => e
         logger.warn "Error checking team #{team} subscription, #{e.message}."
         NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
+      end
+    end
+
+    def check_stripe_subscribers!
+      Stripe::Subscription.list(plan: 'slava-yearly').auto_paging_each do |subscription|
+        team = Team.where(stripe_customer_id: subscription.customer).first
+        next if team
+
+        customer = Stripe::Customer.retrieve(subscription.customer)
+        metadata = customer.metadata
+        team = Team.where(team_id: metadata.team_id).first
+        next if team&.subscribed?
+
+        if team
+          logger.warn "Re-associating customer_id for #{metadata.name} (#{metadata.team_id}) with #{team}."
+          team.update_attributes!(stripe_customer_id: subscription.customer, subscribed: true)
+        else
+          logger.warn "Cannot find team for #{metadata.name} (#{metadata.team_id}), contact #{customer.email}."
+        end
+      rescue StandardError => e
+        logger.warn "Error checking customer #{subscription.customer}, #{e.message}."
+        NewRelic::Agent.notice_error(e, custom_params: { team: subscription.customer })
       end
     end
   end
