@@ -60,7 +60,7 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
           expect(team.stripe_customer_id).to_not be nil
         end
         context 'not an admin' do
-          let(:user) { Fabricate(:user, is_admin: false, is_owner: false) }
+          let!(:user) { Fabricate(:user, is_admin: false, is_owner: false, team: team) }
           before do
             expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
           end
@@ -72,8 +72,8 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
     end
   end
   context 'subscribed team' do
-    let!(:activated_user) { Fabricate(:user) }
     let!(:team) { Fabricate(:team, subscribed: true) }
+    let!(:activated_user) { Fabricate(:user, team: team) }
     before do
       team.update_attributes!(activated_user_id: activated_user.user_id)
     end
