@@ -30,5 +30,13 @@ describe Api::Endpoints::MapsEndpoint do
         expect(activity.reload.map.png).to_not be_nil
       end
     end
+    context 'with a private activity', vcr: { cassette_name: 'strava/map' } do
+      let(:user) { Fabricate(:user, private_activities: false) }
+      let(:activity) { Fabricate(:user_activity, private: true, user: user) }
+      it 'does not return map' do
+        get "/api/maps/#{activity.map.id}.png"
+        expect(last_response.status).to eq 403
+      end
+    end
   end
 end

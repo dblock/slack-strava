@@ -1,6 +1,14 @@
 require 'spec_helper'
 
 describe ClubActivity do
+  context 'hidden?' do
+    context 'default' do
+      let(:activity) { Fabricate(:club_activity) }
+      it 'is not hidden' do
+        expect(activity.hidden?).to be false
+      end
+    end
+  end
   context 'brag!' do
     let(:team) { Fabricate(:team) }
     let(:club) { Fabricate(:club, team: team) }

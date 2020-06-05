@@ -10,6 +10,10 @@ class UserActivity < Activity
 
   before_validation :validate_team
 
+  def hidden?
+    private? && !user.private_activities?
+  end
+
   def start_date_local_s
     return unless start_date_local
 
@@ -19,7 +23,7 @@ class UserActivity < Activity
   def brag!
     return if bragged_at
 
-    if private? && !user.private_activities?
+    if hidden?
       logger.info "Skipping #{user}, #{self}, private."
       update_attributes!(bragged_at: Time.now.utc)
       []

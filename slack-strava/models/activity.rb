@@ -34,6 +34,10 @@ class Activity
   index(team_id: 1)
   validates_presence_of :team_id
 
+  def hidden?
+    false
+  end
+
   def to_s
     "name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, speed=#{speed_s}"
   end

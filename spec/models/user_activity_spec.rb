@@ -4,6 +4,35 @@ describe UserActivity do
   before do
     allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
   end
+  context 'hidden?' do
+    context 'default' do
+      let(:activity) { Fabricate(:user_activity) }
+      it 'is not hidden' do
+        expect(activity.hidden?).to be false
+      end
+    end
+    context 'private and user is private' do
+      let(:user) { Fabricate(:user, private_activities: false) }
+      let(:activity) { Fabricate(:user_activity, private: true) }
+      it 'is hidden' do
+        expect(activity.hidden?).to be true
+      end
+    end
+    context 'private but user is public' do
+      let(:user) { Fabricate(:user, private_activities: true) }
+      let(:activity) { Fabricate(:user_activity, private: true) }
+      it 'is hidden' do
+        expect(activity.hidden?).to be true
+      end
+    end
+    context 'public but user is private' do
+      let(:user) { Fabricate(:user, private_activities: false) }
+      let(:activity) { Fabricate(:user_activity, private: false) }
+      it 'is hidden' do
+        expect(activity.hidden?).to be false
+      end
+    end
+  end
   context 'brag!' do
     let(:team) { Fabricate(:team) }
     let(:user) { Fabricate(:user, team: team) }
