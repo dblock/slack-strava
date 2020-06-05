@@ -144,11 +144,21 @@ class UserActivity < Activity
       weather.attributes.except('_id', 'updated_at', 'created_at')
     )
 
-    temp = case team.units
-           when 'km' then current_weather.temp_c.to_i
-           when 'mi' then current_weather.temp_f.to_i
-           end
+    main = current_weather.weather&.first&.main
 
-    ["#{temp}°", current_weather.weather&.first&.main].join(' ')
+    case team.units
+    when 'km' then
+      ["#{current_weather.temp_c.to_i}°C", main].compact.join(' ')
+    when 'mi' then
+      ["#{current_weather.temp_f.to_i}°F", main].compact.join(' ')
+    when 'both' then
+      [
+        [
+          "#{current_weather.temp_f.to_i}°F",
+          "#{current_weather.temp_c.to_i}°C"
+        ].join(ActivityMethods::UNIT_SEPARATOR),
+        main
+      ].compact.join(' ')
+     end
   end
 end

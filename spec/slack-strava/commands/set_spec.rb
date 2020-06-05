@@ -8,7 +8,7 @@ describe SlackStrava::Commands::Set do
   before do
     allow(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
   end
-  context 'units' do
+  context 'settings' do
     it 'requires a subscription' do
       expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(team.trial_message)
     end
@@ -130,6 +130,20 @@ describe SlackStrava::Commands::Set do
             )
             expect(client.owner.units).to eq 'km'
             expect(team.reload.units).to eq 'km'
+          end
+          it 'shows current value of units set to both' do
+            team.update_attributes!(units: 'both')
+            expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
+              "Activities for team #{team.name} display *both units*."
+            )
+          end
+          it 'sets units to both' do
+            team.update_attributes!(units: 'km')
+            expect(message: "#{SlackRubyBot.config.user} set units both").to respond_with_slack_message(
+              "Activities for team #{team.name} now display *both units*."
+            )
+            expect(client.owner.units).to eq 'both'
+            expect(team.reload.units).to eq 'both'
           end
         end
         context 'maps' do

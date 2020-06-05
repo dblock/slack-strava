@@ -75,7 +75,7 @@ describe UserActivity do
               { title: 'Pace', value: '9m02s/mi', short: true },
               { title: 'Speed', value: '6.6mph', short: true },
               { title: 'Elevation', value: '475.4ft', short: true },
-              { title: 'Weather', value: '70° Rain', short: true }
+              { title: 'Weather', value: '70°F Rain', short: true }
             ],
             author_name: user.athlete.name,
             author_link: user.athlete.strava_url,
@@ -110,7 +110,7 @@ describe UserActivity do
                 { title: 'Max Heart Rate', value: '178.0bpm', short: true },
                 { title: 'PR Count', value: '3', short: true },
                 { title: 'Calories', value: '870.2', short: true },
-                { title: 'Weather', value: '70° Rain', short: true }
+                { title: 'Weather', value: '70°F Rain', short: true }
               ],
               author_name: user.athlete.name,
               author_link: user.athlete.strava_url,
@@ -141,7 +141,7 @@ describe UserActivity do
                 { title: 'Pace', value: '9m02s/mi', short: true },
                 { title: 'Speed', value: '6.6mph', short: true },
                 { title: 'Elevation', value: '475.4ft', short: true },
-                { title: 'Weather', value: '70° Rain', short: true }
+                { title: 'Weather', value: '70°F Rain', short: true }
               ]
             }
           ]
@@ -170,7 +170,38 @@ describe UserActivity do
               { title: 'Pace', value: '5m37s/km', short: true },
               { title: 'Speed', value: '10.7km/h', short: true },
               { title: 'Elevation', value: '144.9m', short: true },
-              { title: 'Weather', value: '21° Rain', short: true }
+              { title: 'Weather', value: '21°C Rain', short: true }
+            ],
+            author_name: user.athlete.name,
+            author_link: user.athlete.strava_url,
+            author_icon: user.athlete.profile_medium
+          }
+        ]
+      )
+    end
+  end
+  context 'both' do
+    let(:team) { Fabricate(:team, units: 'both') }
+    let(:user) { Fabricate(:user, team: team) }
+    let(:activity) { Fabricate(:user_activity, user: user) }
+    it 'to_slack' do
+      expect(activity.to_slack).to eq(
+        attachments: [
+          {
+            fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
+            title: activity.name,
+            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
+            fields: [
+              { title: 'Type', value: 'Run 🏃', short: true },
+              { title: 'Distance', value: '14.01mi 22.54km', short: true },
+              { title: 'Moving Time', value: '2h6m26s', short: true },
+              { title: 'Elapsed Time', value: '2h8m6s', short: true },
+              { title: 'Pace', value: '9m02s/mi 5m37s/km', short: true },
+              { title: 'Speed', value: '6.6mph 10.7km/h', short: true },
+              { title: 'Elevation', value: '475.4ft 144.9m', short: true },
+              { title: 'Weather', value: '70°F 21°C Rain', short: true }
             ],
             author_name: user.athlete.name,
             author_link: user.athlete.strava_url,
@@ -234,6 +265,33 @@ describe UserActivity do
       )
     end
   end
+  context 'swim activity in both' do
+    let(:team) { Fabricate(:team, units: 'both') }
+    let(:user) { Fabricate(:user, team: team) }
+    let(:activity) { Fabricate(:swim_activity, user: user) }
+    it 'to_slack' do
+      expect(activity.to_slack).to eq(
+        attachments: [
+          {
+            fallback: "#{activity.name} via #{activity.user.slack_mention}, 2050yd 1874m 37m 1m48s/100yd 1m58s/100m",
+            title: activity.name,
+            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            fields: [
+              { title: 'Type', value: 'Swim 🏊', short: true },
+              { title: 'Distance', value: '2050yd 1874m', short: true },
+              { title: 'Time', value: '37m', short: true },
+              { title: 'Pace', value: '1m48s/100yd 1m58s/100m', short: true },
+              { title: 'Speed', value: '1.9mph 3.0km/h', short: true }
+            ],
+            author_name: user.athlete.name,
+            author_link: user.athlete.strava_url,
+            author_icon: user.athlete.profile_medium
+          }
+        ]
+      )
+    end
+  end
   context 'ride activities in kilometers/hour' do
     let(:team) { Fabricate(:team, units: 'km') }
     let(:user) { Fabricate(:user, team: team) }
@@ -253,6 +311,34 @@ describe UserActivity do
               { title: 'Elapsed Time', value: '1h13m30s', short: true },
               { title: 'Pace', value: '2m30s/km', short: true },
               { title: 'Speed', value: '24.0km/h', short: true }
+            ],
+            author_name: user.athlete.name,
+            author_link: user.athlete.strava_url,
+            author_icon: user.athlete.profile_medium
+          }
+        ]
+      )
+    end
+  end
+  context 'ride activities in both' do
+    let(:team) { Fabricate(:team, units: 'both') }
+    let(:user) { Fabricate(:user, team: team) }
+    let(:activity) { Fabricate(:ride_activity, user: user) }
+    it 'to_slack' do
+      expect(activity.to_slack).to eq(
+        attachments: [
+          {
+            fallback: "#{activity.name} via #{activity.user.slack_mention}, 17.46mi 28.1km 1h10m7s 4m01s/mi 2m30s/km",
+            title: activity.name,
+            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            fields: [
+              { title: 'Type', value: 'Ride 🚴', short: true },
+              { title: 'Distance', value: '17.46mi 28.1km', short: true },
+              { title: 'Moving Time', value: '1h10m7s', short: true },
+              { title: 'Elapsed Time', value: '1h13m30s', short: true },
+              { title: 'Pace', value: '4m01s/mi 2m30s/km', short: true },
+              { title: 'Speed', value: '14.9mph 24.0km/h', short: true }
             ],
             author_name: user.athlete.name,
             author_link: user.athlete.strava_url,

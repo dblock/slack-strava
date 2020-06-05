@@ -2,7 +2,7 @@ class Team
   field :api, type: Boolean, default: false
 
   field :units, type: String, default: 'mi'
-  validates_inclusion_of :units, in: %w[mi km]
+  validates_inclusion_of :units, in: %w[mi km both]
 
   field :activity_fields, type: Array, default: ['Default']
   validates :activity_fields, array: { presence: true, inclusion: { in: ActivityFields.values } }
@@ -44,6 +44,8 @@ class Team
       'miles'
     when 'km'
       'kilometers'
+    when 'both'
+      'both units'
     else
       raise ArgumentError
     end

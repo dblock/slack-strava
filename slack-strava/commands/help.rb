@@ -20,7 +20,7 @@ module SlackStrava
 
         Settings
         ------------
-        set units mi|km          - use miles or kilometers
+        set units mi|km|both     - use imperial vs. metric units, or display both
         set fields all|none|...  - display all, none or certain activity fields
         set maps off|full|thumb  - change the way maps are displayed
         set sync true|false      - sync activities (default is true)

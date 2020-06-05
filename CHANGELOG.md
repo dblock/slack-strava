@@ -1,5 +1,7 @@
 ### Changelog
 
+* 2020/05/05: Added setting units to `both` - [@dblock](https://github.com/dblock).
+* 2020/05/05: Do not post private activities coming from club feeds when user is also connected - [@dblock](https://github.com/dblock).
 * 2020/05/17: Added current weather field - [@dblock](https://github.com/dblock).
 * 2020/05/07: Do not post activities for users deactivated in Slack - [@dblock](https://github.com/dblock).
 * 2020/04/19: Inform admins and users on restricted channel errors - [@dblock](https://github.com/dblock).
