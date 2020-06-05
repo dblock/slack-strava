@@ -19,10 +19,16 @@ class UserActivity < Activity
   def brag!
     return if bragged_at
 
-    logger.info "Bragging about #{user}, #{self}."
-    rc = user.inform!(to_slack)
-    update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
-    rc
+    if private? && !user.private_activities?
+      logger.info "Skipping #{user}, #{self}, private."
+      update_attributes!(bragged_at: Time.now.utc)
+      []
+    else
+      logger.info "Bragging about #{user}, #{self}."
+      rc = user.inform!(to_slack)
+      update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
+      rc
+    end
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
     when 'not_in_channel', 'account_inactive' then

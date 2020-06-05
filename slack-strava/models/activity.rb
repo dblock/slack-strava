@@ -21,6 +21,7 @@ class Activity
   field :type, type: String
 
   index(strava_id: 1)
+  index(team_id: 1, bragged_at: 1)
   index(distance: 1, moving_time: 1, elapsed_time: 1, total_elevation_gain: 1)
 
   embeds_many :channel_messages, inverse_of: nil
@@ -78,15 +79,29 @@ class Activity
       total_elevation_gain == other.total_elevation_gain
   end
 
-  # Have we recently bragged an identically looking activity?
-  # Typically a user activity.
-  def bragged_in?(channel_id)
+  # Have we recently bragged an identically looking user activity?
+  def bragged_in?(channel_id, dt = 48.hours)
     Activity.where(
+      team_id: team.id,
       distance: distance,
       moving_time: moving_time,
       elapsed_time: elapsed_time,
       total_elevation_gain: total_elevation_gain,
+      :bragged_at.gt => Time.now.utc.to_i - dt.to_i,
       "channel_messages.channel": channel_id
+    ).exists?
+  end
+
+  # Have we recently skipped bragging of an identically looking private activity?
+  def privately_bragged?(dt = 48.hours)
+    Activity.where(
+      team_id: team.id,
+      distance: distance,
+      moving_time: moving_time,
+      elapsed_time: elapsed_time,
+      total_elevation_gain: total_elevation_gain,
+      :bragged_at.gt => Time.now.utc.to_i - dt.to_i,
+      private: true
     ).exists?
   end
 end

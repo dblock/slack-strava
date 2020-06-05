@@ -314,8 +314,6 @@ class User
     return unless sync_activities?
 
     strava_client.athlete_activities(options) do |activity|
-      next if activity.private && !private_activities?
-
       UserActivity.create_from_strava!(self, activity)
     end
   rescue Strava::Errors::Fault => e

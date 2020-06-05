@@ -15,6 +15,10 @@ class ClubActivity < Activity
       update_attributes!(bragged_at: Time.now.utc)
       logger.info "Already bragged about #{club} in #{club.channel_id}, #{self}"
       nil
+    elsif privately_bragged?
+      update_attributes!(bragged_at: Time.now.utc)
+      logger.info "Found a privately bragged activity about #{club} in #{club.channel_id}, #{self}"
+      nil
     else
       logger.info "Bragging about #{club}, #{self}"
       message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)

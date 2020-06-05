@@ -47,11 +47,13 @@ describe ClubActivity do
     context 'having already bragged a user activity in the channel' do
       let!(:user_activity) do
         Fabricate(:user_activity,
+                  team: club.team,
                   distance: activity.distance,
                   moving_time: activity.moving_time,
                   elapsed_time: activity.elapsed_time,
                   total_elevation_gain: activity.total_elevation_gain,
                   map: nil,
+                  bragged_at: Time.now.utc,
                   channel_messages: [
                     ChannelMessage.new(channel: club.channel_id)
                   ])
@@ -62,6 +64,55 @@ describe ClubActivity do
           expect(activity.brag!).to be nil
         }.to change(club.activities.unbragged, :count).by(-1)
         expect(activity.bragged_at).to_not be_nil
+      end
+    end
+    context 'having a private user activity' do
+      let!(:user_activity) do
+        Fabricate(:user_activity,
+                  team: club.team,
+                  distance: activity.distance,
+                  moving_time: activity.moving_time,
+                  elapsed_time: activity.elapsed_time,
+                  total_elevation_gain: activity.total_elevation_gain,
+                  map: nil,
+                  private: true)
+      end
+      context 'unbragged' do
+        it 'rebrags the activity' do
+          expect(club.team.slack_client).to receive(:chat_postMessage).with(
+            activity.to_slack.merge(
+              channel: club.channel_id,
+              as_user: true
+            )
+          ).and_return('ts' => 1)
+          expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+        end
+      end
+      context 'bragged recently' do
+        before do
+          user_activity.set(bragged_at: Time.now.utc)
+        end
+        it 'does not rebrag the activity' do
+          expect(club.team.slack_client).to_not receive(:chat_postMessage)
+          expect {
+            expect(activity.brag!).to be nil
+          }.to change(club.activities.unbragged, :count).by(-1)
+          expect(activity.bragged_at).to_not be_nil
+        end
+      end
+      context 'bragged a long time ago' do
+        before do
+          user_activity.set(bragged_at: Time.now.utc - 1.month)
+        end
+        it 'rebrags the activity' do
+          expect(club.team.slack_client).to receive(:chat_postMessage).with(
+            activity.to_slack.merge(
+              channel: club.channel_id,
+              as_user: true
+            )
+          ).and_return('ts' => 1)
+          expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+        end
       end
     end
   end

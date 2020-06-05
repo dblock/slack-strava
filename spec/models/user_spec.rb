@@ -244,22 +244,28 @@ describe User do
     context 'with private activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_with_private' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       context 'by default' do
-        it 'skips private activities' do
+        it 'includes private activities' do
           expect {
             user.sync_new_strava_activities!
-          }.to change(user.activities, :count).by(3)
-          expect(user.activities.select(&:private).count).to eq 0
+          }.to change(user.activities, :count).by(4)
+          expect(user.activities.select(&:private).count).to eq 2
+        end
+        it 'does not brag private activities' do
+          user.sync_new_strava_activities!
+          allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
+          expect(user).to receive(:inform!).exactly(2).times
+          5.times { user.brag! }
         end
       end
       context 'with private_activities set to true' do
         before do
           user.update_attributes!(private_activities: true)
         end
-        it 'skips private activities' do
-          expect {
-            user.sync_new_strava_activities!
-          }.to change(user.activities, :count).by(4)
-          expect(user.activities.select(&:private).count).to eq 1
+        it 'brags private activities' do
+          user.sync_new_strava_activities!
+          allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
+          expect(user).to receive(:inform!).exactly(4).times
+          5.times { user.brag! }
         end
       end
     end
