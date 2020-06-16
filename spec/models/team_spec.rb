@@ -21,10 +21,12 @@ describe Team do
       before do
         inactive_team_a_month_ago.set(subscribed: true)
       end
-      it 'does not destroy team' do
+      it 'does not destroy team the subscribed team' do
         expect {
           Team.purge!
-        }.to raise_error StandardError, 'cannot destroy a subscribed team'
+        }.to change(Team, :count).by(-1)
+        expect(Team.find(inactive_team_two_weeks_ago.id)).to be nil
+        expect(Team.find(inactive_team_a_month_ago.id)).to_not be nil
       end
     end
   end
