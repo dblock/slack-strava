@@ -269,6 +269,46 @@ describe User do
         end
       end
     end
+    context 'with follower only activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_privacy' } do
+      let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+      context 'by default' do
+        it 'includes followers only activities' do
+          expect {
+            user.sync_new_strava_activities!
+          }.to change(user.activities, :count).by(3)
+          expect(user.activities.select(&:private).count).to eq 1
+          expect(user.activities.map(&:visibility)).to eq %w[everyone only_me followers_only]
+        end
+        it 'brags follower only activities' do
+          user.sync_new_strava_activities!
+          allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
+          expect(user).to receive(:inform!).exactly(2).times
+          3.times { user.brag! }
+        end
+      end
+      context 'with followers_only_activities set to false' do
+        before do
+          user.update_attributes!(followers_only_activities: false)
+        end
+        it 'does not brag follower only activities' do
+          user.sync_new_strava_activities!
+          allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
+          expect(user).to receive(:inform!).exactly(1).times
+          3.times { user.brag! }
+        end
+      end
+      context 'with private set to false' do
+        before do
+          user.update_attributes!(private_activities: false)
+        end
+        it 'brags follower only activities' do
+          user.sync_new_strava_activities!
+          allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
+          expect(user).to receive(:inform!).exactly(2).times
+          3.times { user.brag! }
+        end
+      end
+    end
     context 'with sync_activities set to false' do
       let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer', sync_activities: false) }
       it 'does not retrieve any activities' do

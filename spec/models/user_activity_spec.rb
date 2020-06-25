@@ -11,25 +11,71 @@ describe UserActivity do
         expect(activity.hidden?).to be false
       end
     end
-    context 'private and user is private' do
-      let(:user) { Fabricate(:user, private_activities: false) }
-      let(:activity) { Fabricate(:user_activity, private: true) }
-      it 'is hidden' do
-        expect(activity.hidden?).to be true
+    context 'private' do
+      context 'private and user is private' do
+        let(:user) { Fabricate(:user, private_activities: false) }
+        let(:activity) { Fabricate(:user_activity, user: user, private: true) }
+        it 'is hidden' do
+          expect(activity.hidden?).to be true
+        end
+      end
+      context 'private but user is public' do
+        let(:user) { Fabricate(:user, private_activities: true) }
+        let(:activity) { Fabricate(:user_activity, user: user, private: true) }
+        it 'is not hidden' do
+          expect(activity.hidden?).to be false
+        end
+      end
+      context 'public but user is private' do
+        let(:user) { Fabricate(:user, private_activities: false) }
+        let(:activity) { Fabricate(:user_activity, user: user, private: false) }
+        it 'is hidden' do
+          expect(activity.hidden?).to be false
+        end
       end
     end
-    context 'private but user is public' do
-      let(:user) { Fabricate(:user, private_activities: true) }
-      let(:activity) { Fabricate(:user_activity, private: true) }
-      it 'is hidden' do
-        expect(activity.hidden?).to be true
+    context 'visibility' do
+      context 'user has not set followers_only_activities' do
+        let(:user) { Fabricate(:user, followers_only_activities: false) }
+        context 'only_me' do
+          let(:activity) { Fabricate(:user_activity, user: user, visibility: 'only_me') }
+          it 'is hidden' do
+            expect(activity.hidden?).to be true
+          end
+        end
+        context 'followers_only' do
+          let(:activity) { Fabricate(:user_activity, user: user, visibility: 'followers_only') }
+          it 'is hidden' do
+            expect(activity.hidden?).to be true
+          end
+        end
+        context 'everyone' do
+          let(:activity) { Fabricate(:user_activity, user: user, visibility: 'everyone') }
+          it 'is not hidden' do
+            expect(activity.hidden?).to be false
+          end
+        end
       end
-    end
-    context 'public but user is private' do
-      let(:user) { Fabricate(:user, private_activities: false) }
-      let(:activity) { Fabricate(:user_activity, private: false) }
-      it 'is hidden' do
-        expect(activity.hidden?).to be false
+      context 'user has set followers_only_activities' do
+        let(:user) { Fabricate(:user, followers_only_activities: true) }
+        context 'only_me' do
+          let(:activity) { Fabricate(:user_activity, user: user, visibility: 'only_me') }
+          it 'is hidden' do
+            expect(activity.hidden?).to be true
+          end
+        end
+        context 'followers_only' do
+          let(:activity) { Fabricate(:user_activity, user: user, visibility: 'followers_only') }
+          it 'is not hidden' do
+            expect(activity.hidden?).to be false
+          end
+        end
+        context 'everyone' do
+          let(:activity) { Fabricate(:user_activity, user: user, visibility: 'everyone') }
+          it 'is not hidden' do
+            expect(activity.hidden?).to be false
+          end
+        end
       end
     end
   end

@@ -82,39 +82,87 @@ describe Activity do
     end
   end
   context 'privately_bragged?' do
-    let!(:user_activity) do
-      Fabricate(:user_activity,
-                private: true,
-                map: nil,
-                bragged_at: 1.day.ago,
-                channel_messages: [])
+    context 'private activity' do
+      let!(:user_activity) do
+        Fabricate(:user_activity,
+                  private: true,
+                  map: nil,
+                  bragged_at: 1.day.ago,
+                  channel_messages: [])
+      end
+      let(:user_activity_data) do
+        {
+          private: true,
+          distance: user_activity.distance,
+          moving_time: user_activity.moving_time,
+          elapsed_time: user_activity.elapsed_time,
+          total_elevation_gain: user_activity.total_elevation_gain,
+          team: user_activity.team
+        }
+      end
+      it 'finds a similar user activity' do
+        expect(Activity.new(user_activity_data).privately_bragged?).to be true
+      end
+      it 'does not find a similar public user activity' do
+        user_activity.set(private: false)
+        expect(Activity.new(user_activity_data).privately_bragged?).to be false
+      end
+      it 'finds a similar user activity with everyone visibility' do
+        user_activity.set(visibility: 'everyone')
+        expect(Activity.new(user_activity_data).privately_bragged?).to be true
+      end
+      it 'does not find a dissimilar private activity' do
+        expect(Activity.new(user_activity_data.merge(distance: -1)).privately_bragged?).to be false
+      end
+      it 'does not find a similar private user activity bragged a long time ago' do
+        user_activity.set(bragged_at: 1.week.ago)
+        expect(Activity.new(user_activity_data).privately_bragged?).to be false
+      end
+      it 'does not find a similar private user activity in a different team' do
+        expect(Activity.new(user_activity_data.merge(team: Fabricate(:team))).privately_bragged?).to be false
+      end
     end
-    let(:user_activity_data) do
-      {
-        private: true,
-        distance: user_activity.distance,
-        moving_time: user_activity.moving_time,
-        elapsed_time: user_activity.elapsed_time,
-        total_elevation_gain: user_activity.total_elevation_gain,
-        team: user_activity.team
-      }
-    end
-    it 'finds a similar user activity' do
-      expect(Activity.new(user_activity_data).privately_bragged?).to be true
-    end
-    it 'does not find a similar public user activity' do
-      user_activity.set(private: false)
-      expect(Activity.new(user_activity_data).privately_bragged?).to be false
-    end
-    it 'does not find a dissimilar private activity' do
-      expect(Activity.new(user_activity_data.merge(distance: -1)).privately_bragged?).to be false
-    end
-    it 'does not find a similar private user activity bragged a long time ago' do
-      user_activity.set(bragged_at: 1.week.ago)
-      expect(Activity.new(user_activity_data).privately_bragged?).to be false
-    end
-    it 'does not find a similar private user activity in a different team' do
-      expect(Activity.new(user_activity_data.merge(team: Fabricate(:team))).privately_bragged?).to be false
+    context 'visibility' do
+      let!(:user_activity) do
+        Fabricate(:user_activity,
+                  map: nil,
+                  bragged_at: 1.day.ago,
+                  channel_messages: [])
+      end
+      let(:user_activity_data) do
+        {
+          distance: user_activity.distance,
+          moving_time: user_activity.moving_time,
+          elapsed_time: user_activity.elapsed_time,
+          total_elevation_gain: user_activity.total_elevation_gain,
+          team: user_activity.team
+        }
+      end
+      it 'finds a similar only_me user activity' do
+        user_activity.set(visibility: 'only_me')
+        expect(Activity.new(user_activity_data).privately_bragged?).to be true
+      end
+      it 'finds a similar followers_only user activity' do
+        user_activity.set(visibility: 'followers_only')
+        expect(Activity.new(user_activity_data).privately_bragged?).to be true
+      end
+      it 'does not find a similar everyone user activity' do
+        user_activity.set(visibility: 'everyone')
+        expect(Activity.new(user_activity_data).privately_bragged?).to be false
+      end
+      it 'does not find a dissimilar private activity' do
+        user_activity.set(visibility: 'only_me')
+        expect(Activity.new(user_activity_data.merge(distance: -1)).privately_bragged?).to be false
+      end
+      it 'does not find a similar private user activity bragged a long time ago' do
+        user_activity.set(visibility: 'only_me')
+        user_activity.set(bragged_at: 1.week.ago)
+        expect(Activity.new(user_activity_data).privately_bragged?).to be false
+      end
+      it 'does not find a similar private user activity in a different team' do
+        user_activity.set(visibility: 'only_me')
+        expect(Activity.new(user_activity_data.merge(team: Fabricate(:team))).privately_bragged?).to be false
+      end
     end
   end
 end

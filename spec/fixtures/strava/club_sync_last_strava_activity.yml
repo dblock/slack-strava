@@ -50,13 +50,7 @@ http_interactions:
       - keep-alive
     body:
       encoding: ASCII-8BIT
-      string: !binary |-
-        W3sicmVzb3VyY2Vfc3RhdGUiOjIsImF0aGxldGUiOnsicmVzb3VyY2Vfc3Rh
-        dGUiOjIsImZpcnN0bmFtZSI6Im1pY2FoIiwibGFzdG5hbWUiOiJNLiJ9LCJu
-        YW1lIjoiSGFyZCBhcyBmdWNrIHJ1biBob21lIOKAlCB0aXJlZCArIGxvdHMg
-        b2YgYWNoZXMgIiwiZGlzdGFuY2UiOjk2OTEuMCwibW92aW5nX3RpbWUiOjI2
-        NjYsImVsYXBzZWRfdGltZSI6MzE3NSwidG90YWxfZWxldmF0aW9uX2dhaW4i
-        Ojg2LjYsInR5cGUiOiJSdW4iLCJ3b3Jrb3V0X3R5cGUiOjB9XQ==
+      string: '[{"resource_state":2,"athlete":{"resource_state":2,"firstname":"micah","lastname":"M."},"name":"Hard as fuck run home — tired + lots of aches ","distance":9691.0,"moving_time":2666,"elapsed_time":3175,"total_elevation_gain":86.6,"type":"Run","workout_type":0}]'
     http_version:
   recorded_at: Thu, 26 Apr 2018 00:40:39 GMT
 recorded_with: VCR 4.0.0

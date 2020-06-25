@@ -11,7 +11,9 @@ class UserActivity < Activity
   before_validation :validate_team
 
   def hidden?
-    private? && !user.private_activities?
+    (private? && !user.private_activities?) ||
+      (visibility == 'only_me' && !user.private_activities?) ||
+      (visibility == 'followers_only' && !user.followers_only_activities?)
   end
 
   def start_date_local_s

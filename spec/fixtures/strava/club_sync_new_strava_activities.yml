@@ -50,50 +50,7 @@ http_interactions:
       - keep-alive
     body:
       encoding: ASCII-8BIT
-      string: !binary |-
-        W3sicmVzb3VyY2Vfc3RhdGUiOjIsImF0aGxldGUiOnsicmVzb3VyY2Vfc3Rh
-        dGUiOjIsImZpcnN0bmFtZSI6Im1pY2FoIiwibGFzdG5hbWUiOiJNLiJ9LCJu
-        YW1lIjoiSGFyZCBhcyBmdWNrIHJ1biBob21lIOKAlCB0aXJlZCArIGxvdHMg
-        b2YgYWNoZXMgIiwiZGlzdGFuY2UiOjk2OTEuMCwibW92aW5nX3RpbWUiOjI2
-        NjYsImVsYXBzZWRfdGltZSI6MzE3NSwidG90YWxfZWxldmF0aW9uX2dhaW4i
-        Ojg2LjYsInR5cGUiOiJSdW4iLCJ3b3Jrb3V0X3R5cGUiOjB9LHsicmVzb3Vy
-        Y2Vfc3RhdGUiOjIsImF0aGxldGUiOnsicmVzb3VyY2Vfc3RhdGUiOjIsImZp
-        cnN0bmFtZSI6ImxpeiIsImxhc3RuYW1lIjoiUC4ifSwibmFtZSI6IkV2ZW5p
-        bmcgUnVuIiwiZGlzdGFuY2UiOjE2MTAuNCwibW92aW5nX3RpbWUiOjU2MCwi
-        ZWxhcHNlZF90aW1lIjo1NzQsInRvdGFsX2VsZXZhdGlvbl9nYWluIjoyLjYs
-        InR5cGUiOiJSdW4iLCJ3b3Jrb3V0X3R5cGUiOm51bGx9LHsicmVzb3VyY2Vf
-        c3RhdGUiOjIsImF0aGxldGUiOnsicmVzb3VyY2Vfc3RhdGUiOjIsImZpcnN0
-        bmFtZSI6Ik1hcmMiLCJsYXN0bmFtZSI6IlIuIn0sIm5hbWUiOiJFdmVuaW5n
-        IFJ1biIsImRpc3RhbmNlIjo5NTA5LjEsIm1vdmluZ190aW1lIjozNDY5LCJl
-        bGFwc2VkX3RpbWUiOjM0NjksInRvdGFsX2VsZXZhdGlvbl9nYWluIjowLjAs
-        InR5cGUiOiJSdW4iLCJ3b3Jrb3V0X3R5cGUiOm51bGx9LHsicmVzb3VyY2Vf
-        c3RhdGUiOjIsImF0aGxldGUiOnsicmVzb3VyY2Vfc3RhdGUiOjIsImZpcnN0
-        bmFtZSI6IkxvZ2FuIiwibGFzdG5hbWUiOiJZLiJ9LCJuYW1lIjoiRXZlbmlu
-        ZyBSdW4iLCJkaXN0YW5jZSI6MTYyMzEuMSwibW92aW5nX3RpbWUiOjQ5Njks
-        ImVsYXBzZWRfdGltZSI6NTY5OSwidG90YWxfZWxldmF0aW9uX2dhaW4iOjYz
-        LjIsInR5cGUiOiJSdW4iLCJ3b3Jrb3V0X3R5cGUiOm51bGx9LHsicmVzb3Vy
-        Y2Vfc3RhdGUiOjIsImF0aGxldGUiOnsicmVzb3VyY2Vfc3RhdGUiOjIsImZp
-        cnN0bmFtZSI6IkZyYW5jaXNjbyIsImxhc3RuYW1lIjoiQi4ifSwibmFtZSI6
-        IkBQcm9qZWN0Tm9EYXlzT2ZmIC0gdjIuMzY1LjExNy40ODIiLCJkaXN0YW5j
-        ZSI6ODUxOC4xLCJtb3ZpbmdfdGltZSI6MjI0MSwiZWxhcHNlZF90aW1lIjoz
-        MzQ4LCJ0b3RhbF9lbGV2YXRpb25fZ2FpbiI6MTAuOCwidHlwZSI6IlJ1biIs
-        IndvcmtvdXRfdHlwZSI6MH0seyJyZXNvdXJjZV9zdGF0ZSI6MiwiYXRobGV0
-        ZSI6eyJyZXNvdXJjZV9zdGF0ZSI6MiwiZmlyc3RuYW1lIjoiZXJpayIsImxh
-        c3RuYW1lIjoiUi4ifSwibmFtZSI6IkV2ZW5pbmcgUnVuIiwiZGlzdGFuY2Ui
-        Ojg3NTMuNCwibW92aW5nX3RpbWUiOjI3MDksImVsYXBzZWRfdGltZSI6Mjk3
-        OSwidG90YWxfZWxldmF0aW9uX2dhaW4iOjMwLjAsInR5cGUiOiJSdW4iLCJ3
-        b3Jrb3V0X3R5cGUiOm51bGx9LHsicmVzb3VyY2Vfc3RhdGUiOjIsImF0aGxl
-        dGUiOnsicmVzb3VyY2Vfc3RhdGUiOjIsImZpcnN0bmFtZSI6IkFybmF1ZCIs
-        Imxhc3RuYW1lIjoiRC4ifSwibmFtZSI6IkV2ZW5pbmcgUnVuIFRpcmVkIExl
-        Z3MgIiwiZGlzdGFuY2UiOjE2MjMyLjYsIm1vdmluZ190aW1lIjo1NTk1LCJl
-        bGFwc2VkX3RpbWUiOjU4NzEsInRvdGFsX2VsZXZhdGlvbl9nYWluIjo0NS4w
-        LCJ0eXBlIjoiUnVuIiwid29ya291dF90eXBlIjowfSx7InJlc291cmNlX3N0
-        YXRlIjoyLCJhdGhsZXRlIjp7InJlc291cmNlX3N0YXRlIjoyLCJmaXJzdG5h
-        bWUiOiJKb2huIiwibGFzdG5hbWUiOiJLLiJ9LCJuYW1lIjoiTWlzc2VkIHRo
-        ZSB3YXJtdGguIE5vdCB0aGUgaHVtaWRpdHkuICIsImRpc3RhbmNlIjoxMzAx
-        NS4xLCJtb3ZpbmdfdGltZSI6MzQ3MiwiZWxhcHNlZF90aW1lIjo0MzM5LCJ0
-        b3RhbF9lbGV2YXRpb25fZ2FpbiI6NzIuNywidHlwZSI6IlJ1biIsIndvcmtv
-        dXRfdHlwZSI6MH1d
+      string: '[{"resource_state":2,"athlete":{"resource_state":2,"firstname":"micah","lastname":"M."},"name":"Hard as fuck run home — tired + lots of aches ","distance":9691.0,"moving_time":2666,"elapsed_time":3175,"total_elevation_gain":86.6,"type":"Run","workout_type":0},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"liz","lastname":"P."},"name":"Evening Run","distance":1610.4,"moving_time":560,"elapsed_time":574,"total_elevation_gain":2.6,"type":"Run","workout_type":null},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"Marc","lastname":"R."},"name":"Evening Run","distance":9509.1,"moving_time":3469,"elapsed_time":3469,"total_elevation_gain":0.0,"type":"Run","workout_type":null},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"Logan","lastname":"Y."},"name":"Evening Run","distance":16231.1,"moving_time":4969,"elapsed_time":5699,"total_elevation_gain":63.2,"type":"Run","workout_type":null},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"Francisco","lastname":"B."},"name":"@ProjectNoDaysOff - v2.365.117.482","distance":8518.1,"moving_time":2241,"elapsed_time":3348,"total_elevation_gain":10.8,"type":"Run","workout_type":0},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"erik","lastname":"R."},"name":"Evening Run","distance":8753.4,"moving_time":2709,"elapsed_time":2979,"total_elevation_gain":30.0,"type":"Run","workout_type":null},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"Arnaud","lastname":"D."},"name":"Evening Run Tired Legs ","distance":16232.6,"moving_time":5595,"elapsed_time":5871,"total_elevation_gain":45.0,"type":"Run","workout_type":0},{"resource_state":2,"athlete":{"resource_state":2,"firstname":"John","lastname":"K."},"name":"Missed the warmth. Not the humidity. ","distance":13015.1,"moving_time":3472,"elapsed_time":4339,"total_elevation_gain":72.7,"type":"Run","workout_type":0}]'
     http_version:
   recorded_at: Thu, 26 Apr 2018 00:41:58 GMT
 - request:

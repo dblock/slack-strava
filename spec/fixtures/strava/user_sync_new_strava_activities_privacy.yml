@@ -1,0 +1,138 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1522022400&page=1
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer token
+      Accept:
+      - application/json; charset=utf-8
+      User-Agent:
+      - Strava Ruby Client/0.4.0
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 25 Jun 2020 13:15:33 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Via:
+      - 1.1 linkerd
+      X-Download-Options:
+      - noopen
+      Status:
+      - 200 OK
+      X-Ratelimit-Limit:
+      - '600,30000'
+      X-Request-Id:
+      - '062080cf-59d4-4358-9e97-c398427f3c60'
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Etag:
+      - W/"a570dd7d146e2948a9c192362086fcbb"
+      X-Frame-Options:
+      - DENY
+      X-Ratelimit-Usage:
+      - '3,2696'
+      X-Content-Type-Options:
+      - nosniff
+      X-Permitted-Cross-Domain-Policies:
+      - none
+      Strava-Athlete-Upload-Version:
+      - e12ee5738a5b2ae76111a4395151fc51
+      Vary:
+      - Origin
+      X-Xss-Protection:
+      - 1; mode=block
+    body:
+      encoding: UTF-8
+      string: '[{"resource_state":2,"athlete":{"id":29323238,"resource_state":1},"name":"Public
+        Activity","distance":1609.3,"moving_time":3600,"elapsed_time":3600,"total_elevation_gain":3.0,"type":"Run","workout_type":0,"id":1991813808,"external_id":null,"upload_id":null,"start_date":"2018-11-29T21:20:00Z","start_date_local":"2018-11-29T16:20:00Z","timezone":"(GMT-05:00)
+        America/New_York","utc_offset":-18000.0,"start_latlng":null,"end_latlng":null,"location_city":null,"location_state":null,"location_country":"United
+        States","start_latitude":null,"start_longitude":null,"achievement_count":0,"kudos_count":1,"comment_count":0,"athlete_count":1,"photo_count":0,"map":{"id":"a1991813808","summary_polyline":null,"resource_state":2},"trainer":false,"commute":false,"manual":true,"private":false,"visibility":"everyone","flagged":false,"gear_id":"g3844087","from_accepted_tag":null,"average_speed":0.447,"max_speed":0.0,"has_heartrate":false,"heartrate_opt_out":false,"display_hide_heartrate_option":false,"pr_count":0,"total_photo_count":0,"has_kudoed":false},{"resource_state":2,"athlete":{"id":29323238,"resource_state":1},"name":"Private
+        Activity","distance":42000.0,"moving_time":13320,"elapsed_time":13320,"total_elevation_gain":37.5,"type":"Run","workout_type":null,"id":1994662431,"external_id":null,"upload_id":null,"start_date":"2018-12-01T15:30:00Z","start_date_local":"2018-12-01T10:30:00Z","timezone":"(GMT-05:00)
+        America/New_York","utc_offset":-18000.0,"start_latlng":null,"end_latlng":null,"location_city":null,"location_state":null,"location_country":"United
+        States","start_latitude":null,"start_longitude":null,"achievement_count":0,"kudos_count":0,"comment_count":0,"athlete_count":1,"photo_count":0,"map":{"id":"a1994662431","summary_polyline":null,"resource_state":2},"trainer":false,"commute":false,"manual":true,"private":true,"visibility":"only_me","flagged":false,"gear_id":"g3844087","from_accepted_tag":null,"average_speed":3.153,"max_speed":0.0,"has_heartrate":false,"heartrate_opt_out":false,"display_hide_heartrate_option":false,"pr_count":0,"total_photo_count":0,"has_kudoed":false},{"resource_state":2,"athlete":{"id":29323238,"resource_state":1},"name":"Follower
+        Only Activity","distance":2999.0,"moving_time":973,"elapsed_time":978,"total_elevation_gain":0.0,"type":"Run","workout_type":0,"id":2953904209,"external_id":"17611540602.tcx","upload_id":3145936923,"start_date":"2019-10-05T00:14:28Z","start_date_local":"2019-10-04T20:14:28Z","timezone":"(GMT-05:00)
+        America/New_York","utc_offset":-14400.0,"start_latlng":[40.755822,-73.983948],"end_latlng":[40.755822,-73.983948],"location_city":null,"location_state":null,"location_country":"United
+        States","start_latitude":40.755822,"start_longitude":-73.983948,"achievement_count":4,"kudos_count":0,"comment_count":0,"athlete_count":1,"photo_count":0,"map":{"id":"a2953904209","summary_polyline":"{bwwFt~pbM??","resource_state":2},"trainer":false,"commute":false,"manual":false,"private":false,"visibility":"followers_only","flagged":false,"gear_id":"g3844087","from_accepted_tag":false,"upload_id_str":"3145936923","average_speed":3.082,"max_speed":3.2,"has_heartrate":true,"average_heartrate":161.9,"max_heartrate":171.0,"heartrate_opt_out":false,"display_hide_heartrate_option":true,"elev_high":18.6,"elev_low":18.6,"pr_count":0,"total_photo_count":0,"has_kudoed":false}]'
+    http_version:
+  recorded_at: Thu, 25 Jun 2020 13:15:31 GMT
+- request:
+    method: get
+    uri: https://www.strava.com/api/v3/athlete/activities?after=1522022400&page=2
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer token
+      Accept:
+      - application/json; charset=utf-8
+      User-Agent:
+      - Strava Ruby Client/0.4.0
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 25 Jun 2020 13:15:34 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Via:
+      - 1.1 linkerd
+      X-Download-Options:
+      - noopen
+      Status:
+      - 200 OK
+      X-Ratelimit-Limit:
+      - '600,30000'
+      X-Request-Id:
+      - 5c279f43-f2b1-48fa-911e-e67fbc1e7c42
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Etag:
+      - W/"4f53cda18c2baa0c0354bb5f9a3ecbe5"
+      X-Frame-Options:
+      - DENY
+      X-Ratelimit-Usage:
+      - '4,2697'
+      X-Content-Type-Options:
+      - nosniff
+      X-Permitted-Cross-Domain-Policies:
+      - none
+      Strava-Athlete-Upload-Version:
+      - f19123a56b0de246d0b3ed9976c7eb95
+      Vary:
+      - Origin
+      X-Xss-Protection:
+      - 1; mode=block
+    body:
+      encoding: UTF-8
+      string: "[]"
+    http_version:
+  recorded_at: Thu, 25 Jun 2020 13:15:31 GMT
+recorded_with: VCR 5.1.0

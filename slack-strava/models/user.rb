@@ -12,6 +12,7 @@ class User
   field :is_owner, type: Boolean, default: false
   field :is_admin, type: Boolean, default: false
   field :private_activities, type: Boolean, default: false
+  field :followers_only_activities, type: Boolean, default: true
   field :sync_activities, type: Boolean, default: true
 
   embeds_one :athlete

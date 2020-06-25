@@ -24,7 +24,8 @@ module SlackStrava
         set fields all|none|...  - display all, none or certain activity fields
         set maps off|full|thumb  - change the way maps are displayed
         set sync true|false      - sync activities (default is true)
-        set private true|false   - sync private activities (default is false)
+        set private true|false   - sync private (only you) activities (default is false)
+        set followers true|false - sync followers only activities (default is true)
 
         General
         ------------

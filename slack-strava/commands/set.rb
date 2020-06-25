@@ -12,7 +12,8 @@ module SlackStrava
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps for team #{team.name} are *#{team.maps_s}*.",
             "Your activities will #{user.sync_activities? ? '' : 'not '}sync.",
-            "Your private activities will #{user.private_activities? ? '' : 'not '}be posted."
+            "Your private activities will #{user.private_activities? ? '' : 'not '}be posted.",
+            "Your followers only activities will #{user.followers_only_activities? ? '' : 'not '}be posted."
           ]
           client.say(channel: data.channel, text: messages.join("\n"))
           logger.info "SET: #{team}, user=#{data.user} - set"
@@ -29,6 +30,11 @@ module SlackStrava
             user.update_attributes!(private_activities: v) unless v.nil?
             client.say(channel: data.channel, text: "Your private activities will#{changed ? (user.private_activities? ? ' now' : ' no longer') : (user.private_activities? ? '' : ' not')} be posted.")
             logger.info "SET: #{team}, user=#{data.user} - private set to #{user.private_activities}"
+          when 'followers' then
+            changed = v && user.followers_only_activities != v
+            user.update_attributes!(followers_only_activities: v) unless v.nil?
+            client.say(channel: data.channel, text: "Your followers only activities will#{changed ? (user.followers_only_activities? ? ' now' : ' no longer') : (user.followers_only_activities? ? '' : ' not')} be posted.")
+            logger.info "SET: #{team}, user=#{data.user} - followers_only set to #{user.followers_only_activities}"
           when 'units' then
             changed = v && team.units != v
             if !user.team_admin? && changed

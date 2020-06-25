@@ -18,6 +18,7 @@ class Activity
   field :bragged_at, type: DateTime
   field :total_elevation_gain, type: Float
   field :private, type: Boolean
+  field :visibility, type: String
   field :type, type: String
 
   index(strava_id: 1)
@@ -69,6 +70,7 @@ class Activity
       type: response.type,
       total_elevation_gain: response.total_elevation_gain,
       private: response.private,
+      visibility: response.visibility,
       description: response.description
     }
   end
@@ -96,7 +98,7 @@ class Activity
     ).exists?
   end
 
-  # Have we recently skipped bragging of an identically looking private activity?
+  # Have we recently skipped bragging of an identically looking private or followers only activity?
   def privately_bragged?(dt = 48.hours)
     Activity.where(
       team_id: team.id,
@@ -104,8 +106,9 @@ class Activity
       moving_time: moving_time,
       elapsed_time: elapsed_time,
       total_elevation_gain: total_elevation_gain,
-      :bragged_at.gt => Time.now.utc.to_i - dt.to_i,
-      private: true
-    ).exists?
+      :bragged_at.gt => Time.now.utc.to_i - dt.to_i
+    ).any? do |activity|
+      activity.private? || activity.visibility == 'only_me' || activity.visibility == 'followers_only'
+    end
   end
 end

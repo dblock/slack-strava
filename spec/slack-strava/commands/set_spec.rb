@@ -25,7 +25,8 @@ describe SlackStrava::Commands::Set do
           'Activity fields are *set to default*.',
           "Maps for team #{team.name} are *displayed in full*.",
           'Your activities will sync.',
-          'Your private activities will not be posted.'
+          'Your private activities will not be posted.',
+          'Your followers only activities will be posted.'
         ].join("\n"))
       end
       context 'sync' do
@@ -100,6 +101,33 @@ describe SlackStrava::Commands::Set do
             'Your private activities will now be posted.'
           )
           expect(user.reload.private_activities).to be true
+        end
+      end
+      context 'followers only' do
+        it 'shows current value of followers_only' do
+          expect(message: "#{SlackRubyBot.config.user} set followers").to respond_with_slack_message(
+            'Your followers only activities will be posted.'
+          )
+        end
+        it 'shows current value of followers only set to false' do
+          user.update_attributes!(followers_only_activities: false)
+          expect(message: "#{SlackRubyBot.config.user} set followers").to respond_with_slack_message(
+            'Your followers only activities will not be posted.'
+          )
+        end
+        it 'sets followers only to false' do
+          user.update_attributes!(followers_only_activities: true)
+          expect(message: "#{SlackRubyBot.config.user} set followers false").to respond_with_slack_message(
+            'Your followers only activities will no longer be posted.'
+          )
+          expect(user.reload.followers_only_activities).to be false
+        end
+        it 'sets followers only to true' do
+          user.update_attributes!(followers_only_activities: false)
+          expect(message: "#{SlackRubyBot.config.user} set followers true").to respond_with_slack_message(
+            'Your followers only activities will now be posted.'
+          )
+          expect(user.reload.followers_only_activities).to be true
         end
       end
       context 'as team admin' do
