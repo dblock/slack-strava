@@ -22,19 +22,20 @@ describe Api::Endpoints::StravaEndpoint do
       end
     end
     context 'webhook event' do
+      let(:event_data) do
+        {
+          aspect_type: 'update',
+          event_time: 1_516_126_040,
+          object_id: 1_360_128_428,
+          object_type: 'activity',
+          owner_id: 134_815,
+          subscription_id: 120_475,
+          updates: {}
+        }
+      end
       it 'responds to a valid event' do
         post '/api/strava/event',
-             JSON.dump(
-               aspect_type: 'update',
-               event_time: 1_516_126_040,
-               object_id: 1_360_128_428,
-               object_type: 'activity',
-               owner_id: 134_815,
-               subscription_id: 120_475,
-               updates: {
-                 title: 'a run'
-               }
-             ),
+             JSON.dump(event_data),
              'CONTENT_TYPE' => 'application/json'
         expect(last_response.status).to eq 200
         response = JSON.parse(last_response.body)
@@ -43,18 +44,14 @@ describe Api::Endpoints::StravaEndpoint do
       context 'with a connected user' do
         let!(:user) { Fabricate(:user, access_token: 'token') }
         it 'syncs user' do
+          expect_any_instance_of(Logger).to receive(:info).with(/Syncing activity/).and_call_original
           expect_any_instance_of(User).to receive(:sync_and_brag!).once
           post '/api/strava/event',
                JSON.dump(
-                 aspect_type: 'create',
-                 event_time: 1_516_126_040,
-                 object_id: 1_360_128_428,
-                 object_type: 'activity',
-                 owner_id: user.athlete.athlete_id.to_s,
-                 subscription_id: 120_475,
-                 updates: {
-                   title: 'a run'
-                 }
+                 event_data.merge(
+                   aspect_type: 'create',
+                   owner_id: user.athlete.athlete_id.to_s
+                 )
                ),
                'CONTENT_TYPE' => 'application/json'
           expect(last_response.status).to eq 200
@@ -63,45 +60,75 @@ describe Api::Endpoints::StravaEndpoint do
         end
         context 'with an existing activity' do
           let!(:activity) { Fabricate(:user_activity, user: user, map: nil) }
-          it 'rebrags an existing activity' do
-            expect_any_instance_of(User).to receive(:rebrag_activity!).once
+          it 'rebrags the existing activity' do
+            expect_any_instance_of(Logger).to receive(:info).with(/Updating activity/).and_call_original
+            expect_any_instance_of(User).to receive(:rebrag_activity!) do |u, a|
+              expect(u).to eq user
+              expect(a).to eq activity
+            end
             post '/api/strava/event',
                  JSON.dump(
-                   aspect_type: 'update',
-                   event_time: 1_516_126_040,
-                   object_id: activity.strava_id,
-                   object_type: 'activity',
-                   owner_id: user.athlete.athlete_id.to_s,
-                   subscription_id: 120_475,
-                   updates: {
-                     title: 'a run'
-                   }
+                   event_data.merge(
+                     aspect_type: 'update',
+                     object_id: activity.strava_id,
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
                  ),
                  'CONTENT_TYPE' => 'application/json'
             expect(last_response.status).to eq 200
             response = JSON.parse(last_response.body)
             expect(response['ok']).to be true
           end
-        end
-        it 'ignores delete' do
-          expect_any_instance_of(User).to_not receive(:sync_and_brag!)
-          expect_any_instance_of(User).to_not receive(:rebrag!)
-          post '/api/strava/event',
-               JSON.dump(
-                 aspect_type: 'delete',
-                 event_time: 1_516_126_040,
-                 object_id: 1_360_128_428,
-                 object_type: 'activity',
-                 owner_id: user.athlete.athlete_id.to_s,
-                 subscription_id: 120_475,
-                 updates: {
-                   title: 'a run'
-                 }
-               ),
-               'CONTENT_TYPE' => 'application/json'
-          expect(last_response.status).to eq 200
-          response = JSON.parse(last_response.body)
-          expect(response['ok']).to be true
+          it 'ignores non-existent activities' do
+            expect_any_instance_of(Logger).to receive(:info).with(/Ignoring activity/).and_call_original
+            expect_any_instance_of(User).to_not receive(:rebrag_activity!)
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'update',
+                     object_id: 'other',
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
+          it 'skips other object types' do
+            expect_any_instance_of(Logger).to receive(:warn).with(/Ignoring object type 'other'/).and_call_original
+            expect_any_instance_of(User).to_not receive(:rebrag_activity!)
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'update',
+                     object_type: 'other',
+                     object_id: activity.strava_id,
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
+          it 'ignores delete' do
+            expect_any_instance_of(Logger).to receive(:info).with(/Ignoring aspect type 'delete'/).and_call_original
+            expect_any_instance_of(User).to_not receive(:sync_and_brag!)
+            expect_any_instance_of(User).to_not receive(:rebrag!)
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'delete',
+                     object_id: activity.strava_id,
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
         end
       end
     end

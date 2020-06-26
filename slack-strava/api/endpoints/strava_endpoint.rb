@@ -28,27 +28,29 @@ module Api
             requires 'event_time', type: Time, coerce_with: ->(v) { Time.at(v) }
           end
           post do
-            User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
+            case params['object_type']
+            when 'activity'
               case params['aspect_type']
               when 'create'
-                Api::Middleware.logger.info "Syncing team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
-                user.sync_and_brag!
+                User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
+                  Api::Middleware.logger.info "Syncing activity for team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
+                  user.sync_and_brag!
+                end
               when 'update'
-                case params['object_type']
-                when 'activity'
+                User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
                   activity = user.activities.where(strava_id: params['object_id']).first
                   if activity
-                    Api::Middleware.logger.info "Updating team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                    Api::Middleware.logger.info "Updating activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
                     user.rebrag_activity!(activity)
                   else
                     Api::Middleware.logger.info "Ignoring activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
                   end
-                else
-                  Api::Middleware.logger.warn "Ignoring type #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
                 end
               else
-                Api::Middleware.logger.info "Skipping team #{user.team}, user #{user}, #{user.athlete}, aspect_type=#{params['aspect_type']}, #{params['object_type']}=#{params['object_id']}."
+                Api::Middleware.logger.info "Ignoring aspect type '#{params['aspect_type']}', object_type=#{params['object_type']}, object_id=#{params['object_id']}, #{params['updates']}."
               end
+            else
+              Api::Middleware.logger.warn "Ignoring object type '#{params['object_type']}', aspect_type=#{params['aspect_type']}, object_id=#{params['object_id']}, #{params['updates']}."
             end
             status 200
             { ok: true }
