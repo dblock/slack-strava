@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2020/06/26: Repost activities that flip privacy settings - [@dblock](https://github.com/dblock).
 * 2020/06/25: Toggle whether to sync followers only activities - [@dblock](https://github.com/dblock).
 * 2020/06/05: Added setting units to `both` - [@dblock](https://github.com/dblock).
 * 2020/05/05: Do not post private activities coming from club feeds when user is also connected - [@dblock](https://github.com/dblock).

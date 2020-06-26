@@ -61,24 +61,27 @@ describe Api::Endpoints::StravaEndpoint do
           response = JSON.parse(last_response.body)
           expect(response['ok']).to be true
         end
-        it 'updates user' do
-          expect_any_instance_of(User).to receive(:rebrag!).once
-          post '/api/strava/event',
-               JSON.dump(
-                 aspect_type: 'update',
-                 event_time: 1_516_126_040,
-                 object_id: 1_360_128_428,
-                 object_type: 'activity',
-                 owner_id: user.athlete.athlete_id.to_s,
-                 subscription_id: 120_475,
-                 updates: {
-                   title: 'a run'
-                 }
-               ),
-               'CONTENT_TYPE' => 'application/json'
-          expect(last_response.status).to eq 200
-          response = JSON.parse(last_response.body)
-          expect(response['ok']).to be true
+        context 'with an existing activity' do
+          let!(:activity) { Fabricate(:user_activity, user: user, map: nil) }
+          it 'rebrags an existing activity' do
+            expect_any_instance_of(User).to receive(:rebrag_activity!).once
+            post '/api/strava/event',
+                 JSON.dump(
+                   aspect_type: 'update',
+                   event_time: 1_516_126_040,
+                   object_id: activity.strava_id,
+                   object_type: 'activity',
+                   owner_id: user.athlete.athlete_id.to_s,
+                   subscription_id: 120_475,
+                   updates: {
+                     title: 'a run'
+                   }
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
         end
         it 'ignores delete' do
           expect_any_instance_of(User).to_not receive(:sync_and_brag!)

@@ -206,9 +206,7 @@ class User
   end
 
   def rebrag!
-    with_strava_error_handler do
-      rebrag_last_activity!
-    end
+    rebrag_last_activity!
   end
 
   def brag_new_activities!
@@ -229,17 +227,22 @@ class User
     activity = latest_bragged_activity
     return unless activity
 
-    detailed_activity = strava_client.activity(activity.strava_id)
-    return if detailed_activity['private'] && !private_activities?
+    rebrag_activity!(activity)
+  end
 
-    activity = UserActivity.create_from_strava!(self, detailed_activity)
-    return unless activity
+  def rebrag_activity!(activity)
+    with_strava_error_handler do
+      detailed_activity = strava_client.activity(activity.strava_id)
 
-    results = activity.rebrag!
-    return unless results
+      activity = UserActivity.create_from_strava!(self, detailed_activity)
+      return unless activity
 
-    results.map do |result|
-      result.merge(activity: activity)
+      results = activity.bragged_at ? activity.rebrag! : activity.brag!
+      return unless results
+
+      results.map do |result|
+        result.merge(activity: activity)
+      end
     end
   end
 

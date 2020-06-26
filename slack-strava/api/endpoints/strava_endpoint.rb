@@ -34,8 +34,18 @@ module Api
                 Api::Middleware.logger.info "Syncing team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
                 user.sync_and_brag!
               when 'update'
-                Api::Middleware.logger.info "Updating team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
-                user.rebrag!
+                case params['object_type']
+                when 'activity'
+                  activity = user.activities.where(strava_id: params['object_id']).first
+                  if activity
+                    Api::Middleware.logger.info "Updating team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                    user.rebrag_activity!(activity)
+                  else
+                    Api::Middleware.logger.info "Ignoring activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                  end
+                else
+                  Api::Middleware.logger.warn "Ignoring type #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                end
               else
                 Api::Middleware.logger.info "Skipping team #{user.team}, user #{user}, #{user.athlete}, aspect_type=#{params['aspect_type']}, #{params['object_type']}=#{params['object_id']}."
               end
