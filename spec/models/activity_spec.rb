@@ -165,4 +165,55 @@ describe Activity do
       end
     end
   end
+  context 'access changes' do
+    before do
+      allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
+    end
+    describe 'privacy changes' do
+      context 'a private, bragged activity that was not posted to any channels' do
+        let!(:activity) { Fabricate(:user_activity, private: true, bragged_at: Time.now.utc) }
+        it 'resets bragged_at' do
+          activity.update_attributes!(private: false)
+          expect(activity.reload.bragged_at).to be_nil
+        end
+      end
+      context 'a private, bragged activity a long time ago that was not posted to any channels' do
+        let!(:activity) { Fabricate(:user_activity, private: true, bragged_at: 1.week.ago) }
+        it 'does not reset bragged_at' do
+          activity.update_attributes!(private: false)
+          expect(activity.reload.bragged_at).to_not be_nil
+        end
+      end
+      context 'a private, bragged activity that was posted to a channel' do
+        let!(:activity) { Fabricate(:user_activity, private: true, bragged_at: Time.now.utc, channel_messages: [ChannelMessage.new(channel: 'c1')]) }
+        it 'does not reset bragged_at' do
+          activity.update_attributes!(private: false)
+          expect(activity.reload.bragged_at).to_not be_nil
+        end
+      end
+    end
+    describe 'visibility changes' do
+      context 'bragged activity that was not posted to any channels' do
+        let!(:activity) { Fabricate(:user_activity, visibility: 'only_me', bragged_at: Time.now.utc) }
+        it 'resets bragged_at' do
+          activity.update_attributes!(visibility: 'everyone')
+          expect(activity.reload.bragged_at).to be_nil
+        end
+      end
+      context 'bragged activity a long time ago that was not posted to any channels' do
+        let!(:activity) { Fabricate(:user_activity, visibility: 'only_me', bragged_at: 1.week.ago) }
+        it 'does not reset bragged_at' do
+          activity.update_attributes!(visibility: 'everyone')
+          expect(activity.reload.bragged_at).to_not be_nil
+        end
+      end
+      context 'bragged activity that was posted to a channel' do
+        let!(:activity) { Fabricate(:user_activity, visibility: 'only_me', bragged_at: Time.now.utc, channel_messages: [ChannelMessage.new(channel: 'c1')]) }
+        it 'does not reset bragged_at' do
+          activity.update_attributes!(visibility: 'everyone')
+          expect(activity.reload.bragged_at).to_not be_nil
+        end
+      end
+    end
+  end
 end

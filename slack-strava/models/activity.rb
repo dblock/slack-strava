@@ -35,6 +35,8 @@ class Activity
   index(team_id: 1)
   validates_presence_of :team_id
 
+  before_update :reset_bragged_at
+
   def hidden?
     false
   end
@@ -110,5 +112,14 @@ class Activity
     ).any? do |activity|
       activity.private? || activity.visibility == 'only_me' || activity.visibility == 'followers_only'
     end
+  end
+
+  def reset_bragged_at(dt = 48.hours)
+    return unless bragged_at
+    return unless private_changed? || visibility_changed?
+    return if channel_messages.any?
+    return if bragged_at < Time.now.utc - dt
+
+    self.bragged_at = nil
   end
 end
