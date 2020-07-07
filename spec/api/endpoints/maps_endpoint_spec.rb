@@ -20,6 +20,11 @@ describe Api::Endpoints::MapsEndpoint do
         expect(last_response.headers['Content-Type']).to eq 'image/png'
         expect(activity.reload.map.png_retrieved_at).to_not be_nil
       end
+      it 'returns no map data' do
+        allow_any_instance_of(Map).to receive(:update_png!)
+        get "/api/maps/#{activity.map.id}.png"
+        expect(last_response.status).to eq 404
+      end
       it 'refetches map if needed', vcr: { cassette_name: 'strava/map', allow_playback_repeats: true } do
         expect(activity.map.png).to_not be_nil
         activity.map.delete_png!
