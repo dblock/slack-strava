@@ -6,7 +6,10 @@ module Api
       namespace :status do
         desc 'Get system status.'
         get do
-          present self, with: Api::Presenters::StatusPresenter
+          present OpenStruct.new(
+            stats: SystemStats.latest_or_aggregate!,
+            status: Team.asc(:_id).first&.ping!
+          ), with: Api::Presenters::StatusPresenter
         end
       end
     end

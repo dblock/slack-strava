@@ -16,33 +16,27 @@ module Api
       property :ping
 
       def ping
-        team = Team.asc(:_id).first
-        return unless team
-
-        team.ping!
+        status
       end
 
       def teams_count
-        Team.count
+        stats&.teams_count
       end
 
       def active_teams_count
-        Team.active.count
+        stats&.active_teams_count
       end
 
       def connected_users_count
-        User.connected_to_strava.count
+        stats&.connected_users_count
       end
 
       def total_distance_in_miles
-        Activity.sum(:distance) * 0.00062137
+        stats&.total_distance_in_miles
       end
 
       def total_distance_in_miles_s
-        distance = total_distance_in_miles
-        return unless distance&.positive?
-
-        format('%g miles', format('%.2f', distance))
+        stats&.total_distance_in_miles_s
       end
 
       def base_url(opts)

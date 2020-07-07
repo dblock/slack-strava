@@ -8,10 +8,12 @@ describe Api::Endpoints::StatusEndpoint do
   end
 
   context 'status' do
-    it 'returns a status' do
-      status = client.status
-      expect(status.teams_count).to eq 0
-      expect(status.connected_users_count).to eq 0
+    context 'without a team' do
+      it 'returns a status' do
+        status = client.status
+        expect(status.teams_count).to eq 0
+        expect(status.connected_users_count).to eq 0
+      end
     end
 
     context 'with a team' do

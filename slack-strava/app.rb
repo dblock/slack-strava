@@ -11,6 +11,7 @@ module SlackStrava
           deactivate_asleep_teams!
           check_trials!
           prune_pngs!
+          aggregate_stats!
         end
         once_and_every 60 * 60 do
           expire_subscriptions!
@@ -37,6 +38,9 @@ module SlackStrava
       ::Async::Reactor.run do |task|
         loop do
           yield
+        rescue StandardError => e
+          logger.error e
+        ensure
           task.sleep tt
         end
       end
@@ -83,6 +87,10 @@ module SlackStrava
         logger.warn "Error checking team #{team} trial, #{e.message}."
         NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
       end
+    end
+
+    def aggregate_stats!
+      SystemStats.aggregate!
     end
 
     def prune_pngs!
