@@ -7,6 +7,7 @@ class UserActivity < Activity
   embeds_one :weather
 
   index(user_id: 1, start_date: 1)
+  index('map._id' => 1)
 
   before_validation :validate_team
 
