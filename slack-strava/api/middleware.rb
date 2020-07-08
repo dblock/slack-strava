@@ -21,6 +21,10 @@ module Api
           r302 %r{(\/[\w\/]*\/)(%7B|\{)?(.*)(%7D|\})}, '$1'
         end
 
+        use Rack::ConditionalGet
+
+        use Rack::ETag
+
         use Rack::Robotz, 'User-Agent' => '*', 'Disallow' => '/api'
 
         use Rack::ServerPages
