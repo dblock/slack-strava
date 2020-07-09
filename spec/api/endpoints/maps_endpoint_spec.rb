@@ -41,6 +41,30 @@ describe Api::Endpoints::MapsEndpoint do
         expect(last_response.headers['Content-Type']).to eq 'image/png'
         expect(activity.reload.map.png).to_not be_nil
       end
+      context 'with map', vcr: { cassette_name: 'strava/map' } do
+        it 'updates map timestamp' do
+          get "/api/maps/#{activity.map.id}.png"
+          expect(last_response.status).to eq 200
+          expect(activity.reload.map.png_retrieved_at).to_not be_nil
+        end
+        it 'returns content-type' do
+          get "/api/maps/#{activity.map.id}.png"
+          expect(last_response.status).to eq 200
+          expect(last_response.headers['Content-Type']).to eq 'image/png'
+        end
+        it 'returns content-length' do
+          get "/api/maps/#{activity.map.id}.png"
+          expect(last_response.status).to eq 200
+          expect(last_response.headers['Content-Length']).to eq last_response.body.size.to_s
+        end
+        it 'handles if-none-match' do
+          get "/api/maps/#{activity.map.id}.png"
+          expect(last_response.status).to eq 200
+          expect(last_response.headers['ETag']).to_not be nil
+          get "/api/maps/#{activity.map.id}.png", {}, 'HTTP_IF_NONE_MATCH' => last_response.headers['ETag']
+          expect(last_response.status).to eq 304
+        end
+      end
     end
     context 'with a private activity', vcr: { cassette_name: 'strava/map' } do
       let(:user) { Fabricate(:user, private_activities: false) }
