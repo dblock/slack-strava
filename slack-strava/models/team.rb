@@ -7,6 +7,7 @@ class Team
   field :activity_fields, type: Array, default: ['Default']
   validates :activity_fields, array: { presence: true, inclusion: { in: ActivityFields.values } }
 
+  field :maps_format, type: String, default: 'png'
   field :maps, type: String, default: 'full'
   validates_inclusion_of :maps, in: MapTypes.values
 
