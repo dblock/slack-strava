@@ -90,9 +90,9 @@ class UserActivity < Activity
     result[:text] = ["<@#{user.user_name}> on #{start_date_local_s}", description].compact.join("\n\n")
     if map
       if team.maps == 'full'
-        result[:image_url] = map.proxy_image_url
+        result[:image_url] = map.proxy_image_url(user.team.maps_format)
       elsif team.maps == 'thumb'
-        result[:thumb_url] = map.proxy_image_url
+        result[:thumb_url] = map.proxy_image_url(user.team.maps_format)
       end
     end
     result[:fields] = slack_fields

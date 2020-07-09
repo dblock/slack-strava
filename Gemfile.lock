@@ -122,6 +122,7 @@ GEM
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2020.0512)
+    mini_magick (4.10.1)
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
     minitest (5.14.1)
@@ -301,6 +302,7 @@ DEPENDENCIES
   httparty
   hyperclient
   irb
+  mini_magick
   mongoid
   mongoid-scroll
   mongoid-shell

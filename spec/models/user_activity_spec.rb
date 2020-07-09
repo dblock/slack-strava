@@ -159,6 +159,10 @@ describe UserActivity do
         ]
       )
     end
+    it 'with jpeg maps format' do
+      activity.team.maps_format = 'jpg'
+      expect(activity.to_slack[:attachments].first[:image_url]).to eq("https://slava.playplay.io/api/maps/#{activity.map.id}.jpg")
+    end
     context 'with all fields' do
       before do
         team.activity_fields = ['All']
