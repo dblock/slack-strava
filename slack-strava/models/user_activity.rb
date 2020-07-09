@@ -79,6 +79,7 @@ class UserActivity < Activity
     activity.map.update!
     activity.update_weather!
     activity.save!
+
     activity
   end
 

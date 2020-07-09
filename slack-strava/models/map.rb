@@ -23,6 +23,7 @@ class Map
   def update!
     update_decoded_summary_polyline!
     update_png!
+    save_to_s3!
   end
 
   def start_latlng
@@ -45,7 +46,12 @@ class Map
   end
 
   def proxy_image_url(format = 'png')
-    "#{SlackRubyBotServer::Service.url}/api/maps/#{id}.#{format}"
+    case format
+    when 's3' then
+      "https://slava-playplay-io.s3.amazonaws.com/maps/#{id}.png"
+    else
+      "#{SlackRubyBotServer::Service.url}/api/maps/#{id}.#{format}"
+    end
   end
 
   def png_size
@@ -84,10 +90,21 @@ class Map
     self.png = BSON::Binary.new(body)
   end
 
+  def save_to_s3!
+    return unless user_activity.user.team.maps_format == 's3'
+    return unless ENV.key?('AWS_ACCESS_KEY_ID')
+    return unless png&.data
+
+    s3 = Aws::S3::Resource.new(region:'us-east-1')
+    obj = s3.bucket('slava-playplay-io').object("maps/#{id}.png")
+    obj.put(body: png.data)
+  end
+
   def update_png
     return if png_changed?
     return unless summary_polyline_changed? || png.nil?
 
     update_png!
+    save_to_s3!
   end
 end
