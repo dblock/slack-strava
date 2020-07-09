@@ -116,7 +116,6 @@ GEM
     kaminari-grape (1.0.1)
       grape
       kaminari-core (~> 1.0)
-    kgio (2.11.3)
     mailchimp_api_v3 (0.2.18)
       rest-client (~> 2)
     mime-types (3.3.1)
@@ -167,6 +166,8 @@ GEM
       ast (~> 2.4.0)
     polylines (0.3.0)
     public_suffix (4.0.5)
+    puma (4.3.5)
+      nio4r (~> 2.0)
     rack (2.2.3)
     rack-accept (0.4.5)
       rack (>= 0.4)
@@ -180,7 +181,6 @@ GEM
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rainbow (3.0.0)
-    raindrops (0.19.1)
     rake (12.3.3)
     regexp_parser (1.7.0)
     reline (0.1.4)
@@ -271,9 +271,6 @@ GEM
       unf_ext
     unf_ext (0.0.7.7)
     unicode-display_width (1.7.0)
-    unicorn (5.5.5)
-      kgio (~> 2.6)
-      raindrops (~> 0.7)
     vcr (5.1.0)
     wannabe_bool (0.7.1)
     webmock (3.8.3)
@@ -309,6 +306,7 @@ DEPENDENCIES
   nokogiri
   open-weather-ruby-client
   polylines
+  puma
   rack-robotz
   rack-server-pages
   rack-test
@@ -324,7 +322,6 @@ DEPENDENCIES
   stripe (~> 1.58.0)
   stripe-ruby-mock (~> 2.4.1)
   timecop
-  unicorn
   vcr
   wannabe_bool
   webmock
