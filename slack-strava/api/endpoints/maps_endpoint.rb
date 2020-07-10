@@ -10,30 +10,28 @@ module Api
         end
         get ':id' do
           user_agent = headers['User-Agent'] || 'Unknown User-Agent'
-          Api::Middleware.logger.debug "Getting map ID #{params[:id]} for #{user_agent}."
-          activity = Activity.where('map._id' => BSON::ObjectId(params[:id])).first
+          activity = UserActivity.where('map._id' => BSON::ObjectId(params[:id])).first
           unless activity
-            Api::Middleware.logger.debug "Activity for map ID #{params[:id]} for #{user_agent} has not been found, 404."
+            Api::Middleware.logger.debug "Map #{params[:id]} for #{user_agent}, not found (404)."
             error!('Not Found', 404)
           end
           if activity.hidden?
-            Api::Middleware.logger.debug "Activity #{activity.strava_id} for map ID #{params[:id]} for #{user_agent} is hidden, 403."
+            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, hidden (403)."
             error!('Access Denied', 403)
           end
           unless activity.map
-            Api::Middleware.logger.debug "Activity #{activity.strava_id} has no map ID #{params[:id]} for #{user_agent}, 404."
+            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
             error!('Map Not Found', 404)
           end
           # will also re-fetch the map if needed
           activity.map.update_attributes!(png_retrieved_at: Time.now.utc)
           unless activity.map.png
-            Api::Middleware.logger.debug "Activity #{activity.strava_id} has no map ID #{params[:id]} data for #{user_agent}, 404."
+            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no data (404)."
             error!('Map Data Not Found', 404)
           end
-          Api::Middleware.logger.debug "Found activity #{activity.strava_id} for map ID #{params[:id]} with URL #{activity.map.proxy_image_url}."
           content_type 'image/png'
           png = activity.map.png.data
-          Api::Middleware.logger.debug "Returning #{png.size} byte(s) of PNG for activity #{activity.strava_id} map ID #{params[:id]}."
+          Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, #{png.size} byte(s)."
           body png
         end
       end

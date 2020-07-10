@@ -101,7 +101,7 @@ class UserActivity < Activity
   end
 
   def to_s
-    "name=#{name}, date=#{start_date_local_s}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
+    "id=#{strava_id}, name=#{name}, date=#{start_date_local&.iso8601}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
   end
 
   def validate_team
