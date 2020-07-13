@@ -58,6 +58,25 @@ describe Api::Endpoints::StravaEndpoint do
           response = JSON.parse(last_response.body)
           expect(response['ok']).to be true
         end
+        context 'with an expired subscription' do
+          let(:team) { Fabricate(:team, created_at: 3.weeks.ago) }
+          let!(:user) { Fabricate(:user, access_token: 'token', team: team) }
+          it 'does not sync user' do
+            expect_any_instance_of(Logger).to receive(:info).with(/expired/).and_call_original
+            expect_any_instance_of(User).to_not receive(:sync_and_brag!).once
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'create',
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
+        end
         context 'with an existing activity' do
           let!(:activity) { Fabricate(:user_activity, user: user, map: nil) }
           it 'rebrags the existing activity' do

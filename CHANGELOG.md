@@ -1,5 +1,9 @@
 ### Changelog
 
+* 2020/07/13: Don't post activities for teams with expired subscriptions - [@dblock](https://github.com/dblock).
+* 2020/07/09: Swap Puma for Unicorn and fix map posting - [@dblock](https://github.com/dblock).
+* 2020/07/08: Improve performance of map database lookups - [@dblock](https://github.com/dblock).
+* 2020/06/26: Brag or rebrag the activity being updated when pushed from Strava - [@dblock](https://github.com/dblock).
 * 2020/06/26: Repost activities that flip privacy settings - [@dblock](https://github.com/dblock).
 * 2020/06/25: Toggle whether to sync followers only activities - [@dblock](https://github.com/dblock).
 * 2020/06/05: Added setting units to `both` - [@dblock](https://github.com/dblock).

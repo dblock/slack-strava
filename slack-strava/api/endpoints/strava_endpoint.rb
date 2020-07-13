@@ -33,17 +33,25 @@ module Api
               case params['aspect_type']
               when 'create'
                 User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
-                  Api::Middleware.logger.info "Syncing activity for team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
-                  user.sync_and_brag!
+                  if user.team.subscription_expired?
+                    Api::Middleware.logger.info "Team #{user.team} subscription expired, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
+                  else
+                    Api::Middleware.logger.info "Syncing activity for team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
+                    user.sync_and_brag!
+                  end
                 end
               when 'update'
                 User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
-                  activity = user.activities.where(strava_id: params['object_id']).first
-                  if activity
-                    Api::Middleware.logger.info "Updating activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
-                    user.rebrag_activity!(activity)
+                  if user.team.subscription_expired?
+                    Api::Middleware.logger.info "Team #{user.team} subscription expired, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
                   else
-                    Api::Middleware.logger.info "Ignoring activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                    activity = user.activities.where(strava_id: params['object_id']).first
+                    if activity
+                      Api::Middleware.logger.info "Updating activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                      user.rebrag_activity!(activity)
+                    else
+                      Api::Middleware.logger.info "Ignoring activity team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}, #{params['updates']}."
+                    end
                   end
                 end
               else
