@@ -325,11 +325,16 @@ class User
   end
 
   def handle_strava_error(e)
-    logger.error e
-    case e.message
-    when /Authorization Error/
-      dm_connect! 'There was an authorization problem. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account'
+    if e.message =~ /Authorization Error/
+      logger.warn "Error for #{self}, #{e.message}, authorization error."
+      dm_connect! 'There was an authorization problem with Strava. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account'
       reset_access_tokens!(connected_to_strava_at: nil)
+    elsif e.errors&.first && e.errors.first['field'] == 'refresh_token' && e.errors.first['code'] == 'invalid'
+      logger.warn "Error for #{self}, #{e.message}, refresh token was invalid."
+      dm_connect! 'There was a re-authorization problem with Strava. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account'
+      reset_access_tokens!(connected_to_strava_at: nil)
+    else
+      logger.error "#{e.class.name}: #{e.message}\n  #{backtrace}"
     end
     raise e
   end
