@@ -246,8 +246,8 @@ describe User do
         }.to change(user.activities, :count).by(14)
       end
     end
-    context 'different connected_to_strava_at' do
-      let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+    context 'different connected_to_strava_at includes 8 hours of prior activities' do
+      let!(:user) { Fabricate(:user, connected_to_strava_at: DateTime.new(2018, 2, 1) + 8.hours, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
       it 'retrieves multiple pages of activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_many' } do
         expect {
           user.sync_new_strava_activities!

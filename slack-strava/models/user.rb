@@ -247,7 +247,7 @@ class User
   end
 
   def sync_new_strava_activities!
-    dt = activities_at || latest_activity_start_date || connected_to_strava_at || created_at
+    dt = activities_at || latest_activity_start_date || before_connected_to_strava_at || created_at
     options = {}
     options[:after] = dt.to_i unless dt.nil?
     sync_strava_activities!(options)
@@ -292,6 +292,13 @@ class User
   end
 
   private
+
+  # includes some of the most recent activities
+  def before_connected_to_strava_at(tt = 8.hours)
+    dt = connected_to_strava_at
+    dt -= tt if dt
+    dt
+  end
 
   def latest_bragged_activity(dt = 12.hours)
     activities.bragged.where(:start_date.gt => Time.now - dt).desc(:start_date).first
