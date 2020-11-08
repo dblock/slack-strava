@@ -1,5 +1,6 @@
 class ClubActivity < Activity
   field :athlete_name, type: String
+  field :first_sync, type: Boolean, default: false
 
   belongs_to :club, inverse_of: :activities
 
@@ -10,6 +11,10 @@ class ClubActivity < Activity
   def brag!
     if bragged_at?
       logger.info "Already bragged about #{club}, #{self}"
+      nil
+    elsif first_sync?
+      update_attributes!(bragged_at: Time.now.utc)
+      logger.info "Skipping first sync about #{club} in #{club.channel_id}, #{self}"
       nil
     elsif bragged_in?(club.channel_id)
       update_attributes!(bragged_at: Time.now.utc)

@@ -105,10 +105,22 @@ describe Club do
       )
     end
   end
-  context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
-    it 'syncs and brags' do
-      expect_any_instance_of(ClubActivity).to receive(:brag!)
-      club.sync_and_brag!
+  context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
+    context 'upon creation' do
+      it 'syncs but does not brag' do
+        expect_any_instance_of(Slack::Web::Client).to_not receive(:chat_postMessage)
+        club.sync_and_brag!
+      end
+    end
+    context 'after an initial sync' do
+      before do
+        club.sync_and_brag!
+        club.activities.destroy_all
+      end
+      it 'syncs and brags' do
+        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once
+        club.sync_and_brag!
+      end
     end
     it 'warns on error' do
       expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)

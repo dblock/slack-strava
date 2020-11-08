@@ -15,6 +15,7 @@ class Club
   field :url, type: String
   field :member_count, type: Integer
   field :sync_activities, type: Boolean, default: true
+  field :first_sync_at, type: DateTime
 
   belongs_to :team
   validates_presence_of :team_id
@@ -122,6 +123,8 @@ class Club
 
       current_page += 1
     end
+
+    update_attributes!(first_sync_at: Time.now.utc) unless first_sync_at
   end
 
   private
@@ -130,7 +133,7 @@ class Club
     return unless sync_activities?
 
     strava_client.club_activities(strava_id, options).map do |activity|
-      club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(team: team, club: self))
+      club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(team: team, club: self, first_sync: first_sync_at.nil?))
       next if ClubActivity.where(strava_id: club_activity.strava_id).exists?
 
       club_activity.save!
