@@ -204,17 +204,27 @@ module SlackStrava
 
     def check_stripe_subscribers!
       Stripe::Subscription.list(plan: 'slava-yearly').auto_paging_each do |subscription|
-        team = Team.where(stripe_customer_id: subscription.customer).first
-        next if team
-
         customer = Stripe::Customer.retrieve(subscription.customer)
         metadata = customer.metadata
-        team = Team.where(team_id: metadata.team_id).first
-        next if team&.subscribed?
+
+        team = Team.where(stripe_customer_id: subscription.customer).first
+        team ||= Team.where(team_id: metadata.team_id).first
+
+        next if team&.subscribed? && team&.active?
 
         if team
-          logger.warn "Re-associating customer_id for #{metadata.name} (#{metadata.team_id}) with #{team}."
-          team.update_attributes!(stripe_customer_id: subscription.customer, subscribed: true)
+          if team.active?
+            logger.warn "Re-associating customer_id for #{metadata.name} (#{metadata.team_id}) with #{team}."
+            team.update_attributes!(stripe_customer_id: subscription.customer, subscribed: true)
+          elsif team.active_stripe_subscription
+            logger.warn "Inactive team #{team} for #{metadata.name} (#{metadata.team_id})."
+            active_subscription = team.active_stripe_subscription
+            active_subscription.delete(at_period_end: true)
+            amount = ActiveSupport::NumberHelper.number_to_currency(active_subscription.plan.amount.to_f / 100)
+            logger.warn "Successfully canceled auto-renew for #{active_subscription.plan.name} (#{amount}) for #{team}."
+          else
+            logger.warn "Inactive team #{team} for #{metadata.name} (#{metadata.team_id}), no active subscription."
+          end
         else
           logger.warn "Cannot find team for #{metadata.name} (#{metadata.team_id}), contact #{customer.email}."
         end
