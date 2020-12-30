@@ -38,7 +38,7 @@ class Club
   end
 
   def brag!
-    activity = activities.unbragged.asc(:_id).first
+    activity = activities.unbragged.where(first_sync: false).asc(:_id).first
     return unless activity
 
     results = activity.brag!

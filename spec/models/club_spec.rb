@@ -115,11 +115,15 @@ describe Club do
     context 'after an initial sync' do
       before do
         club.sync_and_brag!
-        club.activities.destroy_all
       end
-      it 'syncs and brags' do
-        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once
-        club.sync_and_brag!
+      context 'with a new activity' do
+        before do
+          club.activities.desc(:_id).first.destroy
+        end
+        it 'syncs and brags' do
+          expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once
+          club.sync_and_brag!
+        end
       end
     end
     it 'warns on error' do
