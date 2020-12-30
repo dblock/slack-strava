@@ -31,6 +31,6 @@ class SystemStats
     distance = total_distance_in_miles
     return unless distance&.positive?
 
-    format('%g miles', format('%.2f', distance))
+    format('%.2f miles', distance)
   end
 end

@@ -38,12 +38,11 @@ describe Api::Endpoints::StatusEndpoint do
         expect(status.connected_users_count).to eq 1
       end
       context 'with activities' do
-        let!(:activity1) { Fabricate(:user_activity, user: connected_user) }
-        let!(:activity2) { Fabricate(:user_activity, user: connected_user) }
-        let(:total_distance_in_miles) { activity1.distance_in_miles + activity2.distance_in_miles }
+        let!(:activity1) { Fabricate(:user_activity, user: connected_user, distance: 12_345_678_100) }
+        let!(:activity2) { Fabricate(:user_activity, user: connected_user, distance: 54_321_678_100) }
         it 'returns a status with distance and users' do
           status = client.status
-          expect(status.total_distance_in_miles_s).to eq '28.01 miles'
+          expect(status.total_distance_in_miles_s).to eq '41425095.12 miles'
           expect(status.connected_users_count).to eq 1
         end
       end
