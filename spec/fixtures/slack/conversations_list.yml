@@ -2,10 +2,10 @@
 http_interactions:
 - request:
     method: post
-    uri: https://slack.com/api/channels.list
+    uri: https://slack.com/api/conversations.list
     body:
       encoding: UTF-8
-      string: exclude_archived=true&exclude_members=true&token=token
+      string: exclude_archived=true&token=token
     headers:
       Accept:
       - application/json; charset=utf-8

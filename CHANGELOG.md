@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2021/01/03: Added support for posting into private channels - [@dblock](https://github.com/dblock).
 * 2020/11/08: Flush club activities out to prevent old activities on a new connection - [@dblock](https://github.com/dblock).
 * 2020/07/13: Don't post activities for teams with expired subscriptions - [@dblock](https://github.com/dblock).
 * 2020/07/09: Swap Puma for Unicorn and fix map posting - [@dblock](https://github.com/dblock).

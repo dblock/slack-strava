@@ -93,12 +93,14 @@ class Team
   end
 
   def slack_channels
-    slack_client.channels_list(
+    channels = []
+    slack_client.conversations_list(
       exclude_archived: true,
-      exclude_members: true
-    )['channels'].select do |channel|
-      channel['is_member']
+      types: 'public_channel,private_channel'
+    ) do |response|
+      channels.concat(response.channels.select(&:is_member))
     end
+    channels
   end
 
   def bot_in_channel?(channel_id)
