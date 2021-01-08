@@ -53,6 +53,8 @@ module Api
                 link.url => activity.to_slack_attachment
               }.to_json
             )
+
+            activity.update_attributes!(bragged_at: Time.now.utc)
           end
         end
       end

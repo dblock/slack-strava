@@ -213,7 +213,7 @@ class User
     activity = activities.unbragged.asc(:start_date).first
     return unless activity
 
-    update_attributes!(activities_at: activity.start_date)
+    update_attributes!(activities_at: activity.start_date) if activities_at.nil? || (activities_at < activity.start_date)
     results = activity.brag!
     return unless results&.any?
 
@@ -257,7 +257,7 @@ class User
     detailed_activity = strava_client.activity(strava_id)
     return if detailed_activity['private'] && !private_activities?
     if detailed_activity.athlete.id.to_s != athlete.athlete_id
-      raise 'Activity athlete ID do not match.'
+      raise "Activity athlete ID #{detailed_activity.athlete.id} does not match #{athlete.athlete_id}."
     end
 
     UserActivity.create_from_strava!(self, detailed_activity) || activities.where(strava_id: detailed_activity.id).first

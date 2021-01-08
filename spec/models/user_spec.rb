@@ -186,6 +186,13 @@ describe User do
           allow_any_instance_of(User).to receive(:inform!).and_return([{ ts: 'ts', channel: 'C1' }])
           user.brag!
         end
+        it 'does not reset activities_at back if the most recent bragged activity is in the past' do
+          expect(user.activities_at).to_not be nil
+          past = Time.parse('2012-01-01T12:34Z')
+          Fabricate(:user_activity, user: user, start_date: past)
+          user.brag!
+          expect(user.activities_at).to_not eq past
+        end
         it 'sets activities_at to the most recent bragged activity' do
           expect(user.activities_at).to eq user.activities.bragged.max(:start_date)
         end
@@ -400,6 +407,27 @@ describe User do
         }]
       )
       user.dm_connect!('Please reconnect your account')
+    end
+  end
+  context 'sync_strava_activity!', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
+    let!(:user) { Fabricate(:user, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+    context 'with a mismatched athlete ID' do
+      it 'raises an exception' do
+        expect {
+          user.sync_strava_activity!('1473024961')
+        }.to raise_error(/Activity athlete ID 26462176 does not match/)
+      end
+    end
+    context 'with a matching athlete ID' do
+      before do
+        user.athlete.athlete_id = '26462176'
+      end
+      it 'fetches an activity' do
+        expect {
+          user.sync_strava_activity!('1473024961')
+        }.to change(user.activities, :count).by(1)
+        expect(user.activities.count).to eq 1
+      end
     end
   end
 end
