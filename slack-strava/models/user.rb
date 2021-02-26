@@ -197,7 +197,7 @@ class User
   end
 
   def dm!(message)
-    im = team.slack_client.im_open(user: user_id)
+    im = team.slack_client.conversations_open(users: user_id.to_s)
     team.slack_client.chat_postMessage(message.merge(channel: im['channel']['id'], as_user: true))
   end
 

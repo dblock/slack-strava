@@ -43,8 +43,8 @@ describe Api::Endpoints::TeamsEndpoint do
         }
         ENV['SLACK_CLIENT_ID'] = 'client_id'
         ENV['SLACK_CLIENT_SECRET'] = 'client_secret'
-        allow_any_instance_of(Slack::Web::Client).to receive(:im_open).with(
-          user: 'activated_user_id'
+        allow_any_instance_of(Slack::Web::Client).to receive(:conversations_open).with(
+          users: 'activated_user_id'
         ).and_return(
           'channel' => {
             'id' => 'C1'
