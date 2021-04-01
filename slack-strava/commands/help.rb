@@ -16,7 +16,7 @@ module SlackStrava
 
         Teams
         ------------
-        stats                    - aggregate team and club stats in current channel
+        stats                    - stats in current channel for the past 30 days
 
         Settings
         ------------

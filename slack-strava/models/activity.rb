@@ -24,6 +24,7 @@ class Activity
   index(strava_id: 1)
   index(team_id: 1, bragged_at: 1)
   index(distance: 1, moving_time: 1, elapsed_time: 1, total_elevation_gain: 1)
+  index({ updated_at: 1 }, { expire_after_seconds: 30.days })
 
   embeds_many :channel_messages, inverse_of: nil
   index('channel_messages.channel' => 1)
