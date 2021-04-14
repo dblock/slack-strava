@@ -29,6 +29,13 @@ describe Club do
         club.sync_new_strava_activities!
       }.to change(club.activities, :count).by(7)
     end
+    it 'updates the existing duplicate', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
+      activity = club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+      tt = activity.reload.updated_at.utc
+      Timecop.travel(Time.now + 1.hour)
+      club.sync_new_strava_activities!
+      expect(activity.reload.updated_at.utc).to_not eq(tt)
+    end
     it 'disconnects club on auth failure' do
       allow(club.strava_client).to receive(:club_activities).and_raise(
         Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [] })

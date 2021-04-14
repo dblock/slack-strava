@@ -133,8 +133,18 @@ class Club
     return unless sync_activities?
 
     strava_client.club_activities(strava_id, options).map do |activity|
-      club_activity = ClubActivity.new(ClubActivity.attrs_from_strava(activity).merge(team: team, club: self, first_sync: first_sync_at.nil?))
-      next if ClubActivity.where(strava_id: club_activity.strava_id).exists?
+      club_activity = ClubActivity.new(
+        ClubActivity.attrs_from_strava(activity).merge(
+          team: team, club: self, fetched_at: Time.now.utc, first_sync: first_sync_at.nil?
+        )
+      )
+
+      existing_activity = ClubActivity.where(strava_id: club_activity.strava_id).first
+      if existing_activity
+        # still fetching this activity, prevent the activity from being purged by a 30 day TTL index
+        existing_activity.update_attributes!(fetched_at: Time.now.utc)
+        next
+      end
 
       club_activity.save!
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"

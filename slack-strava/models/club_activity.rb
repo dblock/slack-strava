@@ -1,5 +1,6 @@
 class ClubActivity < Activity
   field :athlete_name, type: String
+  field :fetched_at, type: DateTime
   field :first_sync, type: Boolean, default: false
 
   belongs_to :club, inverse_of: :activities
