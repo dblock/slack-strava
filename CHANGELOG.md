@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2021/06/24: Do not brag activities for the first time on updates - [@dblock](https://github.com/dblock).
 * 2021/06/24: Fix club subscriptions on multiple channels - [@dblock](https://github.com/dblock).
 * 2021/04/01: Do not store activities for more than 30 days - [@dblock](https://github.com/dblock).
 * 2021/01/08: Mark unfurled activities bragged, and do not reset `activities_at` to the past - [@dblock](https://github.com/dblock).

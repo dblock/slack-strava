@@ -430,4 +430,28 @@ describe User do
       end
     end
   end
+  context '#rebrag_activity!', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
+    let!(:user) { Fabricate(:user, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+    let!(:activity) { Fabricate(:user_activity, user: user, team: user.team, strava_id: '1473024961') }
+    context 'a previously bragged activity' do
+      before do
+        activity.update_attributes!(
+          bragged_at: Time.now.utc,
+          channel_messages: [ChannelMessage.new(channel: 'channel1')]
+        )
+      end
+      it 'rebrags' do
+        expect_any_instance_of(UserActivity).to_not receive(:brag!)
+        expect_any_instance_of(UserActivity).to receive(:rebrag!)
+        user.rebrag_activity!(activity)
+      end
+    end
+    context 'a new activity' do
+      it 'does not rebrag' do
+        expect_any_instance_of(UserActivity).to_not receive(:brag!)
+        expect_any_instance_of(UserActivity).to_not receive(:rebrag!)
+        user.rebrag_activity!(activity)
+      end
+    end
+  end
 end

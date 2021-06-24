@@ -236,8 +236,9 @@ class User
 
       activity = UserActivity.create_from_strava!(self, detailed_activity)
       return unless activity
+      return unless activity.bragged_at
 
-      results = activity.bragged_at ? activity.rebrag! : activity.brag!
+      results = activity.rebrag!
       return unless results
 
       results.map do |result|
