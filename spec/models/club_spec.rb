@@ -34,7 +34,59 @@ describe Club do
       tt = activity.reload.updated_at.utc
       Timecop.travel(Time.now + 1.hour)
       club.sync_new_strava_activities!
-      expect(activity.reload.updated_at.utc).to_not eq(tt)
+      expect(activity.reload.updated_at.utc.to_i).to_not eq(tt.to_i)
+    end
+    context 'with two club channels' do
+      let!(:club2) { Fabricate(:club, team: team, strava_id: '43749', channel_id: '1HNTD0CW', channel_name: 'testing', access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+      it 'retrieves the last activity and stores it twice' do
+        expect {
+          club.sync_last_strava_activity!
+        }.to change(club.activities, :count).by(1)
+        expect {
+          club2.sync_last_strava_activity!
+        }.to change(club2.activities, :count).by(1)
+        expect(club.activities.count).to eq(1)
+        expect(club2.activities.count).to eq(1)
+      end
+      it 'only saves the last activity once per club' do
+        expect {
+          2.times { club.sync_last_strava_activity! }
+        }.to change(club.activities, :count).by(1)
+        expect {
+          2.times { club2.sync_last_strava_activity! }
+        }.to change(club2.activities, :count).by(1)
+        expect(club.activities.count).to eq(1)
+        expect(club2.activities.count).to eq(1)
+      end
+      it 'retrieves an incremental set of activities', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
+        expect {
+          club.sync_new_strava_activities!
+        }.to change(club.activities, :count).by(8)
+        expect {
+          club2.sync_new_strava_activities!
+        }.to change(club2.activities, :count).by(8)
+      end
+      it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
+        # first activity from the cassette
+        club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        club2.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        expect {
+          club.sync_new_strava_activities!
+        }.to change(club.activities, :count).by(7)
+        expect {
+          club2.sync_new_strava_activities!
+        }.to change(club2.activities, :count).by(7)
+      end
+      it 'updates the existing duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
+        activity = club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        tt = activity.reload.updated_at.utc
+        activity2 = club2.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        tt2 = activity.reload.updated_at.utc
+        Timecop.travel(Time.now + 1.hour)
+        club.sync_new_strava_activities!
+        expect(activity.reload.updated_at.utc.to_i).to_not eq(tt.to_i)
+        expect(activity2.reload.updated_at.utc.to_i).to eq(tt2.to_i)
+      end
     end
     it 'disconnects club on auth failure' do
       allow(club.strava_client).to receive(:club_activities).and_raise(

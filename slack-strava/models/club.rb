@@ -139,7 +139,7 @@ class Club
         )
       )
 
-      existing_activity = ClubActivity.where(strava_id: club_activity.strava_id).first
+      existing_activity = ClubActivity.where(strava_id: club_activity.strava_id, club: self).first
       if existing_activity
         # still fetching this activity, prevent the activity from being purged by a 30 day TTL index
         existing_activity.update_attributes!(fetched_at: Time.now.utc)
