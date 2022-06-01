@@ -93,12 +93,15 @@ class Team
   end
 
   def slack_channels
+    raise 'missing bot_user_id' unless bot_user_id
+
     channels = []
-    slack_client.conversations_list(
+    slack_client.users_conversations(
+      user: bot_user_id,
       exclude_archived: true,
       types: 'public_channel,private_channel'
     ) do |response|
-      channels.concat(response.channels.select(&:is_member))
+      channels.concat(response.channels)
     end
     channels
   end
