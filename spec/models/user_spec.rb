@@ -360,7 +360,10 @@ describe User do
   end
   context '#inform!' do
     let(:user) { Fabricate(:user, user_id: 'U0HLFUZLJ') }
-    it 'sends message to all channels a user is a member of', vcr: { cassette_name: 'slack/conversations_list_conversations_members' } do
+    before do
+      user.team.bot_user_id = 'bot_user_id'
+    end
+    it 'sends message to all channels a user is a member of', vcr: { cassette_name: 'slack/users_conversations_conversations_members' } do
       expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
         message: 'message',
         channel: 'C0HNSS6H5',

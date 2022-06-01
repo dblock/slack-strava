@@ -111,8 +111,11 @@ describe Team do
   end
   context '#inform!' do
     let(:team) { Fabricate(:team) }
-    it 'sends message to all channels', vcr: { cassette_name: 'slack/conversations_list' } do
-      expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).exactly(3).times.and_return('ts' => '1503435956.000247')
+    before do
+      team.bot_user_id = 'bot_user_id'
+    end
+    it 'sends message to all channels', vcr: { cassette_name: 'slack/users_conversations' } do
+      expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).exactly(25).times.and_return('ts' => '1503435956.000247')
       team.inform!(message: 'message')
     end
   end
