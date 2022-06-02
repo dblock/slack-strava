@@ -1,7 +1,7 @@
 Slava
 =====
 
-[![Build Status](https://travis-ci.org/dblock/slack-strava.svg?branch=master)](https://travis-ci.org/dblock/slack-strava)
+[![Tests](https://github.com/dblock/slack-strava/actions/workflows/test.yml/badge.svg)](https://github.com/dblock/slack-strava/actions/workflows/test.yml)
 
 Integrate Strava into Slack. Hosted at [slava.playplay.io](https://slava.playplay.io/).
 
