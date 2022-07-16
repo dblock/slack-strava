@@ -38,6 +38,12 @@ class ClubActivity < Activity
     end
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
+    when 'is_archived'
+      logger.warn "Bragging to #{club} failed, #{e.message}."
+      club.team.inform_admin!(text: "I couldn't post an activity from #{club.name} into #{club.channel_mention} because the channel was archived, please reconnect that club in a different channel.")
+      club.update_attributes!(sync_activities: false)
+      NewRelic::Agent.notice_error(e, custom_params: { team: club.team.to_s, self: club.to_s })
+      nil
     when 'restricted_action'
       logger.warn "Bragging to #{club} failed, #{e.message}."
       club.team.inform_admin!(text: "I wasn't allowed to post into #{club.channel_mention} because of a Slack workspace preference, please contact your Slack admin.")

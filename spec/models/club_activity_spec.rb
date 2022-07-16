@@ -52,6 +52,17 @@ describe ClubActivity do
         expect(activity.brag!).to be nil
       }.to_not change(Club, :count)
     end
+    it 'informs admin on is_archived channel' do
+      expect {
+        expect_any_instance_of(Logger).to receive(:warn).with(/is_archived/)
+        expect(club.team).to receive(:inform_admin!).with(text: "I couldn't post an activity from #{club.name} into <##{club.channel_id}> because the channel was archived, please reconnect that club in a different channel.")
+        expect(club.team.slack_client).to receive(:chat_postMessage) {
+          raise Slack::Web::Api::Errors::SlackError, 'is_archived'
+        }
+        expect(activity.brag!).to be nil
+      }.to_not change(Club, :count)
+      expect(club.reload.sync_activities).to be false
+    end
     context 'having already bragged a user activity in the channel' do
       let!(:user_activity) do
         Fabricate(:user_activity,
