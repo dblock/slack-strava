@@ -7,32 +7,32 @@ module SlackStrava
 
         DM or /slava
         ------------
-        connect                  - connect your Strava account
-        disconnect               - disconnect your Strava account
+        connect                          - connect your Strava account
+        disconnect                       - disconnect your Strava account
 
         Clubs
         ------------
-        /slava clubs             - connect/disconnect clubs
+        /slava clubs                     - connect/disconnect clubs
 
         Teams
         ------------
-        stats                    - stats in current channel for the past 30 days
+        stats                            - stats in current channel for the past 30 days
 
         Settings
         ------------
-        set units mi|km|both     - use imperial vs. metric units, or display both
-        set fields all|none|...  - display all, none or certain activity fields
-        set maps off|full|thumb  - change the way maps are displayed
-        set sync true|false      - sync activities (default is true)
-        set private true|false   - sync private (only you) activities (default is false)
-        set followers true|false - sync followers only activities (default is true)
+        set units imperial|metric|both   - use imperial vs. metric units, or display both
+        set fields all|none|...          - display all, none or certain activity fields
+        set maps off|full|thumb          - change the way maps are displayed
+        set sync true|false              - sync activities (default is true)
+        set private true|false           - sync private (only you) activities (default is false)
+        set followers true|false         - sync followers only activities (default is true)
 
         General
         ------------
-        help                     - get this helpful message
-        subscription             - show subscription info, update credit-card
-        unsubscribe              - turn off subscription auto-renew
-        info                     - bot info, contact, feature requests
+        help                             - get this helpful message
+        subscription                     - show subscription info, update credit-card
+        unsubscribe                      - turn off subscription auto-renew
+        info                             - bot info, contact, feature requests
         ```
       EOS
       def self.call(client, data, _match)

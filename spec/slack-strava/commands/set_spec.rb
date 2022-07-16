@@ -21,7 +21,7 @@ describe SlackStrava::Commands::Set do
       end
       it 'shows current settings' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
-          "Activities for team #{team.name} display *miles*.",
+          "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
           'Activity fields are *set to default*.',
           "Maps for team #{team.name} are *displayed in full*.",
           'Your activities will sync.',
@@ -134,19 +134,43 @@ describe SlackStrava::Commands::Set do
         context 'units' do
           it 'shows current value of units' do
             expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
-              "Activities for team #{team.name} display *miles*."
+              "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*."
             )
           end
           it 'shows current value of units set to km' do
             team.update_attributes!(units: 'km')
             expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
-              "Activities for team #{team.name} display *kilometers*."
+              "Activities for team #{team.name} display *kilometers, meters, and degrees Celcius*."
             )
           end
           it 'sets units to mi' do
             team.update_attributes!(units: 'km')
             expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
-              "Activities for team #{team.name} now display *miles*."
+              "Activities for team #{team.name} now display *miles, feet, yards, and degrees Fahrenheit*."
+            )
+            expect(client.owner.units).to eq 'mi'
+            expect(team.reload.units).to eq 'mi'
+          end
+          it 'sets units to km' do
+            team.update_attributes!(units: 'mi')
+            expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(
+              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celcius*."
+            )
+            expect(client.owner.units).to eq 'km'
+            expect(team.reload.units).to eq 'km'
+          end
+          it 'sets units to metric' do
+            team.update_attributes!(units: 'mi')
+            expect(message: "#{SlackRubyBot.config.user} set units metric").to respond_with_slack_message(
+              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celcius*."
+            )
+            expect(client.owner.units).to eq 'km'
+            expect(team.reload.units).to eq 'km'
+          end
+          it 'sets units to imperial' do
+            team.update_attributes!(units: 'km')
+            expect(message: "#{SlackRubyBot.config.user} set units imperial").to respond_with_slack_message(
+              "Activities for team #{team.name} now display *miles, feet, yards, and degrees Fahrenheit*."
             )
             expect(client.owner.units).to eq 'mi'
             expect(team.reload.units).to eq 'mi'
@@ -154,7 +178,7 @@ describe SlackStrava::Commands::Set do
           it 'changes units' do
             team.update_attributes!(units: 'mi')
             expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(
-              "Activities for team #{team.name} now display *kilometers*."
+              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celcius*."
             )
             expect(client.owner.units).to eq 'km'
             expect(team.reload.units).to eq 'km'
@@ -260,13 +284,13 @@ describe SlackStrava::Commands::Set do
           context 'units' do
             it 'shows current value of units' do
               expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
-                "Activities for team #{team.name} display *miles*."
+                "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*."
               )
             end
             it 'cannot set units' do
               team.update_attributes!(units: 'km')
               expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
-                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *kilometers*."
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *kilometers, meters, and degrees Celcius*."
               )
               expect(team.reload.units).to eq 'km'
             end

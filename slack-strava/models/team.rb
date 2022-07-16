@@ -41,9 +41,9 @@ class Team
   def units_s
     case units
     when 'mi'
-      'miles'
+      'miles, feet, yards, and degrees Fahrenheit'
     when 'km'
-      'kilometers'
+      'kilometers, meters, and degrees Celcius'
     when 'both'
       'both units'
     else
