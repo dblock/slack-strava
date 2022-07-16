@@ -27,17 +27,40 @@ describe User do
     before do
       client.owner = team
     end
+    context 'with a mismatching user id in slack_mention' do
+      let!(:user) { Fabricate(:user, team: team) }
+      let(:web_client) { double(Slack::Web::Client, users_info: { user: { id: user.user_id, name: user.user_name } }) }
+      before do
+        allow(client).to receive(:web_client).and_return(web_client)
+      end
+      it 'finds by different slack id returned from slack info' do
+        expect(User.find_create_or_update_by_slack_id!(client, 'unknown')).to eq user
+      end
+    end
     context 'without a user' do
       it 'creates a user' do
         expect {
           user = User.find_create_or_update_by_slack_id!(client, 'whatever')
           expect(user).to_not be_nil
-          expect(user.user_id).to eq 'whatever'
+          expect(user.user_id).to eq 'U007'
           expect(user.user_name).to eq 'username'
           expect(user.is_admin).to be true
           expect(user.is_bot).to be false
           expect(user.is_owner).to be true
         }.to change(User, :count).by(1)
+      end
+    end
+    context 'with a user with info matching an existing user id' do
+      let!(:user) { Fabricate(:user, team: team, is_admin: true, user_id: 'U007') }
+      it 'updates the fields of the existing user' do
+        expect {
+          User.find_create_or_update_by_slack_id!(client, 'whatever')
+        }.to_not change(User, :count)
+        user.reload
+        expect(user.user_id).to eq 'U007'
+        expect(user.is_admin).to be true
+        expect(user.is_bot).to be false
+        expect(user.is_owner).to be true
       end
     end
     context 'with a user' do

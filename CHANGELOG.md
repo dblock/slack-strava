@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2022/07/16: Fix [#136](https://github.com/dblock/slack-strava/issues/136), Mongo::Error::OperationFailure: [11000]: E11000 duplicate key error - [@dblock](https://github.com/dblock).
 * 2022/06/22: Fix [#133](https://github.com/dblock/slack-strava/issues/133), improve fetching channels list - [@dblock](https://github.com/dblock).
 * 2021/06/24: Do not brag activities for the first time on updates - [@dblock](https://github.com/dblock).
 * 2021/06/24: Fix club subscriptions on multiple channels - [@dblock](https://github.com/dblock).
