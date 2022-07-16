@@ -2,9 +2,7 @@ module Api
   module Endpoints
     module Requests
       class Event < Request
-        attr_reader :challenge, :type
-        attr_reader :team_id, :api_app_id
-        attr_reader :event
+        attr_reader :challenge, :type, :team_id, :api_app_id, :event
 
         def initialize(params)
           super(params)

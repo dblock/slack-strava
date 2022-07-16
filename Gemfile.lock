@@ -11,7 +11,7 @@ GEM
       zeitwerk (~> 2.2, >= 2.2.2)
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
-    ast (2.4.1)
+    ast (2.4.2)
     async (1.26.2)
       console (~> 1.0)
       nio4r (~> 2.3)
@@ -112,6 +112,7 @@ GEM
     io-console (0.5.6)
     irb (1.2.4)
       reline (>= 0.0.1)
+    json (2.6.2)
     kaminari-core (1.2.1)
     kaminari-grape (1.0.1)
       grape
@@ -162,8 +163,8 @@ GEM
       faraday (>= 1.0.0)
       faraday_middleware
       hashie
-    parallel (1.19.2)
-    parser (2.7.1.4)
+    parallel (1.22.1)
+    parser (3.1.2.0)
       ast (~> 2.4.1)
     polylines (0.3.0)
     public_suffix (4.0.6)
@@ -182,9 +183,9 @@ GEM
       rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
-    rainbow (3.0.0)
+    rainbow (3.1.1)
     rake (12.3.3)
-    regexp_parser (1.7.1)
+    regexp_parser (1.8.2)
     reline (0.1.4)
       io-console (~> 0.5)
     representable (3.0.4)
@@ -212,20 +213,25 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
     rspec-support (3.9.3)
-    rubocop (0.87.1)
+    rubocop (1.31.2)
+      json (~> 2.3)
       parallel (~> 1.10)
-      parser (>= 2.7.1.1)
+      parser (>= 3.1.0.0)
       rainbow (>= 2.2.2, < 4.0)
-      regexp_parser (>= 1.7)
-      rexml
-      rubocop-ast (>= 0.1.0, < 1.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.18.0, < 2.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (>= 1.4.0, < 2.0)
-    rubocop-ast (0.1.0)
-      parser (>= 2.7.0.1)
+      unicode-display_width (>= 1.4.0, < 3.0)
+    rubocop-ast (1.19.1)
+      parser (>= 3.1.1.0)
+    rubocop-rake (0.6.0)
+      rubocop (~> 1.0)
+    rubocop-rspec (2.12.1)
+      rubocop (~> 1.31)
     ruby-enum (0.8.0)
       i18n
-    ruby-progressbar (1.10.1)
+    ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.2)
     rubyzip (2.3.0)
     safe_yaml (1.0.5)
@@ -276,7 +282,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
-    unicode-display_width (1.7.0)
+    unicode-display_width (2.2.0)
     vcr (6.0.0)
     wannabe_bool (0.7.1)
     webmock (3.8.3)
@@ -319,6 +325,8 @@ DEPENDENCIES
   rake (~> 12.3)
   rspec
   rubocop
+  rubocop-rake
+  rubocop-rspec
   ruby-enum
   selenium-webdriver
   slack-ruby-bot-server
@@ -336,4 +344,4 @@ RUBY VERSION
    ruby 2.6.5p114
 
 BUNDLED WITH
-   1.17.2
+   1.17.3

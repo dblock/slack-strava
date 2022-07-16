@@ -7,7 +7,7 @@ module SlackRubyBotServer
     end
 
     def self.url
-      ENV['URL'] || (ENV['RACK_ENV'] == 'development' ? LOCALHOST : 'https://slava.playplay.io')
+      ENV.fetch('URL') { (ENV['RACK_ENV'] == 'development' ? LOCALHOST : 'https://slava.playplay.io') }
     end
   end
 end

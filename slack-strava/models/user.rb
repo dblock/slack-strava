@@ -37,7 +37,7 @@ class User
 
   def connect_to_strava_url
     redirect_uri = "#{SlackRubyBotServer::Service.url}/connect"
-    "https://www.strava.com/oauth/authorize?client_id=#{ENV['STRAVA_CLIENT_ID']}&redirect_uri=#{redirect_uri}&response_type=code&scope=activity:read_all&state=#{id}"
+    "https://www.strava.com/oauth/authorize?client_id=#{ENV.fetch('STRAVA_CLIENT_ID', nil)}&redirect_uri=#{redirect_uri}&response_type=code&scope=activity:read_all&state=#{id}"
   end
 
   def slack_mention
@@ -54,8 +54,7 @@ class User
 
   def self.find_create_or_update_by_team_and_slack_id!(team_id, user_id)
     team = Team.where(team_id: team_id).first || raise("Cannot find team ID #{team_id}")
-    user = User.where(team: team, user_id: user_id).first || User.create!(team: team, user_id: user_id)
-    user
+    User.where(team: team, user_id: user_id).first || User.create!(team: team, user_id: user_id)
   end
 
   # Find an existing record, update the username if necessary, otherwise create a user record.
@@ -116,12 +115,12 @@ class User
     }
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
-    when 'restricted_action' then
+    when 'restricted_action'
       logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
       dm!(text: "I wasn't allowed to post into <##{channel['id']}> because of a Slack workspace preference, please contact your Slack admin.")
       NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, self: to_s })
       nil
-    when 'not_in_channel', 'account_inactive' then
+    when 'not_in_channel', 'account_inactive'
       logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
       NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, self: to_s })
       nil

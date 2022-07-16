@@ -31,7 +31,7 @@ describe 'Teams', js: true, type: :feature do
       expect(title).to eq('Slava: Strava integration with Slack')
     end
     it 'includes a link to add to slack with the client id' do
-      expect(find("a[href='https://slack.com/oauth/authorize?scope=#{ENV['SLACK_OAUTH_SCOPE']}&client_id=#{ENV['SLACK_CLIENT_ID']}']"))
+      expect(find("a[href='https://slack.com/oauth/authorize?scope=#{ENV.fetch('SLACK_OAUTH_SCOPE', nil)}&client_id=#{ENV.fetch('SLACK_CLIENT_ID', nil)}']"))
     end
   end
 end

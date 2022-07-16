@@ -1,9 +1,7 @@
 class TeamStats
   extend Forwardable
 
-  attr_reader :team
-  attr_reader :stats
-  attr_reader :options
+  attr_reader :team, :stats, :options
 
   def initialize(team, options = {})
     @team = team
@@ -28,34 +26,32 @@ class TeamStats
   end
 
   def aggregate!
-    @stats = Hash[
-      Activity.collection.aggregate(
-        [
-          { '$match' => aggreate_options },
-          {
-            '$group' => {
-              _id: { type: { '$ifNull' => ['$type', 'unknown'] } },
-              count: { '$sum' => 1 },
-              distance: { '$sum' => '$distance' },
-              elapsed_time: { '$sum' => '$elapsed_time' },
-              moving_time: { '$sum' => '$moving_time' },
-              pr_count: { '$sum' => '$pr_count' },
-              calories: { '$sum' => '$calories' },
-              total_elevation_gain: { '$sum' => '$total_elevation_gain' }
-            }
-          },
-          { '$sort' => { count: -1 } }
-        ]
-      ).map do |row|
-        type = row['_id']['type']
-        [type, ActivitySummary.new(
-          team: team,
-          type: type,
-          count: row['count'],
-          athlete_count: team.activities.where(type: type).distinct(:user_id).count,
-          stats: Hashie::Mash.new(row.except('_id').except('count'))
-        )]
-      end
-    ]
+    @stats = Activity.collection.aggregate(
+      [
+        { '$match' => aggreate_options },
+        {
+          '$group' => {
+            _id: { type: { '$ifNull' => ['$type', 'unknown'] } },
+            count: { '$sum' => 1 },
+            distance: { '$sum' => '$distance' },
+            elapsed_time: { '$sum' => '$elapsed_time' },
+            moving_time: { '$sum' => '$moving_time' },
+            pr_count: { '$sum' => '$pr_count' },
+            calories: { '$sum' => '$calories' },
+            total_elevation_gain: { '$sum' => '$total_elevation_gain' }
+          }
+        },
+        { '$sort' => { count: -1 } }
+      ]
+    ).map { |row|
+      type = row['_id']['type']
+      [type, ActivitySummary.new(
+        team: team,
+        type: type,
+        count: row['count'],
+        athlete_count: team.activities.where(type: type).distinct(:user_id).count,
+        stats: Hashie::Mash.new(row.except('_id').except('count'))
+      )]
+    }.to_h
   end
 end

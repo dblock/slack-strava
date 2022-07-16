@@ -5,8 +5,8 @@ class StravaWebhook
 
   def client
     @client ||= Strava::Webhooks::Client.new(
-      client_id: ENV['STRAVA_CLIENT_ID'],
-      client_secret: ENV['STRAVA_CLIENT_SECRET']
+      client_id: ENV.fetch('STRAVA_CLIENT_ID', nil),
+      client_secret: ENV.fetch('STRAVA_CLIENT_SECRET', nil)
     )
   end
 
@@ -25,7 +25,7 @@ class StravaWebhook
   end
 
   def verify_token
-    Digest::MD5.hexdigest(ENV['STRAVA_CLIENT_SECRET'])
+    Digest::MD5.hexdigest(ENV.fetch('STRAVA_CLIENT_SECRET', nil))
   end
 
   def subscribe!

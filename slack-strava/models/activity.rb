@@ -97,7 +97,7 @@ class Activity
       elapsed_time: elapsed_time,
       total_elevation_gain: total_elevation_gain,
       :bragged_at.gt => Time.now.utc.to_i - dt.to_i,
-      "channel_messages.channel": channel_id
+      'channel_messages.channel': channel_id
     ).exists?
   end
 

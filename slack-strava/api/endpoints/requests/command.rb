@@ -2,11 +2,7 @@ module Api
   module Endpoints
     module Requests
       class Command < Request
-        attr_reader :action, :arg, :type
-        attr_reader :channel_id, :channel_name
-        attr_reader :user_id, :team_id
-        attr_reader :text, :image_url, :response_url
-        attr_reader :trigger_id, :submission, :message_ts
+        attr_reader :action, :arg, :type, :channel_id, :channel_name, :user_id, :team_id, :text, :image_url, :response_url, :trigger_id, :submission, :message_ts
 
         def initialize(params)
           super(params)

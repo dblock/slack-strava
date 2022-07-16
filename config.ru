@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 ENV['RACK_ENV'] ||= 'development'
 
 require 'bundler/setup'
-Bundler.require :default, ENV['RACK_ENV']
+Bundler.require :default, ENV.fetch('RACK_ENV', nil)
 
 require 'slack-ruby-bot-server'
 require 'slack-strava'

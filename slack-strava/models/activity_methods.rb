@@ -81,11 +81,11 @@ module ActivityMethods
   end
 
   def pace_per_100_yards_s
-    convert_meters_per_second_to_pace average_speed, :"100yd"
+    convert_meters_per_second_to_pace average_speed, :'100yd'
   end
 
   def pace_per_100_meters_s
-    convert_meters_per_second_to_pace average_speed, :"100m"
+    convert_meters_per_second_to_pace average_speed, :'100m'
   end
 
   def pace_per_kilometer_s
@@ -318,8 +318,8 @@ module ActivityMethods
     total_seconds = case unit
                     when :mi then 1609.344 / speed
                     when :km then 1000 / speed
-                    when :"100yd" then 91.44 / speed
-                    when :"100m" then 100 / speed
+                    when :'100yd' then 91.44 / speed
+                    when :'100m' then 100 / speed
                     end
     minutes, seconds = total_seconds.divmod(60)
     seconds = seconds.round
