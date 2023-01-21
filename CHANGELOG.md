@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2023/01/21: Upgrade to Ruby 2.7.7 - [@dblock](https://github.com/dblock).
 * 2022/07/16: Fix [#112](https://github.com/dblock/slack-strava/issues/112), handle archived channels - [@dblock](https://github.com/dblock).
 * 2022/07/16: [#137](https://github.com/dblock/slack-strava/issues/137), add `set units imperial` and `set units metric` - [@dblock](https://github.com/dblock).
 * 2022/07/16: Fix [#136](https://github.com/dblock/slack-strava/issues/136), Mongo::Error::OperationFailure: [11000]: E11000 duplicate key error - [@dblock](https://github.com/dblock).
