@@ -99,6 +99,14 @@ describe User do
           user.sync_new_strava_activities!
         }.to change(user.activities, :count).by(3)
       end
+      it 'logs and raises errors' do
+        allow(UserActivity).to receive(:create_from_strava!) do |_user, _response|
+          raise Strava::Errors::Fault.new(404, body: { 'message' => 'Not Found', 'errors' => [{ 'resource' => 'Activity', 'field' => 'id', 'code' => 'not_found' }] })
+        end
+        expect {
+          user.sync_new_strava_activities!
+        }.to raise_error(Strava::Errors::Fault)
+      end
       it 'sets activities_at to nil without any bragged activity' do
         user.sync_new_strava_activities!
         expect(user.activities_at).to be nil

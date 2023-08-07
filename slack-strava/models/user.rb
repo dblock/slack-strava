@@ -346,6 +346,7 @@ class User
       dm_connect! 'There was a re-authorization problem with Strava. Make sure that you leave the "View data about your private activities" box checked when reconnecting your Strava account'
       reset_access_tokens!(connected_to_strava_at: nil)
     else
+      backtrace = e.backtrace.join("\n")
       logger.error "#{e.class.name}: #{e.message}\n  #{backtrace}"
     end
     raise e
