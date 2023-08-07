@@ -243,6 +243,12 @@ class Team
     "Customer since #{Time.at(stripe_customer.created).strftime('%B %d, %Y')}."
   end
 
+  def stripe_subcriptions
+    return unless stripe_customer
+
+    stripe_customer.subscriptions
+  end
+
   def subscriber_text
     return unless subscribed_at
 
@@ -257,10 +263,14 @@ class Team
     stripe_customer.subscriptions.map do |subscription|
       amount = ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)
       current_period_end = Time.at(subscription.current_period_end).strftime('%B %d, %Y')
-      [
-        "Subscribed to #{subscription.plan.name} (#{amount}), will#{subscription.cancel_at_period_end ? ' not' : ''} auto-renew on #{current_period_end}.",
-        !subscription.cancel_at_period_end && with_unsubscribe ? "Send `unsubscribe #{subscription.id}` to unsubscribe." : nil
-      ].compact.join("\n")
+      if subscription.status == 'active'
+        [
+          "Subscribed to #{subscription.plan.name} (#{amount}), will#{subscription.cancel_at_period_end ? ' not' : ''} auto-renew on #{current_period_end}.",
+          !subscription.cancel_at_period_end && with_unsubscribe ? "Send `unsubscribe #{subscription.id}` to unsubscribe." : nil
+        ].compact.join("\n")
+      else
+        "#{subscription.status.titleize} subscription created #{Time.at(subscription.created).strftime('%B %d, %Y')} to #{subscription.plan.name} (#{amount})."
+      end
     end
   end
 
