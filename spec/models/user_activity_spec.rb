@@ -452,6 +452,21 @@ describe UserActivity do
       )
     end
   end
+  context 'map' do
+    context 'with a summary polyline' do
+      let(:activity) { Fabricate(:user_activity) }
+      it 'start_latlng' do
+        expect(activity.start_latlng).to eq([37.82822, -122.26348])
+      end
+    end
+    context 'with a blank summary polyline' do
+      let(:map) { Fabricate.build(:map, summary_polyline: '') }
+      let(:activity) { Fabricate(:user_activity, map: map) }
+      it 'start_latlng' do
+        expect(activity.start_latlng).to be nil
+      end
+    end
+  end
   context 'maps' do
     context 'without maps' do
       let(:team) { Fabricate(:team, maps: 'off') }

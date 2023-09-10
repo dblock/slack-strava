@@ -71,7 +71,7 @@ class Map
   end
 
   def update_decoded_summary_polyline!
-    return unless summary_polyline
+    return if summary_polyline.blank?
 
     self.decoded_summary_polyline = Polylines::Decoder.decode_polyline(summary_polyline)
   end
