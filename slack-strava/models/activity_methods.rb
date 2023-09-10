@@ -276,23 +276,23 @@ module ActivityMethods
       when 'Distance'
         fields << { title: 'Distance', value: distance_s, short: true } if distance&.positive?
       when 'Time'
-        if elapsed_time && moving_time
+        if elapsed_time&.positive? && moving_time&.positive?
           fields << { title: 'Time', value: moving_time_in_hours_s, short: true } if elapsed_time == moving_time
-        elsif moving_time
+        elsif moving_time&.positive?
           fields << { title: 'Time', value: moving_time_in_hours_s, short: true }
-        elsif elapsed_time
+        elsif elapsed_time&.positive?
           fields << { title: 'Time', value: elapsed_time_in_hours_s, short: true }
         end
       when 'Moving Time'
-        fields << { title: 'Moving Time', value: moving_time_in_hours_s, short: true } if elapsed_time && moving_time && elapsed_time != moving_time
+        fields << { title: 'Moving Time', value: moving_time_in_hours_s, short: true } if elapsed_time&.positive? && moving_time&.positive? && elapsed_time != moving_time
       when 'Elapsed Time'
-        fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true } if elapsed_time && moving_time && elapsed_time != moving_time
+        fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true } if elapsed_time&.positive? && moving_time&.positive? && elapsed_time != moving_time
       when 'Pace'
-        fields << { title: 'Pace', value: pace_s, short: true } if average_speed
+        fields << { title: 'Pace', value: pace_s, short: true } if average_speed&.positive?
       when 'Speed'
-        fields << { title: 'Speed', value: speed_s, short: true } if average_speed
+        fields << { title: 'Speed', value: speed_s, short: true } if average_speed&.positive?
       when 'Max Speed'
-        fields << { title: 'Max Speed', value: max_speed_s, short: true } if max_speed
+        fields << { title: 'Max Speed', value: max_speed_s, short: true } if max_speed&.positive?
       when 'Elevation'
         fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain&.positive?
       when 'Heart Rate'

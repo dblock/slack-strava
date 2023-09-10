@@ -84,7 +84,8 @@ class UserActivity < Activity
 
   def to_slack_attachment
     result = {}
-    result[:fallback] = "#{name} via #{user.slack_mention}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
+    fallback_fields = [distance_s, moving_time_in_hours_s, pace_s].compact.join(' ')
+    result[:fallback] = ["#{name} via #{user.slack_mention}", fallback_fields].compact.join(', ')
     result[:title] = name
     result[:title_link] = strava_url
     result[:text] = ["<@#{user.user_name}> on #{start_date_local_s}", description].compact.join("\n\n")
