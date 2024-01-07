@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2024/01/07: Add Title, Description, Url, User, Athlete and Date field options - [@dblock](https://github.com/dblock).
 * 2023/01/21: Upgrade to Ruby 2.7.7 - [@dblock](https://github.com/dblock).
 * 2022/07/16: Fix [#112](https://github.com/dblock/slack-strava/issues/112), handle archived channels - [@dblock](https://github.com/dblock).
 * 2022/07/16: [#137](https://github.com/dblock/slack-strava/issues/137), add `set units imperial` and `set units metric` - [@dblock](https://github.com/dblock).

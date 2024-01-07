@@ -84,11 +84,39 @@ class UserActivity < Activity
 
   def to_slack_attachment
     result = {}
-    fallback_fields = [distance_s, moving_time_in_hours_s, pace_s].compact.join(' ')
-    result[:fallback] = ["#{name} via #{user.slack_mention}", fallback_fields].compact.join(', ')
-    result[:title] = name
-    result[:title_link] = strava_url
-    result[:text] = ["<@#{user.user_name}> on #{start_date_local_s}", description].compact.join("\n\n")
+
+    if display_field?(ActivityFields::TITLE) && display_field?(ActivityFields::URL)
+      result[:title] = name || strava_id
+      result[:title_link] = strava_url
+    elsif display_field?(ActivityFields::TITLE)
+      result[:title] = name || strava_id
+    elsif display_field?(ActivityFields::URL)
+      result[:title] = strava_id
+      result[:title_link] = strava_url
+    end
+
+    result_fallback = [
+      display_field?(ActivityFields::TITLE) ? name : nil,
+      display_field?(ActivityFields::USER) ? "via #{user.slack_mention}" : nil,
+      display_field?(ActivityFields::DISTANCE) ? distance_s : nil,
+      display_field?(ActivityFields::MOVING_TIME) ? moving_time_in_hours_s : nil,
+      display_field?(ActivityFields::PACE) ? pace_s : nil
+    ].compact.join(' ')
+
+    result[:fallback] = result_fallback.blank? ? strava_id : result_fallback
+
+    result_text = [
+      if display_field?(ActivityFields::USER) || display_field?(ActivityFields::DATE)
+        [
+          display_field?(ActivityFields::USER) ? "<@#{user.user_name}>" : nil,
+          display_field?(ActivityFields::DATE) ? start_date_local_s : nil
+        ].compact.join(' on ')
+      end,
+      display_field?(ActivityFields::DESCRIPTION) ? description : nil
+    ].compact.join("\n\n")
+
+    result[:text] = result_text unless result_text.blank?
+
     if map
       if team.maps == 'full'
         result[:image_url] = map.proxy_image_url
@@ -96,8 +124,10 @@ class UserActivity < Activity
         result[:thumb_url] = map.proxy_image_url
       end
     end
-    result[:fields] = slack_fields
-    result.merge!(user.athlete.to_slack) if user.athlete
+
+    result_fields = slack_fields
+    result[:fields] = result_fields if result_fields && result_fields.any?
+    result.merge!(user.athlete.to_slack) if user.athlete && display_field?(ActivityFields::ATHLETE)
     result
   end
 

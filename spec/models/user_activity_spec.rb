@@ -137,10 +137,10 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 2h6m26s 9m02s/mi",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run 🏃', short: true },
@@ -167,10 +167,10 @@ describe UserActivity do
         expect(activity.to_slack).to eq(
           attachments: [
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 2h6m26s 9m02s/mi",
+              fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run 🏃', short: true },
@@ -195,6 +195,153 @@ describe UserActivity do
         )
       end
     end
+    context 'with none fields' do
+      before do
+        team.activity_fields = ['None']
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} via #{activity.user.slack_mention}",
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
+              author_name: user.athlete.name,
+              author_link: user.athlete.strava_url,
+              author_icon: user.athlete.profile_medium
+            }
+          ]
+        )
+      end
+    end
+    context 'with all header fields' do
+      before do
+        team.activity_fields = %w[Title Url User Description Date Athlete]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} via #{activity.user.slack_mention}",
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
+              author_name: user.athlete.name,
+              author_link: user.athlete.strava_url,
+              author_icon: user.athlete.profile_medium
+            }
+          ]
+        )
+      end
+    end
+    context 'without athlete' do
+      before do
+        team.activity_fields = %w[Title Url User Description Date]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} via #{activity.user.slack_mention}",
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+            }
+          ]
+        )
+      end
+    end
+    context 'without user' do
+      before do
+        team.activity_fields = %w[Title Url Description Date]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: activity.name,
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+            }
+          ]
+        )
+      end
+    end
+    context 'without description' do
+      before do
+        team.activity_fields = %w[Title Url User Date]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} via #{activity.user.slack_mention}",
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+            }
+          ]
+        )
+      end
+    end
+    context 'without date' do
+      before do
+        team.activity_fields = %w[Title Url Description]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: activity.name,
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: 'Great run!',
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+            }
+          ]
+        )
+      end
+    end
+    context 'without url' do
+      before do
+        team.activity_fields = %w[Title]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: activity.name,
+              title: activity.name,
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+            }
+          ]
+        )
+      end
+    end
+    context 'without title' do
+      before do
+        team.activity_fields = %w[Url]
+      end
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: activity.strava_id,
+              title: activity.strava_id,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+            }
+          ]
+        )
+      end
+    end
     context 'without an athlete' do
       before do
         user.athlete.destroy
@@ -203,10 +350,10 @@ describe UserActivity do
         expect(activity.reload.to_slack).to eq(
           attachments: [
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 2h6m26s 9m02s/mi",
+              fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run 🏃', short: true },
@@ -231,10 +378,10 @@ describe UserActivity do
         expect(activity.reload.to_slack).to eq(
           attachments: [
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 2h6m26s",
+              fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run 🏃', short: true },
@@ -261,10 +408,10 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 22.54km 2h6m26s 5m37s/km",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 22.54km 2h6m26s 5m37s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run 🏃', short: true },
@@ -292,10 +439,10 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run 🏃', short: true },
@@ -323,7 +470,7 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 2050yd 37m 1m48s/100yd",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 2050yd 37m 1m48s/100yd",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
@@ -350,7 +497,7 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 1874m 37m 1m58s/100m",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 1874m 37m 1m58s/100m",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
@@ -377,7 +524,7 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 2050yd 1874m 37m 1m48s/100yd 1m58s/100m",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 2050yd 1874m 37m 1m48s/100yd 1m58s/100m",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
@@ -404,7 +551,7 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 28.1km 1h10m7s 2m30s/km",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 28.1km 1h10m7s 2m30s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
@@ -432,7 +579,7 @@ describe UserActivity do
       expect(activity.to_slack).to eq(
         attachments: [
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention}, 17.46mi 28.1km 1h10m7s 4m01s/mi 2m30s/km",
+            fallback: "#{activity.name} via #{activity.user.slack_mention} 17.46mi 28.1km 1h10m7s 4m01s/mi 2m30s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
             text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",

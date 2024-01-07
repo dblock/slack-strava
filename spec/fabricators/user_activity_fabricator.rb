@@ -3,6 +3,7 @@ Fabricator(:user_activity) do
   user { Fabricate.build(:user) }
   type 'Run'
   name { Faker::Internet.user_name }
+  description 'Great run!'
   start_date { DateTime.parse('2018-02-20T18:02:13Z') }
   start_date_local { DateTime.parse('2018-02-20T10:02:13Z') }
   distance 22_539.6

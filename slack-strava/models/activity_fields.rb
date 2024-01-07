@@ -19,7 +19,21 @@ class ActivityFields
   define :CALORIES, 'Calories'
   define :WEATHER, 'Weather'
 
-  DEFAULT_VALUES = ['Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Weather'].freeze
+  define :TITLE, 'Title'
+  define :DESCRIPTION, 'Description'
+  define :URL, 'Url'
+  define :USER, 'User'
+  define :ATHLETE, 'Athlete'
+  define :DATE, 'Date'
+
+  HEADER_VALUES = %w[
+    Title Description Url User Athlete Date
+  ].freeze
+
+  DEFAULT_VALUES = [
+    'Title', 'Description', 'Url', 'User', 'Athlete', 'Date',
+    'Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Weather'
+  ].freeze
 
   def self.parse_s(values)
     return unless values
@@ -29,6 +43,7 @@ class ActivityFields
     values.scan(/[\w\s']+/).map do |v|
       v = v.strip
       title = v.titleize
+      title = ActivityFields::PR_COUNT if title == 'Pr Count' # HACK: titleize
       if value?(title)
         fields << title
       else

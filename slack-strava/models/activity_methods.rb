@@ -256,6 +256,21 @@ module ActivityMethods
     ].compact.join
   end
 
+  def display_field?(name)
+    activity_fields = team.activity_fields
+
+    case activity_fields
+    when ['All']
+      true
+    when ['Default']
+      ActivityFields::DEFAULT_VALUES.include?(name)
+    when ['None']
+      ActivityFields::HEADER_VALUES.include?(name)
+    else
+      activity_fields.include?(name)
+    end
+  end
+
   def slack_fields
     activity_fields = team.activity_fields
 

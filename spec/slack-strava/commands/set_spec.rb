@@ -274,9 +274,29 @@ describe SlackStrava::Commands::Set do
           end
           it 'sets to invalid fields' do
             expect(message: "#{SlackRubyBot.config.user} set fields Time, Foo, Bar").to respond_with_slack_message(
-              'Invalid fields: Foo and Bar, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories and Weather.'
+              'Invalid fields: Foo and Bar, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories, Weather, Title, Description, Url, User, Athlete and Date.'
             )
             expect(team.reload.activity_fields).to eq ['Default']
+          end
+          context 'some' do
+            it 'sets fields to some' do
+              expect(message: "#{SlackRubyBot.config.user} set fields Title, Url, PR Count, Elapsed Time").to respond_with_slack_message(
+                "Activity fields for team #{team.name} are now *Title, Url, PR Count and Elapsed Time*."
+              )
+              expect(team.reload.activity_fields).to eq(['Title', 'Url', 'PR Count', 'Elapsed Time'])
+            end
+          end
+          context 'each field' do
+            (ActivityFields.values - [ActivityFields::ALL, ActivityFields::DEFAULT, ActivityFields::NONE]).each do |field|
+              context field do
+                it "sets fields to #{field}" do
+                  expect(message: "#{SlackRubyBot.config.user} set fields #{field}").to respond_with_slack_message(
+                    "Activity fields for team #{team.name} are now *#{field}*."
+                  )
+                  expect(team.reload.activity_fields).to eq([field])
+                end
+              end
+            end
           end
         end
         context 'not as a team admin' do
