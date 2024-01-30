@@ -5,7 +5,7 @@ class ClubActivity < Activity
 
   belongs_to :club, inverse_of: :activities
 
-  index(club_id: 1)
+  index(club_id: 1, first_sync: 1)
 
   before_validation :validate_team
 
