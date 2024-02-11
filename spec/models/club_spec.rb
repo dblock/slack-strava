@@ -88,22 +88,24 @@ describe Club do
         expect(activity2.reload.updated_at.utc.to_i).to eq(tt2.to_i)
       end
     end
-    it 'disconnects club on auth failure' do
-      allow(club.strava_client).to receive(:club_activities).and_raise(
-        Strava::Errors::Fault.new(401, body: { 'message' => 'Authorization Error', 'errors' => [] })
-      )
-      expect(club.team.slack_client).to receive(:chat_postMessage).with(
-        club.to_slack.merge(
-          text: 'There was an authorization problem. Please reconnect the club via /slava clubs.',
-          channel: club.channel_id,
-          as_user: true
+    ['Authorization Error', 'Forbidden'].each do |message|
+      it 'disconnects club on auth failure' do
+        allow(club.strava_client).to receive(:club_activities).and_raise(
+          Strava::Errors::Fault.new(401, body: { 'message' => message, 'errors' => [] })
         )
-      ).and_return('ts' => 1)
-      expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
-      expect(club.access_token).to be nil
-      expect(club.token_type).to be nil
-      expect(club.refresh_token).to be nil
-      expect(club.token_expires_at).to be nil
+        expect(club.team.slack_client).to receive(:chat_postMessage).with(
+          club.to_slack.merge(
+            text: 'There was an authorization problem. Please reconnect the club via /slava clubs.',
+            channel: club.channel_id,
+            as_user: true
+          )
+        ).and_return('ts' => 1)
+        expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
+        expect(club.access_token).to be nil
+        expect(club.token_type).to be nil
+        expect(club.refresh_token).to be nil
+        expect(club.token_expires_at).to be nil
+      end
     end
     it 'disables sync on 404' do
       expect(club.sync_activities?).to be true
