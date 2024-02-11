@@ -183,7 +183,7 @@ module SlackStrava
       logger.info "Checking Stripe subscriptions for #{Team.striped.count} team(s)."
       Team.striped.each do |team|
         customer = Stripe::Customer.retrieve(team.stripe_customer_id)
-        if customer.subscriptions.none?
+        if customer.subscriptions.none? && team.subscribed?
           logger.info "No active subscriptions for #{team} (#{team.stripe_customer_id}), downgrading."
           team.inform_admin!(text: 'Your subscription was canceled and your team has been downgraded. Thank you for being a customer!')
           team.update_attributes!(subscribed: false)
