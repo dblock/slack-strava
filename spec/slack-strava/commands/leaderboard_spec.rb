@@ -14,13 +14,13 @@ describe SlackStrava::Commands::Leaderboard do
       )
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} leaderboard"))
     end
-    it 'heart rate' do
+    it 'elapsed time' do
       expect(client.web_client).to receive(:chat_postMessage).with(
-        text: team.leaderboard(metric: 'Heart Rate').to_s,
+        text: team.leaderboard(metric: 'Elapsed Time').to_s,
         channel: 'channel',
         as_user: true
       )
-      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} leaderboard Heart Rate"))
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} leaderboard elapsed time"))
     end
     it 'includes channel' do
       expect(client.web_client).to receive(:chat_postMessage).with(

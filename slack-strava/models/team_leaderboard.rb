@@ -30,9 +30,12 @@ class TeamLeaderboard
   end
 
   MEASURABLE_VALUES = [
-    'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Max Speed',
-    'Heart Rate', 'Max Heart Rate', 'PR Count', 'Calories'
+    'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Elevation', 'PR Count', 'Calories'
   ].freeze
+
+  # MIN_MAX_VALUES = [
+  #   'Pace', 'Speed', 'Max Speed', 'Heart Rate', 'Max Heart Rate'
+  # ].freeze
 
   attr_accessor :team, :metric, :channel_id
 
