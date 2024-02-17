@@ -218,6 +218,44 @@ describe Api::Endpoints::SlackEndpoint do
               expect(response['attachments'][1]['title']).to eq club.name
             end
           end
+          context 'leaderboard' do
+            it 'returns team leaderboard' do
+              post '/api/slack/command',
+                   command: '/slava',
+                   text: 'leaderboard',
+                   channel_id: 'channel',
+                   channel_name: 'channel_name',
+                   user_id: user.user_id,
+                   team_id: team.team_id,
+                   token: token
+              expect(last_response.status).to eq 201
+              response = JSON.parse(last_response.body)
+              expect(response).to eq(
+                'text' => 'There are no activities with Distance in this channel.',
+                'user' => user.user_id,
+                'channel' => 'channel'
+              )
+            end
+          end
+          context 'leaderboard with an arg' do
+            it 'returns team leaderboard' do
+              post '/api/slack/command',
+                   command: '/slava',
+                   text: 'leaderboard distance',
+                   channel_id: 'channel',
+                   channel_name: 'channel_name',
+                   user_id: user.user_id,
+                   team_id: team.team_id,
+                   token: token
+              expect(last_response.status).to eq 201
+              response = JSON.parse(last_response.body)
+              expect(response).to eq(
+                'text' => 'There are no activities with distance in this channel.',
+                'user' => user.user_id,
+                'channel' => 'channel'
+              )
+            end
+          end
         end
         context 'out of channel' do
           before do

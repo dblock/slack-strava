@@ -8,7 +8,7 @@ describe SlackStrava::Commands::Leaderboard do
     let!(:team) { Fabricate(:team, subscribed: true) }
     it 'leaderboard' do
       expect(client.web_client).to receive(:chat_postMessage).with(
-        text: team.leaderboard(metric: 'Distance').to_s,
+        text: 'There are no activities with distance in this channel.',
         channel: 'channel',
         as_user: true
       )
@@ -16,7 +16,7 @@ describe SlackStrava::Commands::Leaderboard do
     end
     it 'elapsed time' do
       expect(client.web_client).to receive(:chat_postMessage).with(
-        text: team.leaderboard(metric: 'Elapsed Time').to_s,
+        text: 'There are no activities with elapsed time in this channel.',
         channel: 'channel',
         as_user: true
       )
@@ -24,7 +24,7 @@ describe SlackStrava::Commands::Leaderboard do
     end
     it 'includes channel' do
       expect(client.web_client).to receive(:chat_postMessage).with(
-        text: team.leaderboard(metric: 'Distance', channel_id: 'channel').to_s,
+        text: 'There are no activities with distance in this channel.',
         channel: 'channel',
         as_user: true
       )
@@ -33,7 +33,7 @@ describe SlackStrava::Commands::Leaderboard do
     end
     it 'does not include channel on a DM' do
       expect(client.web_client).to receive(:chat_postMessage).with(
-        text: team.leaderboard(metric: 'Distance').to_s,
+        text: 'There are no activities with distance in this channel.',
         channel: 'DM',
         as_user: true
       )

@@ -26,10 +26,12 @@ describe TeamLeaderboard do
       expect { TeamLeaderboard.new(team, metric: 'pR CouNT').aggregate! }.to_not raise_error
     end
   end
-  context 'to_s' do
-    let(:leaderboard) { TeamLeaderboard.new(team, metric: 'Distance') }
-    it 'returns no activities by default' do
-      expect(leaderboard.to_s).to eq 'No activities.'
+  TeamLeaderboard::MEASURABLE_VALUES.each do |metric|
+    context metric do
+      let(:leaderboard) { TeamLeaderboard.new(team, metric: metric) }
+      it 'returns no activities by default' do
+        expect(leaderboard.to_s).to eq "There are no activities with #{metric} in this channel."
+      end
     end
   end
   context 'with activities' do
@@ -37,26 +39,36 @@ describe TeamLeaderboard do
     let(:user2) { Fabricate(:user, team: team) }
     let!(:user1_activity_1) { Fabricate(:user_activity, user: user1, team: team) }
     let!(:user1_activity_2) { Fabricate(:user_activity, user: user1, team: team) }
+    let!(:user1_activity_3) { Fabricate(:user_activity, user: user1, team: team) }
     let!(:user1_swim_activity_1) { Fabricate(:swim_activity, user: user1, team: team) }
+    let!(:user1_swim_activity_2) { Fabricate(:swim_activity, user: user1, team: team) }
     let!(:user2_activity_1) { Fabricate(:user_activity, user: user2, team: team) }
     let!(:another_activity) { Fabricate(:user_activity, user: Fabricate(:user, team: Fabricate(:team))) }
+    TeamLeaderboard::MEASURABLE_VALUES.each do |metric|
+      context metric do
+        let(:leaderboard) { TeamLeaderboard.new(team, metric: metric) }
+        it 'returns no activities by default' do
+          expect(leaderboard.to_s).to_not be_blank
+        end
+      end
+    end
     context 'distance leaderboard' do
       let(:leaderboard) { team.leaderboard(metric: 'Distance') }
       it 'aggregate!' do
         expect(leaderboard.aggregate!.to_a).to eq(
           [
-            { '_id' => { 'user_id' => user1.id, 'type' => 'Run' }, 'distance' => user1_activity_1.distance + user1_activity_2.distance, 'rank' => 1 },
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Run' }, 'distance' => user1_activity_1.distance + user1_activity_2.distance + user1_activity_3.distance, 'rank' => 1 },
             { '_id' => { 'user_id' => user2.id, 'type' => 'Run' }, 'distance' => user2_activity_1.distance, 'rank' => 2 },
-            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'distance' => user1_swim_activity_1.distance, 'rank' => 3 }
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'distance' => user1_swim_activity_1.distance + user1_swim_activity_2.distance, 'rank' => 3 }
           ]
         )
       end
       it 'to_s' do
         expect(leaderboard.to_s).to eq(
           [
-            "1: #{user1.user_name} 🏃 #{format('%.2f', (user1_activity_1.distance + user1_activity_2.distance) * 0.00062137)}mi",
+            "1: #{user1.user_name} 🏃 #{format('%.2f', (user1_activity_1.distance + user1_activity_2.distance + user1_activity_3.distance) * 0.00062137)}mi",
             "2: #{user2.user_name} 🏃 #{format('%.2f', user2_activity_1.distance * 0.00062137)}mi",
-            "3: #{user1.user_name} 🏊 #{format('%.0f', user1_swim_activity_1.distance * 1.09361)}yd"
+            "3: #{user1.user_name} 🏊 #{format('%.1f', (user1_swim_activity_1.distance + user1_swim_activity_2.distance) * 1.09361)}yd"
           ].join("\n")
         )
       end
@@ -66,18 +78,18 @@ describe TeamLeaderboard do
       it 'aggregate!' do
         expect(leaderboard.aggregate!.to_a).to eq(
           [
-            { '_id' => { 'user_id' => user1.id, 'type' => 'Run' }, 'count' => 2, 'rank' => 1 },
-            { '_id' => { 'user_id' => user2.id, 'type' => 'Run' }, 'count' => 1, 'rank' => 2 },
-            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'count' => 1, 'rank' => 2 }
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Run' }, 'count' => 3, 'rank' => 1 },
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'count' => 2, 'rank' => 2 },
+            { '_id' => { 'user_id' => user2.id, 'type' => 'Run' }, 'count' => 1, 'rank' => 3 }
           ]
         )
       end
       it 'to_s' do
         expect(leaderboard.to_s).to eq(
           [
-            "1: #{user1.user_name} 🏃 2",
-            "2: #{user1.user_name} 🏊 1",
-            "2: #{user2.user_name} 🏃 1"
+            "1: #{user1.user_name} 🏃 3",
+            "2: #{user1.user_name} 🏊 2",
+            "3: #{user2.user_name} 🏃 1"
           ].join("\n")
         )
       end

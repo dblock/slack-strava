@@ -17,12 +17,19 @@ class TeamLeaderboard
     end
 
     def to_s
-      ["#{rank}:", user.user_name, emoji, send("#{field}_s")].join(' ').to_s
+      ["#{rank}:", user.user_name, emoji, send("#{field.gsub(' ', '_')}_s")].join(' ').to_s
     end
 
-    def count_s
-      value
-    end
+    alias count_s value
+    alias pr_count_s value
+    alias total_elevation_gain value
+    alias moving_time value
+    alias elapsed_time value
+
+    alias elevation_s total_elevation_gain_s
+    alias time_s moving_time_in_hours_s
+    alias moving_time_s moving_time_in_hours_s
+    alias elapsed_time_s elapsed_time_in_hours_s
 
     def method_missing(method, *args)
       if method.to_s == field
@@ -34,7 +41,7 @@ class TeamLeaderboard
   end
 
   MEASURABLE_VALUES = [
-    'Count', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Elevation', 'PR Count', 'Calories'
+    'Count', 'Distance', 'Moving Time', 'Elapsed Time', 'Elevation', 'PR Count', 'Calories'
   ].freeze
 
   # MIN_MAX_VALUES = [
@@ -50,7 +57,7 @@ class TeamLeaderboard
   end
 
   def metric_field
-    @metric_field ||= metric.downcase.underscore
+    @metric_field ||= metric.downcase.gsub(' ', '_')
   end
 
   def aggreate_options
@@ -87,7 +94,9 @@ class TeamLeaderboard
   end
 
   def to_s
-    top = aggregate!.map do |row|
+    top = aggregate!.map { |row|
+      next unless row[metric_field] > 0
+
       Row.new(
         team: team,
         user: team.users.find(row[:_id][:user_id]),
@@ -96,7 +105,7 @@ class TeamLeaderboard
         value: row[metric_field],
         rank: row[:rank]
       ).to_s
-    end
-    top.any? ? top.join("\n") : 'No activities.'
+    }.compact
+    top.any? ? top.join("\n") : "There are no activities with #{metric} in this channel."
   end
 end

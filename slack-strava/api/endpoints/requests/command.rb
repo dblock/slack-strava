@@ -75,6 +75,17 @@ module Api
           )
         end
 
+        def leaderboard!
+          logger.info "LEADERBOARD: #{channel_id}, #{user}, #{user.team}."
+          options = {}
+          options.merge!(channel_id: channel_id) unless channel_id[0] == 'D'
+          {
+            text: user.team.leaderboard(options.merge(metric: arg || 'Distance')).to_s,
+            user: user_id,
+            channel: channel_id
+          }
+        end
+
         def connect!
           logger.info "CONNECT: #{channel_id}, #{user}, #{user.team}."
           user.connect_to_strava.merge(user: user_id, channel: channel_id)

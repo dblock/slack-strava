@@ -23,6 +23,8 @@ module Api
           case command.text
           when 'stats'
             command.stats!
+          when /^leaderboard\s?.*/
+            command.leaderboard!
           when 'clubs'
             command.clubs!
           when 'connect'
