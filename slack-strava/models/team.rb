@@ -317,6 +317,10 @@ class Team
     TeamStats.new(self, options)
   end
 
+  def leaderboard(options = {})
+    TeamLeaderboard.new(self, options)
+  end
+
   private
 
   def destroy_subscribed_team

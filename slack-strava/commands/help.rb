@@ -17,6 +17,7 @@ module SlackStrava
         Teams
         ------------
         stats                            - stats in current channel for the past 30 days
+        leaderboard distance|pace|...    - all time leaderboard by distance, pace, etc.
 
         Settings
         ------------
