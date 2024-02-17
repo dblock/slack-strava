@@ -61,6 +61,27 @@ describe TeamLeaderboard do
         )
       end
     end
+    context 'count leaderboard' do
+      let(:leaderboard) { team.leaderboard(metric: 'Count') }
+      it 'aggregate!' do
+        expect(leaderboard.aggregate!.to_a).to eq(
+          [
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Run' }, 'count' => 2, 'rank' => 1 },
+            { '_id' => { 'user_id' => user2.id, 'type' => 'Run' }, 'count' => 1, 'rank' => 2 },
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'count' => 1, 'rank' => 2 }
+          ]
+        )
+      end
+      it 'to_s' do
+        expect(leaderboard.to_s).to eq(
+          [
+            "1: #{user1.user_name} 🏃 2",
+            "2: #{user1.user_name} 🏊 1",
+            "2: #{user2.user_name} 🏃 1"
+          ].join("\n")
+        )
+      end
+    end
     context 'channel leaderboard' do
       before do
         user1_activity_1.update_attributes!(

@@ -20,6 +20,10 @@ class TeamLeaderboard
       ["#{rank}:", user.user_name, emoji, send("#{field}_s")].join(' ').to_s
     end
 
+    def count_s
+      value
+    end
+
     def method_missing(method, *args)
       if method.to_s == field
         value
@@ -30,7 +34,7 @@ class TeamLeaderboard
   end
 
   MEASURABLE_VALUES = [
-    'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Elevation', 'PR Count', 'Calories'
+    'Count', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Elevation', 'PR Count', 'Calories'
   ].freeze
 
   # MIN_MAX_VALUES = [
@@ -66,18 +70,14 @@ class TeamLeaderboard
           {
             '$group' => {
               _id: { user_id: '$user_id', type: '$type' },
-              metric_field => { '$sum' => "$#{metric_field}" }
+              metric_field => { '$sum' => metric_field == 'count' ? 1 : "$#{metric_field}" }
             }
           },
           {
             '$setWindowFields': {
               sortBy: { metric_field => -1 },
               output: {
-                rank: {
-                  '$documentNumber': {
-
-                  }
-                }
+                rank: { '$denseRank': {} }
               }
             }
           }
