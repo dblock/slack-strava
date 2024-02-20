@@ -175,4 +175,15 @@ describe Team do
       Timecop.return
     end
   end
+  context '#destroy' do
+    let!(:team) { Fabricate(:team) }
+    let!(:user1) { Fabricate(:user, team: team) }
+    let!(:user2) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+    it 'revokes access tokens' do
+      allow(team).to receive(:users).and_return([user1, user2])
+      expect(user1).to receive(:revoke_access_token!)
+      expect(user2).to receive(:revoke_access_token!)
+      team.destroy
+    end
+  end
 end

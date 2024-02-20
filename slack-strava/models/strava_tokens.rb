@@ -51,10 +51,20 @@ module StravaTokens
     )
   end
 
+  def revoke_access_token!
+    return unless access_token
+
+    response = strava_client.deauthorize(
+      access_token: access_token
+    )
+
+    raise 'Missing access_token in deauthorize response.' unless response.access_token
+  end
+
   def strava_client
     @strava_client ||= begin
       refresh_access_token!
-      raise 'Missing access_token' unless access_token
+      raise 'Missing access_token.' unless access_token
 
       Strava::Api::Client.new(access_token: access_token)
     end

@@ -488,4 +488,22 @@ describe User do
       end
     end
   end
+  context '#destroy' do
+    context 'without an access token' do
+      let!(:user) { Fabricate(:user) }
+      it 'revokes access token' do
+        expect_any_instance_of(Strava::Api::Client).to_not receive(:deauthorize)
+        user.destroy
+      end
+    end
+    context 'with an access token' do
+      let!(:user) { Fabricate(:user, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+      it 'revokes access token' do
+        expect(user.strava_client).to receive(:deauthorize)
+          .with(access_token: user.access_token)
+          .and_return(access_token: user.access_token)
+        user.destroy
+      end
+    end
+  end
 end
