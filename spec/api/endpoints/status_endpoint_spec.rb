@@ -16,8 +16,17 @@ describe Api::Endpoints::StatusEndpoint do
       end
     end
 
-    context 'with a team' do
+    context 'with an inactive team' do
       let!(:team) { Fabricate(:team, active: false) }
+      it 'returns a status with ping' do
+        status = client.status
+        expect(status.teams_count).to eq 1
+        expect(status).to_not respond_to(:ping)
+      end
+    end
+
+    context 'with an active team' do
+      let!(:team) { Fabricate(:team) }
       it 'returns a status with ping' do
         status = client.status
         expect(status.teams_count).to eq 1

@@ -8,7 +8,7 @@ module Api
         get do
           present OpenStruct.new(
             stats: SystemStats.latest_or_aggregate!,
-            status: Team.asc(:_id).first&.ping!
+            status: Team.active.asc(:_id).first&.ping!
           ), with: Api::Presenters::StatusPresenter
         end
       end
