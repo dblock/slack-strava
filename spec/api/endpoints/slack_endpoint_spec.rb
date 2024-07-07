@@ -105,6 +105,25 @@ describe Api::Endpoints::SlackEndpoint do
     end
     context 'slash commands' do
       let(:user) { Fabricate(:user, team: team) }
+      context 'invalid command' do
+        it 'fails with an error' do
+          post '/api/slack/command',
+               command: '/slava',
+               text: 'invalid',
+               channel_id: 'channel',
+               channel_name: 'channel_name',
+               user_id: user.user_id,
+               team_id: team.team_id,
+               token: token
+          expect(last_response.status).to eq 201
+          response = JSON.parse(last_response.body)
+          expect(response).to eq(
+            'text' => "I don't understand the `invalid` command. Did you mean to DM me?",
+            'user' => user.user_id,
+            'channel' => 'channel'
+          )
+        end
+      end
       context 'stats' do
         it 'returns team stats' do
           post '/api/slack/command',

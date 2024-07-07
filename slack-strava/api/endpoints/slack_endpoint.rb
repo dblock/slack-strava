@@ -32,7 +32,11 @@ module Api
           when 'disconnect'
             command.disconnect!
           else
-            { message: "I don't understand the `#{command.text}` command." }
+            {
+              user: params[:user_id],
+              channel: params[:channel_id],
+              text: "I don't understand the `#{command.text}` command. Did you mean to DM me?"
+            }
           end
         end
 
