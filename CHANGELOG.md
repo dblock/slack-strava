@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2024/07/07: Fixed duplicate activities from concurrent updates - [@dblock](https://github.com/dblock).
 * 2024/02/17: Added `leaderboard` - [@dblock](https://github.com/dblock).
 * 2024/01/07: Added Title, Description, Url, User, Athlete and Date field options - [@dblock](https://github.com/dblock).
 * 2023/01/21: Upgraded to Ruby 2.7.7 - [@dblock](https://github.com/dblock).

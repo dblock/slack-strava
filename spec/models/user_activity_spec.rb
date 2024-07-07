@@ -636,4 +636,62 @@ describe UserActivity do
       end
     end
   end
+  describe 'create_from_strava!' do
+    let(:user) { Fabricate(:user) }
+    let(:detailed_activity) do
+      Strava::Models::Activity.new(
+        JSON.parse(
+          File.read(
+            File.join(__dir__, '../fabricators/activity.json')
+          )
+        )
+      )
+    end
+    it 'creates an activity' do
+      expect {
+        UserActivity.create_from_strava!(user, detailed_activity)
+      }.to change(UserActivity, :count).by(1)
+    end
+    context 'with another existing activity' do
+      let!(:activity) { Fabricate(:user_activity, user: user) }
+      it 'creates another activity' do
+        expect {
+          UserActivity.create_from_strava!(user, detailed_activity)
+        }.to change(UserActivity, :count).by(1)
+        expect(user.reload.activities.count).to eq 2
+      end
+    end
+    context 'with an existing activity' do
+      let!(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+      it 'does not create another activity' do
+        expect {
+          UserActivity.create_from_strava!(user, detailed_activity)
+        }.to_not change(UserActivity, :count)
+      end
+      it 'does not cause a save without changes' do
+        expect_any_instance_of(UserActivity).to_not receive(:save!)
+        UserActivity.create_from_strava!(user, detailed_activity)
+      end
+      it 'updates an existing activity' do
+        activity.update_attributes!(name: 'Original')
+        UserActivity.create_from_strava!(user, detailed_activity)
+        expect(activity.reload.name).to eq 'First Time Breaking 14'
+      end
+      context 'concurrently' do
+        before do
+          expect(UserActivity).to receive(:where).with(
+            strava_id: detailed_activity.id, team_id: user.team.id, user_id: user.id
+          ).and_return([])
+          allow(UserActivity).to receive(:where).and_call_original
+        end
+        it 'does not create a duplicate activity' do
+          expect {
+            expect {
+              UserActivity.create_from_strava!(user, detailed_activity)
+            }.to raise_error(Mongo::Error::OperationFailure)
+          }.to_not change(UserActivity, :count)
+        end
+      end
+    end
+  end
 end
