@@ -15,6 +15,4 @@ unless ENV['RACK_ENV'] == 'production'
   RuboCop::RakeTask.new
 
   task default: %i[rubocop spec]
-
-  import 'tasks/db.rake'
 end
