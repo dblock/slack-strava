@@ -45,6 +45,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
           ].join("\n")
           expect(message: "#{SlackRubyBot.config.user} subscription", user: 'U007').to respond_with_slack_message customer_info
         end
+        pending 'with an ACH source'
         context 'past due subscription' do
           before do
             customer.subscriptions.data.first['status'] = 'past_due'

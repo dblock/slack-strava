@@ -283,7 +283,12 @@ class Team
 
   def stripe_customer_sources_info
     stripe_customer.sources.map do |source|
-      "On file #{source.brand} #{source.object}, #{source.name} ending with #{source.last4}, expires #{source.exp_month}/#{source.exp_year}."
+      case source.object
+      when 'card'
+        "On file #{source.brand} #{source.object}, #{source.name} ending with #{source.last4}, expires #{source.exp_month}/#{source.exp_year}."
+      else
+        'On file, another source, e.g. ACH.'
+      end
     end
   end
 
