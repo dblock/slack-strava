@@ -23,7 +23,31 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
       before do
         stripe_helper.create_plan(id: 'slack-playplay-yearly', amount: 2999, name: 'Plan')
       end
-      context 'a customer' do
+      pending 'a customer with an ach_credit_transfer source'
+      context 'a customer with a bank source' do
+        let!(:customer) do
+          Stripe::Customer.create(
+            source: stripe_helper.generate_bank_token,
+            plan: 'slack-playplay-yearly',
+            email: 'foo@bar.com'
+          )
+        end
+        before do
+          team.update_attributes!(subscribed: true, stripe_customer_id: customer['id'])
+        end
+        it 'displays subscription info' do
+          current_period_end = Time.at(customer.subscriptions.first.current_period_end).strftime('%B %d, %Y')
+          bank = customer.sources.first
+          customer_info = [
+            "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}.",
+            "Subscribed to Plan ($29.99), will auto-renew on #{current_period_end}.",
+            "On file a bank account #{bank.bank_name}, account number #{bank.account_number}.",
+            team.update_cc_text
+          ].join("\n")
+          expect(message: "#{SlackRubyBot.config.user} subscription", user: 'U007').to respond_with_slack_message customer_info
+        end
+      end
+      context 'a customer with a credit card' do
         let!(:customer) do
           Stripe::Customer.create(
             source: stripe_helper.generate_card_token,
@@ -45,7 +69,6 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
           ].join("\n")
           expect(message: "#{SlackRubyBot.config.user} subscription", user: 'U007').to respond_with_slack_message customer_info
         end
-        pending 'with an ACH source'
         context 'past due subscription' do
           before do
             customer.subscriptions.data.first['status'] = 'past_due'

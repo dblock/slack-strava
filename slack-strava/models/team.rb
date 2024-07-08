@@ -286,8 +286,12 @@ class Team
       case source.object
       when 'card'
         "On file #{source.brand} #{source.object}, #{source.name} ending with #{source.last4}, expires #{source.exp_month}/#{source.exp_year}."
+      when 'bank_account'
+        "On file a bank account #{source.bank_name}, account number #{source.account_number}."
+      when 'source'
+        "Payment source registered (#{source.type})."
       else
-        'On file, another source, e.g. ACH.'
+        "On file a payment source I don't understand (#{source.object})."
       end
     end
   end
