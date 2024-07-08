@@ -229,7 +229,7 @@ module SlackStrava
             amount = ActiveSupport::NumberHelper.number_to_currency(active_subscription.plan.amount.to_f / 100)
             logger.warn "Successfully canceled auto-renew for #{active_subscription.plan.name} (#{amount}) for #{team}."
           else
-            logger.warn "Inactive team #{team} for #{metadata.name} (#{metadata.team_id}), no active subscription."
+            logger.warn "Inactive team #{team} for #{metadata.name} (#{metadata.team_id}), no active subscription to cancel."
           end
         else
           logger.warn "Cannot find team for #{metadata.name} (#{metadata.team_id}), contact #{customer.email}."
