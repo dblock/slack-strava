@@ -66,6 +66,19 @@ describe Api::Endpoints::MapsEndpoint do
         end
       end
     end
+    context 'with proxy maps off' do
+      let(:team) { Fabricate(:team) }
+      let(:user) { Fabricate(:user, team: team) }
+      let(:activity) { Fabricate(:user_activity, user: user) }
+      before do
+        team.update_attributes!(proxy_maps: false)
+      end
+      it 'redirects to Google map' do
+        get "/api/maps/#{activity.map.id}.png"
+        expect(last_response.status).to eq 302
+        expect(last_response.headers['Location']).to start_with 'https://maps.googleapis.com'
+      end
+    end
     context 'with a private activity', vcr: { cassette_name: 'strava/map' } do
       let(:user) { Fabricate(:user, private_activities: false) }
       let(:activity) { Fabricate(:user_activity, private: true, user: user) }

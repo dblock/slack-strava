@@ -19,20 +19,24 @@ module Api
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, hidden (403)."
             error!('Access Denied', 403)
           end
-          unless activity.map
-            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
-            error!('Map Not Found', 404)
+          if activity.user.team.proxy_maps
+            unless activity.map
+              Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
+              error!('Map Not Found', 404)
+            end
+            # will also re-fetch the map if needed
+            activity.map.update_attributes!(png_retrieved_at: Time.now.utc)
+            unless activity.map.png
+              Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no data (404)."
+              error!('Map Data Not Found', 404)
+            end
+            content_type 'image/png'
+            png = activity.map.png.data
+            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, #{png.size} byte(s)."
+            body png
+          else
+            redirect activity.map.image_url
           end
-          # will also re-fetch the map if needed
-          activity.map.update_attributes!(png_retrieved_at: Time.now.utc)
-          unless activity.map.png
-            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no data (404)."
-            error!('Map Data Not Found', 404)
-          end
-          content_type 'image/png'
-          png = activity.map.png.data
-          Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, #{png.size} byte(s)."
-          body png
         end
       end
     end

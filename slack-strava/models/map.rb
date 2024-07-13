@@ -87,6 +87,7 @@ class Map
   def update_png
     return if png_changed?
     return unless summary_polyline_changed? || png.nil?
+    return unless user_activity.user.team.proxy_maps
 
     update_png!
   end
