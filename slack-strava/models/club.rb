@@ -1,6 +1,7 @@
 class Club
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Mongoid::Locker
   include StravaTokens
   include Brag
 
@@ -16,6 +17,8 @@ class Club
   field :member_count, type: Integer
   field :sync_activities, type: Boolean, default: true
   field :first_sync_at, type: DateTime
+  field :locking_name, type: String
+  field :locked_at, type: Time
 
   belongs_to :team
   validates_presence_of :team_id

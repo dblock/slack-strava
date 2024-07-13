@@ -159,6 +159,18 @@ describe User do
           expect_any_instance_of(User).to receive(:inform!)
           user.sync_and_brag!
         end
+        it 'uses a lock' do
+          user_instance_2 = User.find(user._id)
+          bragged_activities = []
+          allow_any_instance_of(User).to receive(:inform!) do |_, args|
+            bragged_activities << args[:attachments].first[:title]
+            [{ ts: '1503425956.000247', channel: 'channel' }]
+          end
+          user.sync_and_brag!
+          expect(user_instance_2).to receive(:sync_strava_activities!).with(after: 1_522_072_635)
+          user_instance_2.sync_and_brag!
+          expect(bragged_activities).to eq(['Restarting the Engine', 'First Time Breaking 14'])
+        end
         it 'warns on error' do
           expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)
           allow(user).to receive(:sync_new_strava_activities!).and_raise 'unexpected error'

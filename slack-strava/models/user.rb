@@ -1,6 +1,7 @@
 class User
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Mongoid::Locker
   include StravaTokens
   include Brag
 
@@ -14,6 +15,8 @@ class User
   field :private_activities, type: Boolean, default: false
   field :followers_only_activities, type: Boolean, default: true
   field :sync_activities, type: Boolean, default: true
+  field :locking_name, type: String
+  field :locked_at, type: Time
 
   embeds_one :athlete
   index('athlete.athlete_id' => 1)

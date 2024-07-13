@@ -199,5 +199,6 @@ describe Club do
         expect { club.sync_and_brag! }.to raise_error(Strava::Errors::Fault, /Rate Limit Exceeded/)
       end
     end
+    pending 'uses a lock'
   end
 end

@@ -133,6 +133,8 @@ GEM
     mongoid-compatibility (0.5.1)
       activesupport
       mongoid (>= 2.0)
+    mongoid-locker (2.1.0)
+      mongoid (>= 5.0, < 10)
     mongoid-scroll (0.3.6)
       i18n
       mongoid (>= 3.0)
@@ -313,6 +315,7 @@ DEPENDENCIES
   hyperclient
   irb
   mongoid
+  mongoid-locker
   mongoid-scroll
   mongoid-shell
   newrelic-slack-ruby-bot

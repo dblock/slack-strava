@@ -18,9 +18,11 @@ module Brag
   end
 
   def sync_and_brag!
-    with_strava_error_handler do
-      sync_new_strava_activities!
-      brag!
+    with_lock do
+      with_strava_error_handler do
+        sync_new_strava_activities!
+        brag!
+      end
     end
   end
 end
