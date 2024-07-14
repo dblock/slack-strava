@@ -77,6 +77,55 @@ describe Api::Endpoints::StravaEndpoint do
             expect(response['ok']).to be true
           end
         end
+        context 'with multiple connected users with the same athlete id' do
+          let!(:team2) { Fabricate(:team) }
+          let!(:user2) do
+            Fabricate(
+              :user,
+              team: team2,
+              athlete: Fabricate.build(:athlete, athlete_id: user.athlete.athlete_id.to_s),
+              access_token: 'token'
+            )
+          end
+          it 'syncs both users' do
+            users = []
+            allow_any_instance_of(User).to receive(:sync_and_brag!) do |a_user, _args|
+              users << a_user
+            end
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'create',
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+            expect(users).to eq([user, user2])
+          end
+          it 'skips over failures' do
+            users = []
+            allow_any_instance_of(User).to receive(:sync_and_brag!) do |a_user, _args|
+              raise 'error' if a_user == user
+
+              users << a_user
+            end
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'create',
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+            expect(users).to eq([user2])
+          end
+        end
         context 'with an existing activity' do
           let!(:activity) { Fabricate(:user_activity, user: user, map: nil) }
           it 'rebrags the existing activity' do
@@ -130,6 +179,58 @@ describe Api::Endpoints::StravaEndpoint do
             expect(last_response.status).to eq 200
             response = JSON.parse(last_response.body)
             expect(response['ok']).to be true
+          end
+          context 'with multiple connected users with the same athlete id' do
+            let!(:team2) { Fabricate(:team) }
+            let!(:user2) do
+              Fabricate(
+                :user,
+                team: team2,
+                athlete: Fabricate.build(:athlete, athlete_id: user.athlete.athlete_id.to_s),
+                access_token: 'token'
+              )
+            end
+            let!(:activity2) { Fabricate(:user_activity, user: user2, strava_id: activity.strava_id, map: nil) }
+            it 'rebrags both activities' do
+              users = []
+              allow_any_instance_of(User).to receive(:rebrag_activity!) do |a_user, _args|
+                users << a_user
+              end
+              post '/api/strava/event',
+                   JSON.dump(
+                     event_data.merge(
+                       aspect_type: 'update',
+                       object_id: activity.strava_id,
+                       owner_id: user.athlete.athlete_id.to_s
+                     )
+                   ),
+                   'CONTENT_TYPE' => 'application/json'
+              expect(last_response.status).to eq 200
+              response = JSON.parse(last_response.body)
+              expect(response['ok']).to be true
+              expect(users).to eq([user, user2])
+            end
+            it 'skips over failures' do
+              users = []
+              allow_any_instance_of(User).to receive(:rebrag_activity!) do |a_user, _args|
+                raise 'error' if a_user == user
+
+                users << a_user
+              end
+              post '/api/strava/event',
+                   JSON.dump(
+                     event_data.merge(
+                       aspect_type: 'update',
+                       object_id: activity.strava_id,
+                       owner_id: user.athlete.athlete_id.to_s
+                     )
+                   ),
+                   'CONTENT_TYPE' => 'application/json'
+              expect(last_response.status).to eq 200
+              response = JSON.parse(last_response.body)
+              expect(response['ok']).to be true
+              expect(users).to eq([user2])
+            end
           end
           it 'ignores delete' do
             expect_any_instance_of(Logger).to receive(:info).with(/Ignoring aspect type 'delete'/).and_call_original
