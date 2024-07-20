@@ -11,15 +11,13 @@ module Api
         get ':id' do
           user_agent = headers['User-Agent'] || 'Unknown User-Agent'
           activity = UserActivity.where('map._id' => BSON::ObjectId(params[:id])).first
-          unless activity
+          if activity.nil?
             Api::Middleware.logger.debug "Map #{params[:id]} for #{user_agent}, not found (404)."
             error!('Not Found', 404)
-          end
-          if activity.hidden?
+          elsif activity.hidden?
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, hidden (403)."
             error!('Access Denied', 403)
-          end
-          if activity.user.team.proxy_maps
+          elsif activity.user.team.proxy_maps
             unless activity.map
               Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
               error!('Map Not Found', 404)
