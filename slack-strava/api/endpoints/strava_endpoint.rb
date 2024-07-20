@@ -33,7 +33,9 @@ module Api
               case params['aspect_type']
               when 'create'
                 User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
-                  if user.team.subscription_expired?
+                  if !user.team.active?
+                    Api::Middleware.logger.info "Team #{user.team} inactive, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
+                  elsif user.team.subscription_expired?
                     Api::Middleware.logger.info "Team #{user.team} subscription expired, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
                   else
                     Api::Middleware.logger.info "Syncing activity for team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
@@ -46,7 +48,9 @@ module Api
                 end
               when 'update'
                 User.connected_to_strava.where('athlete.athlete_id' => params['owner_id']).each do |user|
-                  if user.team.subscription_expired?
+                  if !user.team.active?
+                    Api::Middleware.logger.info "Team #{user.team} inactive, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
+                  elsif user.team.subscription_expired?
                     Api::Middleware.logger.info "Team #{user.team} subscription expired, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
                   else
                     activity = user.activities.where(strava_id: params['object_id']).first

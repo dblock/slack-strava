@@ -63,7 +63,26 @@ describe Api::Endpoints::StravaEndpoint do
           let!(:user) { Fabricate(:user, access_token: 'token', team: team) }
           it 'does not sync user' do
             expect_any_instance_of(Logger).to receive(:info).with(/expired/).and_call_original
-            expect_any_instance_of(User).to_not receive(:sync_and_brag!).once
+            expect_any_instance_of(User).to_not receive(:sync_and_brag!)
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'create',
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
+        end
+        context 'with an inactive team' do
+          let(:team) { Fabricate(:team, active: false) }
+          let!(:user) { Fabricate(:user, access_token: 'token', team: team) }
+          it 'does not sync user' do
+            expect_any_instance_of(Logger).to receive(:info).with(/inactive/).and_call_original
+            expect_any_instance_of(User).to_not receive(:sync_and_brag!)
             post '/api/strava/event',
                  JSON.dump(
                    event_data.merge(
@@ -104,6 +123,29 @@ describe Api::Endpoints::StravaEndpoint do
             response = JSON.parse(last_response.body)
             expect(response['ok']).to be true
             expect(users).to eq([user, user2])
+          end
+          context 'with an inactive team' do
+            before do
+              team2.update_attributes!(active: false)
+            end
+            it 'skips over' do
+              users = []
+              allow_any_instance_of(User).to receive(:sync_and_brag!) do |a_user, _args|
+                users << a_user
+              end
+              post '/api/strava/event',
+                   JSON.dump(
+                     event_data.merge(
+                       aspect_type: 'create',
+                       owner_id: user.athlete.athlete_id.to_s
+                     )
+                   ),
+                   'CONTENT_TYPE' => 'application/json'
+              expect(last_response.status).to eq 200
+              response = JSON.parse(last_response.body)
+              expect(response['ok']).to be true
+              expect(users).to eq([user])
+            end
           end
           it 'skips over failures' do
             users = []
@@ -230,6 +272,30 @@ describe Api::Endpoints::StravaEndpoint do
               response = JSON.parse(last_response.body)
               expect(response['ok']).to be true
               expect(users).to eq([user2])
+            end
+            context 'with an inactive team' do
+              before do
+                activity.team.update_attributes!(active: false)
+              end
+              it 'skips for inactive teams' do
+                users = []
+                allow_any_instance_of(User).to receive(:rebrag_activity!) do |a_user, _args|
+                  users << a_user
+                end
+                post '/api/strava/event',
+                     JSON.dump(
+                       event_data.merge(
+                         aspect_type: 'update',
+                         object_id: activity.strava_id,
+                         owner_id: user.athlete.athlete_id.to_s
+                       )
+                     ),
+                     'CONTENT_TYPE' => 'application/json'
+                expect(last_response.status).to eq 200
+                response = JSON.parse(last_response.body)
+                expect(response['ok']).to be true
+                expect(users).to eq([user2])
+              end
             end
           end
           it 'ignores delete' do
