@@ -189,6 +189,22 @@ describe Api::Endpoints::StravaEndpoint do
             response = JSON.parse(last_response.body)
             expect(response['ok']).to be true
           end
+          it 'unbrags an existing activity' do
+            expect_any_instance_of(Logger).to receive(:info).with(/Deleting activity/).and_call_original
+            expect_any_instance_of(UserActivity).to receive(:unbrag!)
+            post '/api/strava/event',
+                 JSON.dump(
+                   event_data.merge(
+                     aspect_type: 'delete',
+                     object_id: activity.strava_id,
+                     owner_id: user.athlete.athlete_id.to_s
+                   )
+                 ),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            response = JSON.parse(last_response.body)
+            expect(response['ok']).to be true
+          end
           it 'ignores non-existent activities' do
             expect_any_instance_of(Logger).to receive(:info).with(/Ignoring activity/).and_call_original
             expect_any_instance_of(User).to_not receive(:rebrag_activity!)
@@ -252,6 +268,25 @@ describe Api::Endpoints::StravaEndpoint do
               expect(response['ok']).to be true
               expect(users).to eq([user, user2])
             end
+            it 'unbrags both activities' do
+              activities = []
+              allow_any_instance_of(UserActivity).to receive(:unbrag!) do |a_activity, _args|
+                activities << a_activity
+              end
+              post '/api/strava/event',
+                   JSON.dump(
+                     event_data.merge(
+                       aspect_type: 'delete',
+                       object_id: activity.strava_id,
+                       owner_id: user.athlete.athlete_id.to_s
+                     )
+                   ),
+                   'CONTENT_TYPE' => 'application/json'
+              expect(last_response.status).to eq 200
+              response = JSON.parse(last_response.body)
+              expect(response['ok']).to be true
+              expect(activities).to eq([activity, activity2])
+            end
             it 'skips over failures' do
               users = []
               allow_any_instance_of(User).to receive(:rebrag_activity!) do |a_user, _args|
@@ -298,14 +333,15 @@ describe Api::Endpoints::StravaEndpoint do
               end
             end
           end
-          it 'ignores delete' do
-            expect_any_instance_of(Logger).to receive(:info).with(/Ignoring aspect type 'delete'/).and_call_original
+          it 'ignores unknown aspects' do
+            expect_any_instance_of(Logger).to receive(:info).with(/Ignoring aspect type 'unknown'/).and_call_original
             expect_any_instance_of(User).to_not receive(:sync_and_brag!)
             expect_any_instance_of(User).to_not receive(:rebrag!)
+            expect_any_instance_of(User).to_not receive(:unbrag!)
             post '/api/strava/event',
                  JSON.dump(
                    event_data.merge(
-                     aspect_type: 'delete',
+                     aspect_type: 'unknown',
                      object_id: activity.strava_id,
                      owner_id: user.athlete.athlete_id.to_s
                    )

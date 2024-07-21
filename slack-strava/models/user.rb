@@ -145,6 +145,14 @@ class User
     }.compact
   end
 
+  def delete!(channel_messages)
+    channel_messages.each do |channel_message|
+      message_with_channel = { channel: channel_message.channel, ts: channel_message.ts, as_user: true }
+      logger.info "Deleting '#{message_with_channel.to_json}' to #{team} on ##{channel_message.channel}."
+      team.slack_client.chat_delete(message_with_channel)
+    end
+  end
+
   def to_s
     "user_id=#{user_id}, user_name=#{user_name}"
   end

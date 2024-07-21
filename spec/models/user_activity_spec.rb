@@ -129,6 +129,34 @@ describe UserActivity do
       }.to_not change(User, :count)
     end
   end
+  context 'unbrag!' do
+    let(:team) { Fabricate(:team) }
+    let(:user) { Fabricate(:user, team: team) }
+    let!(:activity) { Fabricate(:user_activity, user: user) }
+    before do
+      activity.update_attributes!(
+        bragged_at: Time.now.utc,
+        channel_messages: [
+          ChannelMessage.new(channel: 'channel1', ts: 'ts'),
+          ChannelMessage.new(channel: 'channel2', ts: 'ts')
+        ]
+      )
+    end
+    it 'deletes message' do
+      expect(activity.user.team.slack_client).to receive(:chat_delete).with(
+        channel: 'channel1',
+        ts: 'ts',
+        as_user: true
+      )
+      expect(activity.user.team.slack_client).to receive(:chat_delete).with(
+        channel: 'channel2',
+        ts: 'ts',
+        as_user: true
+      )
+      activity.unbrag!
+      expect(activity.reload.channel_messages).to eq []
+    end
+  end
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:user) { Fabricate(:user, team: team) }
