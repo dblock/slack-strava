@@ -297,6 +297,24 @@ class Team
     end
   end
 
+  def subscription_info(is_admin = true)
+    subscription_info = []
+    if stripe_subcriptions&.any?
+      subscription_info << stripe_customer_text
+      subscription_info.concat(stripe_customer_subscriptions_info)
+      if is_admin
+        subscription_info.concat(stripe_customer_invoices_info)
+        subscription_info.concat(stripe_customer_sources_info)
+        subscription_info << update_cc_text
+      end
+    elsif subscribed && subscribed_at
+      subscription_info << subscriber_text
+    else
+      subscription_info << trial_message
+    end
+    subscription_info.compact.join("\n")
+  end
+
   def active_stripe_subscription?
     !active_stripe_subscription.nil?
   end
