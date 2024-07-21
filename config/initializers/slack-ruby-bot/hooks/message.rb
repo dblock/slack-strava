@@ -10,6 +10,7 @@ module SlackRubyBot
           SlackStrava::Commands::Leaderboard,
           SlackStrava::Commands::Subscription,
           SlackStrava::Commands::Unsubscribe,
+          SlackStrava::Commands::Resubscribe,
           SlackStrava::Commands::Connect,
           SlackStrava::Commands::Disconnect,
           SlackStrava::Commands::Set

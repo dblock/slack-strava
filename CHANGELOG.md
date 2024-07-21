@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2024/07/21: Added resubscribe - [@dblock](https://github.com/dblock).
 * 2024/07/14: Fixed error handling during updates for multiple identical users across teams - [@dblock](https://github.com/dblock).
 * 2024/07/07: Fixed duplicate activities from concurrent updates - [@dblock](https://github.com/dblock).
 * 2024/02/17: Added `leaderboard` - [@dblock](https://github.com/dblock).

@@ -21,14 +21,14 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     context 'with a plan' do
       include_context :stripe_mock
       before do
-        stripe_helper.create_plan(id: 'slack-playplay-yearly', amount: 2999, name: 'Plan')
+        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, name: 'Plan')
       end
       pending 'a customer with an ach_credit_transfer source'
       context 'a customer with a bank source' do
         let!(:customer) do
           Stripe::Customer.create(
             source: stripe_helper.generate_bank_token,
-            plan: 'slack-playplay-yearly',
+            plan: 'slava-yearly',
             email: 'foo@bar.com'
           )
         end
@@ -40,7 +40,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
           bank = customer.sources.first
           customer_info = [
             "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}.",
-            "Subscribed to Plan ($29.99), will auto-renew on #{current_period_end}.",
+            "Subscribed to Plan ($9.99), will auto-renew on #{current_period_end}.",
             "On file a bank account #{bank.bank_name}, account number #{bank.account_number}.",
             team.update_cc_text
           ].join("\n")
@@ -51,7 +51,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
         let!(:customer) do
           Stripe::Customer.create(
             source: stripe_helper.generate_card_token,
-            plan: 'slack-playplay-yearly',
+            plan: 'slava-yearly',
             email: 'foo@bar.com'
           )
         end
@@ -63,7 +63,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
           current_period_end = Time.at(customer.subscriptions.first.current_period_end).strftime('%B %d, %Y')
           customer_info = [
             "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}.",
-            "Subscribed to Plan ($29.99), will auto-renew on #{current_period_end}.",
+            "Subscribed to Plan ($9.99), will auto-renew on #{current_period_end}.",
             "On file Visa card, #{card.name} ending with #{card.last4}, expires #{card.exp_month}/#{card.exp_year}.",
             team.update_cc_text
           ].join("\n")
@@ -76,7 +76,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
           end
           it 'displays subscription info' do
             customer_info = "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}."
-            customer_info += "\nPast Due subscription created November 03, 2016 to Plan ($29.99)."
+            customer_info += "\nPast Due subscription created November 03, 2016 to Plan ($9.99)."
             card = customer.sources.first
             customer_info += "\nOn file Visa card, #{card.name} ending with #{card.last4}, expires #{card.exp_month}/#{card.exp_year}."
             customer_info += "\n#{team.update_cc_text}"

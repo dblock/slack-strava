@@ -33,6 +33,7 @@ module SlackStrava
         help                             - get this helpful message
         subscription                     - show subscription info, update credit-card
         unsubscribe                      - turn off subscription auto-renew
+        resubscribe                      - turn on subscription auto-renew
         info                             - bot info, contact, feature requests
         ```
       EOS

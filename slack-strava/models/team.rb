@@ -267,7 +267,15 @@ class Team
       if subscription.status == 'active'
         [
           "Subscribed to #{subscription.plan.name} (#{amount}), will#{subscription.cancel_at_period_end ? ' not' : ''} auto-renew on #{current_period_end}.",
-          !subscription.cancel_at_period_end && with_unsubscribe ? "Send `unsubscribe #{subscription.id}` to unsubscribe." : nil
+          if with_unsubscribe
+            (
+                      if subscription.cancel_at_period_end
+                        "Send `resubscribe #{subscription.id}` to resubscribe."
+                      else
+                        "Send `unsubscribe #{subscription.id}` to unsubscribe."
+                      end
+                    )
+          end
         ].compact.join("\n")
       else
         "#{subscription.status.titleize} subscription created #{Time.at(subscription.created).strftime('%B %d, %Y')} to #{subscription.plan.name} (#{amount})."
@@ -323,7 +331,7 @@ class Team
     return unless stripe_customer
 
     stripe_customer.subscriptions.detect do |subscription|
-      subscription.status == 'active' && !subscription.cancel_at_period_end
+      subscription.status == 'active'
     end
   end
 

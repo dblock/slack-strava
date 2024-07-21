@@ -1,15 +1,15 @@
 require 'spec_helper'
 
-describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_info' } do
+describe SlackStrava::Commands::Resubscribe, vcr: { cassette_name: 'slack/user_info' } do
   let(:app) { SlackStrava::Server.new(team: team) }
   let(:client) { app.send(:client) }
-  shared_examples_for 'unsubscribe' do
+  shared_examples_for 'resubscribe' do
     context 'on trial' do
       before do
         team.update_attributes!(subscribed: false, subscribed_at: nil)
       end
       it 'displays all set message' do
-        expect(message: "#{SlackRubyBot.config.user} unsubscribe").to respond_with_slack_message "You don't have a paid subscription, all set."
+        expect(message: "#{SlackRubyBot.config.user} resubscribe").to respond_with_slack_message "You don't have a paid subscription.\n#{team.subscribe_text}"
       end
     end
     context 'with subscribed_at' do
@@ -17,7 +17,7 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
         team.update_attributes!(subscribed: true, subscribed_at: 1.year.ago)
       end
       it 'displays subscription info' do
-        expect(message: "#{SlackRubyBot.config.user} unsubscribe").to respond_with_slack_message "You don't have a paid subscription, all set."
+        expect(message: "#{SlackRubyBot.config.user} resubscribe").to respond_with_slack_message "You don't have a paid subscription.\n#{team.subscribe_text}"
       end
     end
     context 'with a plan' do
@@ -34,27 +34,28 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
           )
         end
         let(:activated_user) { Fabricate(:user) }
+        let(:active_subscription) { team.active_stripe_subscription }
         before do
           team.update_attributes!(
             subscribed: true,
             stripe_customer_id: customer['id'],
             activated_user_id: activated_user.user_id
           )
+          active_subscription.delete(at_period_end: true)
         end
-        let(:active_subscription) { team.active_stripe_subscription }
         let(:current_period_end) { Time.at(active_subscription.current_period_end).strftime('%B %d, %Y') }
         it 'displays subscription info' do
           customer_info = [
-            "Subscribed to Plan ($9.99), will auto-renew on #{current_period_end}.",
-            "Send `unsubscribe #{active_subscription.id}` to unsubscribe."
+            "Subscribed to Plan ($9.99), will not auto-renew on #{current_period_end}.",
+            "Send `resubscribe #{active_subscription.id}` to resubscribe."
           ].join("\n")
-          expect(message: "#{SlackRubyBot.config.user} unsubscribe", user: activated_user.user_name).to respond_with_slack_message customer_info
+          expect(message: "#{SlackRubyBot.config.user} resubscribe", user: activated_user.user_name).to respond_with_slack_message customer_info
         end
-        it 'cannot unsubscribe with an invalid subscription id' do
-          expect(message: "#{SlackRubyBot.config.user} unsubscribe xyz", user: activated_user.user_name).to respond_with_slack_message 'Sorry, I cannot find a subscription with "xyz".'
+        it 'cannot resubscribe with an invalid subscription id' do
+          expect(message: "#{SlackRubyBot.config.user} resubscribe xyz", user: activated_user.user_name).to respond_with_slack_message 'Sorry, I cannot find a subscription with "xyz".'
         end
-        it 'unsubscribes' do
-          expect(message: "#{SlackRubyBot.config.user} unsubscribe #{active_subscription.id}", user: activated_user.user_name).to respond_with_slack_message 'Successfully canceled auto-renew for Plan ($9.99).'
+        it 'resubscribes' do
+          expect(message: "#{SlackRubyBot.config.user} resubscribe #{active_subscription.id}", user: activated_user.user_name).to respond_with_slack_message 'Successfully enabled auto-renew for Plan ($9.99).'
           team.reload
           expect(team.subscribed).to be true
           expect(team.stripe_customer_id).to_not be nil
@@ -64,8 +65,8 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
           before do
             expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
           end
-          it 'cannot unsubscribe' do
-            expect(message: "#{SlackRubyBot.config.user} unsubscribe xyz").to respond_with_slack_message "Sorry, only <@#{activated_user.user_id}> or a Slack admin can do that."
+          it 'cannot resubscribe' do
+            expect(message: "#{SlackRubyBot.config.user} resubscribe xyz").to respond_with_slack_message "Sorry, only <@#{activated_user.user_id}> or a Slack admin can do that."
           end
         end
       end
@@ -77,10 +78,10 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
     before do
       team.update_attributes!(activated_user_id: activated_user.user_id)
     end
-    it_behaves_like 'unsubscribe'
+    it_behaves_like 'resubscribe'
     context 'with another team' do
       let!(:team2) { Fabricate(:team) }
-      it_behaves_like 'unsubscribe'
+      it_behaves_like 'resubscribe'
     end
   end
 end
