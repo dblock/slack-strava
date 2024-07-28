@@ -3,10 +3,10 @@
     <title>Slava: Update Credit Card</title>
     <%= partial 'public/partials/_head.html' %>
     <%
-      team = Team.where(team_id: request['team_id']).first
-      stripe_token = request['stripeToken']
-      stripe_token_type = request['stripeTokenType']
-      stripe_email = request['stripeEmail']
+      team = Team.where(team_id: request.params['team_id']).first
+      stripe_token = request.params['stripeToken']
+      stripe_token_type = request.params['stripeTokenType']
+      stripe_email = request.params['stripeEmail']
     %>
   </head>
   <body>
@@ -45,7 +45,7 @@
             team_id: "<%= team ? team.id : nil %>"
           };
 
-          if (data.stripe_token) {
+          if (data.stripe_token && data.stripe_token.length > 0) {
 
             var team = {
               id: <%= team ? "'#{team._id}'" : 'null' %>,
@@ -59,9 +59,15 @@
               success: function(data) {
                 SlackStrava.message('Successfully updated team <b>' + team.name + '</b> credit card.<br><br>Thank you for your support!');
                 $('form').remove();
+                $('#update_cc').hide();
               },
               error: SlackStrava.error
             });
+
+          } else if (!data.team_id || data.team_id.length == 0) {
+            SlackStrava.errorMessage("Team not found.")
+            $('form').remove();
+            $('#update_cc').hide();
           }
         });
       </script>

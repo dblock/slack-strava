@@ -3,7 +3,7 @@
     <title>Slava: Connect to Strava</title>
     <%= partial 'public/partials/_head.html' %>
     <%
-      user = User.where(id: request['state']).first
+      user = User.where(id: request.params['state']).first
     %>
   </head>
   <body style='text-align: center'>
@@ -22,10 +22,10 @@
       </p>
       <script>
         $(document).ready(function() {
-          <% user = User.where(id: request['state']).first %>
+          <% user = User.where(id: request.params['state']).first %>
 
           var data = {
-            code: "<%= request['code'] %>"
+            code: "<%= request.params['code'] %>"
           };
 
           var user = {
@@ -45,7 +45,7 @@
               error: SlackStrava.error
             });
           } else {
-            SlackStrava.message('Missing or invalid parameters.');
+            SlackStrava.errorMessage('Missing or invalid parameters.');
           }
         });
       </script>

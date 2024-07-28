@@ -23,7 +23,7 @@
       <script>
         $(document).ready(function() {
 
-          <% team = Team.where(team_id: request['team_id']).first %>
+          <% team = Team.where(team_id: request.params['team_id']).first %>
 
           var team = {
             id: '<%= team && team.team_id %>',
@@ -38,7 +38,7 @@
             SlackStrava.message('Subscribe team <b>' + team.name + '</b> for $9.99/yr.');
           } else {
             $('#subscribeButton').remove();
-            SlackStrava.message('Missing or invalid team ID.');
+            SlackStrava.errorMessage('Missing or invalid team ID.');
           }
 
           var handler = StripeCheckout.configure({
