@@ -26,10 +26,10 @@ describe Api::Endpoints::StravaEndpoint do
         {
           aspect_type: 'update',
           event_time: 1_516_126_040,
-          object_id: 1_360_128_428,
+          object_id: '1360128428',
           object_type: 'activity',
-          owner_id: 134_815,
-          subscription_id: 120_475,
+          owner_id: '134815',
+          subscription_id: '120475',
           updates: {}
         }
       end
@@ -45,7 +45,7 @@ describe Api::Endpoints::StravaEndpoint do
         let!(:user) { Fabricate(:user, access_token: 'token') }
         it 'syncs user' do
           expect_any_instance_of(Logger).to receive(:info).with(/Syncing activity/).and_call_original
-          expect_any_instance_of(User).to receive(:sync_and_brag!).once
+          expect_any_instance_of(User).to receive(:sync_activity_and_brag!).with(event_data[:object_id]).once
           post '/api/strava/event',
                JSON.dump(
                  event_data.merge(
@@ -108,7 +108,7 @@ describe Api::Endpoints::StravaEndpoint do
           end
           it 'syncs both users' do
             users = []
-            allow_any_instance_of(User).to receive(:sync_and_brag!) do |a_user, _args|
+            allow_any_instance_of(User).to receive(:sync_activity_and_brag!) do |a_user, _args|
               users << a_user
             end
             post '/api/strava/event',
@@ -130,7 +130,7 @@ describe Api::Endpoints::StravaEndpoint do
             end
             it 'skips over' do
               users = []
-              allow_any_instance_of(User).to receive(:sync_and_brag!) do |a_user, _args|
+              allow_any_instance_of(User).to receive(:sync_activity_and_brag!) do |a_user, _args|
                 users << a_user
               end
               post '/api/strava/event',
@@ -149,7 +149,7 @@ describe Api::Endpoints::StravaEndpoint do
           end
           it 'skips over failures' do
             users = []
-            allow_any_instance_of(User).to receive(:sync_and_brag!) do |a_user, _args|
+            allow_any_instance_of(User).to receive(:sync_activity_and_brag!) do |a_user, _args|
               raise 'error' if a_user == user
 
               users << a_user

@@ -476,6 +476,16 @@ describe User do
       end
     end
   end
+  context 'sync_activity_and_brag!' do
+    let!(:user) { Fabricate(:user) }
+    let(:activity_id) { '1473024961' }
+    it 'syncs an activity and brags' do
+      expect_any_instance_of(User).to receive(:sync_strava_activity!).with(activity_id)
+      expect_any_instance_of(User).to receive(:brag!)
+      user.sync_activity_and_brag!(activity_id)
+    end
+    pending 'takes a lock'
+  end
   context '#rebrag_activity!', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
     let!(:user) { Fabricate(:user, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
     let!(:activity) { Fabricate(:user_activity, user: user, team: user.team, strava_id: '1473024961') }

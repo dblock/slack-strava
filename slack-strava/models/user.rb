@@ -270,6 +270,15 @@ class User
     sync_strava_activities!(options)
   end
 
+  def sync_activity_and_brag!(activity_id)
+    with_lock do
+      with_strava_error_handler do
+        sync_strava_activity!(activity_id)
+        brag!
+      end
+    end
+  end
+
   def sync_strava_activity!(strava_id)
     detailed_activity = strava_client.activity(strava_id)
     return if detailed_activity['private'] && !private_activities?

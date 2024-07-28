@@ -40,7 +40,7 @@ module Api
                   else
                     Api::Middleware.logger.info "Syncing activity for team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}."
                     begin
-                      user.sync_and_brag!
+                      user.sync_activity_and_brag!(params['object_id'])
                     rescue StandardError => e
                       Api::Middleware.logger.warn "Error syncing new activity for team #{user.team}, user #{user}, #{user.athlete}, #{params['object_type']}=#{params['object_id']}: #{e}."
                     end
