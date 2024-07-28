@@ -2,8 +2,10 @@ require 'spec_helper'
 
 describe ActivitySummary do
   let(:activity_summary) { Fabricate(:activity_summary) }
-  context '#to_slack_attachment' do
+
+  describe '#to_slack_attachment' do
     let(:slack_attachment) { activity_summary.to_slack_attachment }
+
     it 'returns a slack attachment' do
       expect(slack_attachment).to eq(
         {

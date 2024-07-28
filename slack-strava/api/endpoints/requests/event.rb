@@ -5,7 +5,7 @@ module Api
         attr_reader :challenge, :type, :team_id, :api_app_id, :event
 
         def initialize(params)
-          super(params)
+          super
           @challenge = params[:challenge]
           if params.key?(:event)
             @event = Hashie::Mash.new(params[:event])

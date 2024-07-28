@@ -104,11 +104,12 @@ GEM
     io-console (0.5.6)
     irb (1.2.4)
       reline (>= 0.0.1)
-    json (2.6.2)
+    json (2.7.2)
     kaminari-core (1.2.1)
     kaminari-grape (1.0.1)
       grape
       kaminari-core (~> 1.0)
+    language_server-protocol (3.17.0.3)
     mailchimp_api_v3 (0.2.18)
       rest-client (~> 2)
     matrix (0.4.2)
@@ -158,9 +159,10 @@ GEM
       faraday (>= 1.0.0)
       faraday_middleware
       hashie
-    parallel (1.22.1)
-    parser (3.1.2.0)
+    parallel (1.25.1)
+    parser (3.3.4.0)
       ast (~> 2.4.1)
+      racc
     polylines (0.3.0)
     public_suffix (5.1.1)
     puma (6.4.2)
@@ -195,8 +197,8 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rexml (3.2.8)
-      strscan (>= 3.0.9)
+    rexml (3.3.2)
+      strscan
     roar (1.1.0)
       representable (~> 3.0.0)
     rspec (3.9.0)
@@ -212,25 +214,28 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
     rspec-support (3.9.3)
-    rubocop (1.31.2)
+    rubocop (1.65.0)
       json (~> 2.3)
+      language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
-      parser (>= 3.1.0.0)
+      parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
-      regexp_parser (>= 1.8, < 3.0)
+      regexp_parser (>= 2.4, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.18.0, < 2.0)
+      rubocop-ast (>= 1.31.1, < 2.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.19.1)
-      parser (>= 3.1.1.0)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.31.3)
+      parser (>= 3.3.1.0)
+    rubocop-capybara (2.21.0)
+      rubocop (~> 1.41)
     rubocop-rake (0.6.0)
       rubocop (~> 1.0)
-    rubocop-rspec (2.12.1)
-      rubocop (~> 1.31)
+    rubocop-rspec (3.0.3)
+      rubocop (~> 1.61)
     ruby-enum (0.8.0)
       i18n
-    ruby-progressbar (1.11.0)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
     safe_yaml (1.0.5)
@@ -283,7 +288,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
-    unicode-display_width (2.2.0)
+    unicode-display_width (2.5.0)
     vcr (6.0.0)
     wannabe_bool (0.7.1)
     webmock (3.8.3)
@@ -331,6 +336,7 @@ DEPENDENCIES
   rake (~> 12.3)
   rspec
   rubocop
+  rubocop-capybara
   rubocop-rake
   rubocop-rspec
   ruby-enum

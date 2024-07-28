@@ -2,22 +2,27 @@ require 'spec_helper'
 
 describe TeamStats do
   let(:team) { Fabricate(:team) }
+
   before do
     allow_any_instance_of(Map).to receive(:update_png!)
   end
+
   context 'with no activities' do
     let(:stats) { team.stats }
-    context '#stats' do
+
+    describe '#stats' do
       it 'aggregates stats' do
         expect(stats.count).to eq 0
       end
     end
-    context '#to_slack' do
+
+    describe '#to_slack' do
       it 'defaults to no activities' do
         expect(stats.to_slack).to eq({ text: 'There are no activities in this channel.' })
       end
     end
   end
+
   context 'with activities' do
     let!(:user1) { Fabricate(:user, team: team) }
     let!(:user2) { Fabricate(:user, team: team) }
@@ -29,12 +34,15 @@ describe TeamStats do
     let!(:activity1) { Fabricate(:user_activity, user: user1) }
     let!(:activity2) { Fabricate(:user_activity, user: user1) }
     let!(:activity3) { Fabricate(:user_activity, user: user2) }
-    context '#stats' do
+
+    describe '#stats' do
       let(:stats) { team.stats }
+
       it 'returns stats sorted by count' do
         expect(stats.keys).to eq %w[Run Ride Swim]
         expect(stats.values.map(&:count)).to eq [4, 2, 1]
       end
+
       it 'aggregates stats' do
         expect(stats['Ride'].to_h).to eq(
           {
@@ -67,21 +75,26 @@ describe TeamStats do
           }
         )
       end
+
       context 'with activities from another team' do
         let!(:another_activity) { Fabricate(:user_activity, user: user1) }
         let!(:another_team_activity) { Fabricate(:user_activity, user: Fabricate(:user, team: Fabricate(:team))) }
+
         it 'does not include that activity' do
           expect(stats.values.map(&:count)).to eq [5, 2, 1]
         end
       end
     end
-    context '#to_slack' do
+
+    describe '#to_slack' do
       let(:stats) { team.stats }
+
       it 'includes all activities' do
         expect(stats.to_slack[:attachments].count).to eq(3)
       end
     end
   end
+
   context 'with activities across multiple channels' do
     let!(:user) { Fabricate(:user, team: team) }
     let!(:user_activity) { Fabricate(:user_activity, user: user) }
@@ -89,10 +102,12 @@ describe TeamStats do
     let!(:club1_activity) { Fabricate(:club_activity, club: club1) }
     let!(:club2) { Fabricate(:club, team: team, channel_id: 'channel2') }
     let!(:club2_activity) { Fabricate(:club_activity, club: club2) }
-    context '#stats' do
+
+    describe '#stats' do
       context 'all channels' do
         let!(:stats) { team.stats }
         let!(:activities) { [user_activity, club1_activity, club2_activity] }
+
         it 'returns stats for all activities' do
           expect(stats['Run'].to_h).to eq(
             {
@@ -106,14 +121,17 @@ describe TeamStats do
           )
         end
       end
+
       context 'in channel with bragged club activity' do
         before do
           allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
           club1_activity.brag!
         end
+
         context 'stats' do
           let(:stats) { team.stats(channel_id: club1.channel_id) }
           let(:activities) { [club1_activity] }
+
           it 'returns stats for all activities' do
             expect(stats['Run'].to_h).to eq(
               {
@@ -128,6 +146,7 @@ describe TeamStats do
           end
         end
       end
+
       context 'in channel with bragged user activity' do
         before do
           allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => club1_activity.club.channel_id])
@@ -136,9 +155,11 @@ describe TeamStats do
           allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
           user_activity.brag!
         end
+
         context 'stats' do
           let(:stats) { team.stats(channel_id: club1_activity.club.channel_id) }
           let(:activities) { [user_activity] }
+
           it 'returns stats for all activities' do
             expect(stats['Run'].to_h).to eq(
               {
@@ -153,6 +174,7 @@ describe TeamStats do
           end
         end
       end
+
       context 'in channel with bragged user and club activities' do
         before do
           allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => club1_activity.club.channel_id])
@@ -162,9 +184,11 @@ describe TeamStats do
           club1_activity.brag!
           user_activity.brag!
         end
+
         context 'stats' do
           let(:stats) { team.stats(channel_id: club1.channel_id) }
           let(:activities) { [user_activity, club1_activity] }
+
           it 'returns stats for all activities' do
             expect(stats['Run'].to_h).to eq(
               {

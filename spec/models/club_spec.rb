@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Club do
   let(:team) { Fabricate(:team) }
   let!(:club) { Fabricate(:club, team: team, strava_id: '43749', access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+
   context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/club_sync_last_strava_activity' } do
     it 'retrieves the last activity' do
       expect {
@@ -12,16 +13,19 @@ describe Club do
       expect(activity.strava_id).to eq 'b1cbe401792d703084b56eb0bb9ac455'
       expect(activity.name).to eq 'Hard as fuck run home — tired + lots of aches '
     end
+
     it 'only saves the last activity once' do
       expect {
         2.times { club.sync_last_strava_activity! }
       }.to change(club.activities, :count).by(1)
     end
+
     it 'retrieves an incremental set of activities', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
       expect {
         club.sync_new_strava_activities!
       }.to change(club.activities, :count).by(8)
     end
+
     it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
       # first activity from the cassette
       club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
@@ -29,15 +33,18 @@ describe Club do
         club.sync_new_strava_activities!
       }.to change(club.activities, :count).by(7)
     end
+
     it 'updates the existing duplicate', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
       activity = club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
       tt = activity.reload.updated_at.utc
       Timecop.travel(Time.now + 1.hour)
       club.sync_new_strava_activities!
-      expect(activity.reload.updated_at.utc.to_i).to_not eq(tt.to_i)
+      expect(activity.reload.updated_at.utc.to_i).not_to eq(tt.to_i)
     end
+
     context 'with two club channels' do
       let!(:club2) { Fabricate(:club, team: team, strava_id: '43749', channel_id: '1HNTD0CW', channel_name: 'testing', access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+
       it 'retrieves the last activity and stores it twice' do
         expect {
           club.sync_last_strava_activity!
@@ -48,6 +55,7 @@ describe Club do
         expect(club.activities.count).to eq(1)
         expect(club2.activities.count).to eq(1)
       end
+
       it 'only saves the last activity once per club' do
         expect {
           2.times { club.sync_last_strava_activity! }
@@ -58,6 +66,7 @@ describe Club do
         expect(club.activities.count).to eq(1)
         expect(club2.activities.count).to eq(1)
       end
+
       it 'retrieves an incremental set of activities', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
         expect {
           club.sync_new_strava_activities!
@@ -66,6 +75,7 @@ describe Club do
           club2.sync_new_strava_activities!
         }.to change(club2.activities, :count).by(8)
       end
+
       it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
         # first activity from the cassette
         club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
@@ -77,6 +87,7 @@ describe Club do
           club2.sync_new_strava_activities!
         }.to change(club2.activities, :count).by(7)
       end
+
       it 'updates the existing duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
         activity = club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
         tt = activity.reload.updated_at.utc
@@ -84,10 +95,11 @@ describe Club do
         tt2 = activity.reload.updated_at.utc
         Timecop.travel(Time.now + 1.hour)
         club.sync_new_strava_activities!
-        expect(activity.reload.updated_at.utc.to_i).to_not eq(tt.to_i)
+        expect(activity.reload.updated_at.utc.to_i).not_to eq(tt.to_i)
         expect(activity2.reload.updated_at.utc.to_i).to eq(tt2.to_i)
       end
     end
+
     ['Authorization Error', 'Forbidden'].each do |message|
       it 'disconnects club on auth failure' do
         allow(club.strava_client).to receive(:club_activities).and_raise(
@@ -101,10 +113,10 @@ describe Club do
           )
         ).and_return('ts' => 1)
         expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
-        expect(club.access_token).to be nil
-        expect(club.token_type).to be nil
-        expect(club.refresh_token).to be nil
-        expect(club.token_expires_at).to be nil
+        expect(club.access_token).to be_nil
+        expect(club.token_type).to be_nil
+        expect(club.refresh_token).to be_nil
+        expect(club.token_expires_at).to be_nil
       end
     end
     it 'disables sync on 404' do
@@ -122,33 +134,39 @@ describe Club do
       expect { club.sync_last_strava_activity! }.to raise_error Faraday::ResourceNotFound
       expect(club.sync_activities?).to be false
     end
+
     context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
       before do
         club.update_attributes!(refresh_token: nil, token_expires_at: nil)
       end
+
       it 'refreshes access token using access token' do
         club.send(:strava_client)
         expect(club.refresh_token).to eq 'updated-refresh-token'
         expect(club.access_token).to eq 'updated-access-token'
-        expect(club.token_expires_at).to_not be_nil
+        expect(club.token_expires_at).not_to be_nil
         expect(club.token_type).to eq 'Bearer'
       end
     end
+
     context 'with an expired refresh token', vcr: { cassette_name: 'strava/refresh_access_token' } do
       before do
         club.update_attributes!(refresh_token: 'refresh_token', token_expires_at: nil)
       end
+
       it 'refreshes access token' do
         club.send(:strava_client)
         expect(club.refresh_token).to eq 'updated-refresh-token'
         expect(club.access_token).to eq 'updated-access-token'
-        expect(club.token_expires_at).to_not be_nil
+        expect(club.token_expires_at).not_to be_nil
         expect(club.token_type).to eq 'Bearer'
       end
     end
   end
+
   context 'brag!' do
     let!(:activity) { Fabricate(:club_activity, club: club) }
+
     it 'brags the last unbragged activity' do
       expect_any_instance_of(ClubActivity).to receive(:brag!).and_return(
         [
@@ -166,39 +184,47 @@ describe Club do
       )
     end
   end
+
   context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
     context 'upon creation' do
       it 'syncs but does not brag' do
-        expect_any_instance_of(Slack::Web::Client).to_not receive(:chat_postMessage)
+        expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_postMessage)
         club.sync_and_brag!
       end
     end
+
     context 'after an initial sync' do
       before do
         club.sync_and_brag!
       end
+
       context 'with a new activity' do
         before do
           club.activities.desc(:_id).first.destroy
         end
+
         it 'syncs and brags' do
           expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once
           club.sync_and_brag!
         end
       end
     end
+
     it 'warns on error' do
       expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)
       allow(club).to receive(:sync_new_strava_activities!).and_raise 'unexpected error'
-      expect { club.sync_and_brag! }.to_not raise_error
+      expect { club.sync_and_brag! }.not_to raise_error
     end
+
     context 'rate limit exceeded' do
       let(:rate_limit_exceeded_error) { Strava::Errors::Fault.new(429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [{ 'resource' => 'Application', 'field' => 'rate limit', 'code' => 'exceeded' }] }) }
+
       it 'raises an exception' do
         allow(club).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
         expect { club.sync_and_brag! }.to raise_error(Strava::Errors::Fault, /Rate Limit Exceeded/)
       end
     end
+
     pending 'uses a lock'
   end
 end

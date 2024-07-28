@@ -5,6 +5,7 @@ describe Api::Endpoints::UsersEndpoint do
 
   context 'users' do
     let(:user) { Fabricate(:user) }
+
     it 'connects a user to their Strava account', vcr: { cassette_name: 'strava/retrieve_access' } do
       expect_any_instance_of(User).to receive(:dm!).with(
         text: "Your Strava account has been successfully connected.\nI won't post any private activities, DM me `set private on` to toggle that and `help` for other options."
@@ -19,10 +20,11 @@ describe Api::Endpoints::UsersEndpoint do
       user.reload
 
       expect(user.access_token).to eq 'token'
-      expect(user.connected_to_strava_at).to_not be nil
+      expect(user.connected_to_strava_at).not_to be_nil
       expect(user.token_type).to eq 'Bearer'
       expect(user.athlete.athlete_id).to eq '12345'
     end
+
     context 'with prior activities' do
       before do
         allow_any_instance_of(Map).to receive(:update_png!)
@@ -31,6 +33,7 @@ describe Api::Endpoints::UsersEndpoint do
         user.brag!
         user.disconnect_from_strava
       end
+
       it 'resets all activities', vcr: { cassette_name: 'strava/retrieve_access' } do
         expect {
           expect {
@@ -47,7 +50,7 @@ describe Api::Endpoints::UsersEndpoint do
             user.reload
 
             expect(user.access_token).to eq 'token'
-            expect(user.connected_to_strava_at).to_not be nil
+            expect(user.connected_to_strava_at).not_to be_nil
             expect(user.token_type).to eq 'Bearer'
             expect(user.athlete.athlete_id).to eq '12345'
           }.to change(user.activities, :count).by(-2)

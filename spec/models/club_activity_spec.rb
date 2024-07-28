@@ -4,15 +4,18 @@ describe ClubActivity do
   context 'hidden?' do
     context 'default' do
       let(:activity) { Fabricate(:club_activity) }
+
       it 'is not hidden' do
         expect(activity.hidden?).to be false
       end
     end
   end
+
   context 'brag!' do
     let(:team) { Fabricate(:team) }
     let(:club) { Fabricate(:club, team: team) }
     let!(:activity) { Fabricate(:club_activity, club: club) }
+
     it 'sends a message to the subscribed channel' do
       expect(club.team.slack_client).to receive(:chat_postMessage).with(
         activity.to_slack.merge(
@@ -22,15 +25,17 @@ describe ClubActivity do
       ).and_return('ts' => 1)
       expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
     end
+
     it 'warns if the bot leaves the channel' do
       expect {
         expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)
         expect(club.team.slack_client).to receive(:chat_postMessage) {
           raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
         }
-        expect(activity.brag!).to be nil
-      }.to_not change(Club, :count)
+        expect(activity.brag!).to be_nil
+      }.not_to change(Club, :count)
     end
+
     it 'warns if the account goes inactive' do
       expect {
         expect {
@@ -38,10 +43,11 @@ describe ClubActivity do
           expect(club.team.slack_client).to receive(:chat_postMessage) {
             raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
           }
-          expect(activity.brag!).to be nil
-        }.to_not change(Club, :count)
-      }.to_not change(ClubActivity, :count)
+          expect(activity.brag!).to be_nil
+        }.not_to change(Club, :count)
+      }.not_to change(ClubActivity, :count)
     end
+
     it 'informs admin on restricted_action' do
       expect {
         expect_any_instance_of(Logger).to receive(:warn).with(/restricted_action/)
@@ -49,9 +55,10 @@ describe ClubActivity do
         expect(club.team.slack_client).to receive(:chat_postMessage) {
           raise Slack::Web::Api::Errors::SlackError, 'restricted_action'
         }
-        expect(activity.brag!).to be nil
-      }.to_not change(Club, :count)
+        expect(activity.brag!).to be_nil
+      }.not_to change(Club, :count)
     end
+
     it 'informs admin on is_archived channel' do
       expect {
         expect_any_instance_of(Logger).to receive(:warn).with(/is_archived/)
@@ -59,10 +66,11 @@ describe ClubActivity do
         expect(club.team.slack_client).to receive(:chat_postMessage) {
           raise Slack::Web::Api::Errors::SlackError, 'is_archived'
         }
-        expect(activity.brag!).to be nil
-      }.to_not change(Club, :count)
+        expect(activity.brag!).to be_nil
+      }.not_to change(Club, :count)
       expect(club.reload.sync_activities).to be false
     end
+
     context 'having already bragged a user activity in the channel' do
       let!(:user_activity) do
         Fabricate(:user_activity,
@@ -77,14 +85,16 @@ describe ClubActivity do
                     ChannelMessage.new(channel: club.channel_id)
                   ])
       end
+
       it 'does not re-brag the activity' do
-        expect(club.team.slack_client).to_not receive(:chat_postMessage)
+        expect(club.team.slack_client).not_to receive(:chat_postMessage)
         expect {
-          expect(activity.brag!).to be nil
+          expect(activity.brag!).to be_nil
         }.to change(club.activities.unbragged, :count).by(-1)
-        expect(activity.bragged_at).to_not be_nil
+        expect(activity.bragged_at).not_to be_nil
       end
     end
+
     context 'having a private user activity' do
       let!(:user_activity) do
         Fabricate(:user_activity,
@@ -96,6 +106,7 @@ describe ClubActivity do
                   map: nil,
                   private: true)
       end
+
       context 'unbragged' do
         it 'rebrags the activity' do
           expect(club.team.slack_client).to receive(:chat_postMessage).with(
@@ -107,22 +118,26 @@ describe ClubActivity do
           expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
         end
       end
+
       context 'bragged recently' do
         before do
           user_activity.set(bragged_at: Time.now.utc)
         end
+
         it 'does not rebrag the activity' do
-          expect(club.team.slack_client).to_not receive(:chat_postMessage)
+          expect(club.team.slack_client).not_to receive(:chat_postMessage)
           expect {
-            expect(activity.brag!).to be nil
+            expect(activity.brag!).to be_nil
           }.to change(club.activities.unbragged, :count).by(-1)
-          expect(activity.bragged_at).to_not be_nil
+          expect(activity.bragged_at).not_to be_nil
         end
       end
+
       context 'bragged a long time ago' do
         before do
           user_activity.set(bragged_at: Time.now.utc - 1.month)
         end
+
         it 'rebrags the activity' do
           expect(club.team.slack_client).to receive(:chat_postMessage).with(
             activity.to_slack.merge(
@@ -135,10 +150,12 @@ describe ClubActivity do
       end
     end
   end
+
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:club) { Fabricate(:club, team: team) }
     let(:activity) { Fabricate(:club_activity, club: club) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -162,10 +179,12 @@ describe ClubActivity do
       )
     end
   end
+
   context 'km' do
     let(:team) { Fabricate(:team, units: 'km') }
     let(:club) { Fabricate(:club, team: team) }
     let(:activity) { Fabricate(:club_activity, club: club) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -189,10 +208,12 @@ describe ClubActivity do
       )
     end
   end
+
   context 'both' do
     let(:team) { Fabricate(:team, units: 'both') }
     let(:club) { Fabricate(:club, team: team) }
     let(:activity) { Fabricate(:club_activity, club: club) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -216,11 +237,14 @@ describe ClubActivity do
       )
     end
   end
+
   context 'fields' do
     let(:club) { Fabricate(:club, team: team) }
     let(:activity) { Fabricate(:club_activity, club: club) }
+
     context 'none' do
       let(:team) { Fabricate(:team, activity_fields: ['None']) }
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -235,8 +259,10 @@ describe ClubActivity do
         )
       end
     end
+
     context 'some' do
       let(:team) { Fabricate(:team, activity_fields: %w[Pace Elevation Type]) }
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [

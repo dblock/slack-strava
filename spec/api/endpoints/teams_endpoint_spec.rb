@@ -7,12 +7,15 @@ describe Api::Endpoints::TeamsEndpoint do
     subject do
       client.teams
     end
+
     it 'lists no teams' do
       expect(subject.to_a.size).to eq 0
     end
+
     context 'with teams' do
       let!(:team1) { Fabricate(:team, api: false) }
       let!(:team2) { Fabricate(:team, api: true) }
+
       it 'lists teams with api enabled' do
         expect(subject.to_a.size).to eq 1
         expect(subject.first.id).to eq team2.id.to_s
@@ -58,10 +61,12 @@ describe Api::Endpoints::TeamsEndpoint do
           )
         ).and_return(oauth_access)
       end
+
       after do
         ENV.delete('SLACK_CLIENT_ID')
         ENV.delete('SLACK_CLIENT_SECRET')
       end
+
       it 'creates a team' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
@@ -79,6 +84,7 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.activated_user_id).to eq 'activated_user_id'
         }.to change(Team, :count).by(1)
       end
+
       it 'reactivates a deactivated team' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
@@ -97,8 +103,9 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.active).to be true
           expect(team.bot_user_id).to eq 'bot_user_id'
           expect(team.activated_user_id).to eq 'activated_user_id'
-        }.to_not change(Team, :count)
+        }.not_to change(Team, :count)
       end
+
       it 'reactivates a team deactivated on slack' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
@@ -118,8 +125,9 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.active).to be true
           expect(team.bot_user_id).to eq 'bot_user_id'
           expect(team.activated_user_id).to eq 'activated_user_id'
-        }.to_not change(Team, :count)
+        }.not_to change(Team, :count)
       end
+
       it 'returns a useful error when team already exists' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
@@ -133,6 +141,7 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(json['message']).to eq "Team #{existing_team.name} is already registered."
         end
       end
+
       it 'reactivates a deactivated team with a different code' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",
@@ -151,8 +160,9 @@ describe Api::Endpoints::TeamsEndpoint do
           expect(team.active).to be true
           expect(team.bot_user_id).to eq 'bot_user_id'
           expect(team.activated_user_id).to eq 'activated_user_id'
-        }.to_not change(Team, :count)
+        }.not_to change(Team, :count)
       end
+
       context 'with mailchimp settings' do
         before do
           SlackRubyBotServer::Mailchimp.configure do |config|
@@ -160,8 +170,11 @@ describe Api::Endpoints::TeamsEndpoint do
             config.mailchimp_list_id = 'list-id'
           end
         end
+
         after do
           SlackRubyBotServer::Mailchimp.config.reset!
+          ENV.delete('MAILCHIMP_API_KEY')
+          ENV.delete('MAILCHIMP_LIST_ID')
         end
 
         let(:list) { double(Mailchimp::List, members: double(Mailchimp::List::Members)) }
@@ -205,10 +218,6 @@ describe Api::Endpoints::TeamsEndpoint do
           )
 
           client.teams._post(code: 'code')
-        end
-        after do
-          ENV.delete('MAILCHIMP_API_KEY')
-          ENV.delete('MAILCHIMP_LIST_ID')
         end
       end
     end

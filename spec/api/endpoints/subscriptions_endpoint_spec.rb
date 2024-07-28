@@ -11,8 +11,10 @@ describe Api::Endpoints::SubscriptionsEndpoint do
         expect(json['type']).to eq 'param_error'
       end
     end
+
     context 'subscribed team' do
       let!(:team) { Fabricate(:team, subscribed: true) }
+
       it 'fails to create a subscription' do
         expect {
           client.subscriptions._post(
@@ -27,18 +29,22 @@ describe Api::Endpoints::SubscriptionsEndpoint do
         end
       end
     end
+
     context 'team with a canceled subscription' do
       let!(:team) { Fabricate(:team, subscribed: false, stripe_customer_id: 'customer_id') }
       let(:stripe_customer) { double(Stripe::Customer) }
+
       before do
         allow(Stripe::Customer).to receive(:retrieve).with(team.stripe_customer_id).and_return(stripe_customer)
       end
+
       context 'with an active subscription' do
         before do
           allow(stripe_customer).to receive(:subscriptions).and_return([
                                                                          double(Stripe::Subscription)
                                                                        ])
         end
+
         it 'fails to create a subscription' do
           expect {
             client.subscriptions._post(
@@ -53,10 +59,12 @@ describe Api::Endpoints::SubscriptionsEndpoint do
           end
         end
       end
+
       context 'without no active subscription' do
         before do
           allow(stripe_customer).to receive(:subscriptions).and_return([])
         end
+
         it 'updates a subscription' do
           expect(Stripe::Customer).to receive(:update).with(
             team.stripe_customer_id,
@@ -82,13 +90,15 @@ describe Api::Endpoints::SubscriptionsEndpoint do
           )
           team.reload
           expect(team.subscribed).to be true
-          expect(team.subscribed_at).to_not be nil
+          expect(team.subscribed_at).not_to be_nil
           expect(team.stripe_customer_id).to eq 'customer_id'
         end
       end
     end
+
     context 'existing team' do
       let!(:team) { Fabricate(:team) }
+
       it 'creates a subscription' do
         expect(Stripe::Customer).to receive(:create).with(
           source: 'token',
@@ -111,7 +121,7 @@ describe Api::Endpoints::SubscriptionsEndpoint do
         )
         team.reload
         expect(team.subscribed).to be true
-        expect(team.subscribed_at).to_not be nil
+        expect(team.subscribed_at).not_to be_nil
         expect(team.stripe_customer_id).to eq 'customer_id'
       end
     end

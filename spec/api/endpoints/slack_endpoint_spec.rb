@@ -6,11 +6,18 @@ describe Api::Endpoints::SlackEndpoint do
   context 'with a SLACK_VERIFICATION_TOKEN' do
     let(:token) { 'slack-verification-token' }
     let(:team) { Fabricate(:team) }
+
     before do
       ENV['SLACK_VERIFICATION_TOKEN'] = token
     end
+
+    after do
+      ENV.delete('SLACK_VERIFICATION_TOKEN')
+    end
+
     context 'interactive buttons' do
       let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
+
       context 'without a club' do
         let(:club) do
           Club.new(
@@ -24,6 +31,7 @@ describe Api::Endpoints::SlackEndpoint do
             logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/43749/1121181/4/medium.jpg'
           )
         end
+
         it 'connects club', vcr: { cassette_name: 'strava/retrieve_a_club' } do
           expect {
             expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
@@ -49,8 +57,10 @@ describe Api::Endpoints::SlackEndpoint do
           }.to change(Club, :count).by(1)
         end
       end
+
       context 'with a club' do
         let!(:club) { Fabricate(:club, team: team) }
+
         it 'disconnects club' do
           expect {
             expect_any_instance_of(Strava::Api::Client).to receive(:paginate)
@@ -76,6 +86,7 @@ describe Api::Endpoints::SlackEndpoint do
           }.to change(Club, :count).by(-1)
         end
       end
+
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/action', payload: {
           actions: [{ name: 'strava_id', value: '43749' }],
@@ -89,6 +100,7 @@ describe Api::Endpoints::SlackEndpoint do
         response = JSON.parse(last_response.body)
         expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
+
       it 'returns invalid callback id' do
         post '/api/slack/action', payload: {
           actions: [{ name: 'strava_id', value: 'id' }],
@@ -103,8 +115,10 @@ describe Api::Endpoints::SlackEndpoint do
         expect(response['error']).to eq 'Callback invalid-callback is not supported.'
       end
     end
+
     context 'slash commands' do
       let(:user) { Fabricate(:user, team: team) }
+
       context 'invalid command' do
         it 'fails with an error' do
           post '/api/slack/command',
@@ -124,6 +138,7 @@ describe Api::Endpoints::SlackEndpoint do
           )
         end
       end
+
       context 'stats' do
         it 'returns team stats' do
           post '/api/slack/command',
@@ -142,6 +157,7 @@ describe Api::Endpoints::SlackEndpoint do
             'channel' => 'channel'
           )
         end
+
         it 'calls stats with channel' do
           expect_any_instance_of(Team).to receive(:stats).with(channel_id: 'channel_id')
           post '/api/slack/command',
@@ -153,6 +169,7 @@ describe Api::Endpoints::SlackEndpoint do
                team_id: team.team_id,
                token: token
         end
+
         it 'calls stats without channel on a DM' do
           expect_any_instance_of(Team).to receive(:stats).with({})
           post '/api/slack/command',
@@ -165,13 +182,16 @@ describe Api::Endpoints::SlackEndpoint do
                token: token
         end
       end
+
       context 'in channel' do
         before do
           allow_any_instance_of(Team).to receive(:bot_in_channel?).and_return(true)
         end
+
         context 'disconnected user' do
           let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
           let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
+
           it 'lists clubs connected to this channel' do
             post '/api/slack/command',
                  command: '/slava',
@@ -191,6 +211,7 @@ describe Api::Endpoints::SlackEndpoint do
             )
           end
         end
+
         context 'connected user' do
           let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
           let(:nyrr_club) do
@@ -205,6 +226,7 @@ describe Api::Endpoints::SlackEndpoint do
               logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/108605/8433029/1/medium.jpg'
             )
           end
+
           it 'lists clubs a user is a member of', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
             post '/api/slack/command',
                  command: '/slava',
@@ -219,9 +241,11 @@ describe Api::Endpoints::SlackEndpoint do
             expect(response['attachments'].count).to eq 5
             expect(response['attachments'][0]['title']).to eq nyrr_club.name
           end
+
           context 'with another connected club in the channel' do
             let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
             let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
+
             it 'lists both clubs a user is a member of and the connected club', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
               post '/api/slack/command',
                    command: '/slava',
@@ -237,6 +261,7 @@ describe Api::Endpoints::SlackEndpoint do
               expect(response['attachments'][1]['title']).to eq club.name
             end
           end
+
           context 'leaderboard' do
             it 'returns team leaderboard' do
               post '/api/slack/command',
@@ -256,6 +281,7 @@ describe Api::Endpoints::SlackEndpoint do
               )
             end
           end
+
           context 'leaderboard with an arg' do
             it 'returns team leaderboard' do
               post '/api/slack/command',
@@ -276,11 +302,14 @@ describe Api::Endpoints::SlackEndpoint do
             end
           end
         end
+
         context 'out of channel' do
           before do
             allow_any_instance_of(Team).to receive(:bot_in_channel?).and_return(false)
           end
+
           let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
+
           it 'requires the bot to be a member' do
             post '/api/slack/command',
                  command: '/slava',
@@ -294,6 +323,7 @@ describe Api::Endpoints::SlackEndpoint do
             expect(response['text']).to eq 'Please invite <@slava> to this channel before connecting a club.'
           end
         end
+
         context 'DMs' do
           it 'says no clubs are connected in a DM' do
             post '/api/slack/command',
@@ -313,8 +343,10 @@ describe Api::Endpoints::SlackEndpoint do
               'user' => user.user_id
             )
           end
+
           context 'with a connected club' do
             let!(:club) { Fabricate(:club, team: team) }
+
             it 'lists connected clubs in a DM' do
               post '/api/slack/command',
                    command: '/slava',
@@ -341,6 +373,7 @@ describe Api::Endpoints::SlackEndpoint do
           end
         end
       end
+
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/command',
              command: '/slava',
@@ -354,6 +387,7 @@ describe Api::Endpoints::SlackEndpoint do
         response = JSON.parse(last_response.body)
         expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
+
       it 'provides a connect link' do
         post '/api/slack/command',
              command: '/slava',
@@ -379,6 +413,7 @@ describe Api::Endpoints::SlackEndpoint do
           channel: 'channel'
         }.to_json)
       end
+
       it 'attempts to disconnect' do
         post '/api/slack/command',
              command: '/slava',
@@ -396,8 +431,10 @@ describe Api::Endpoints::SlackEndpoint do
         }.to_json)
       end
     end
+
     context 'slack events' do
       let(:user) { Fabricate(:user, team: team) }
+
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/event',
              type: 'url_verification',
@@ -407,6 +444,7 @@ describe Api::Endpoints::SlackEndpoint do
         response = JSON.parse(last_response.body)
         expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
+
       it 'performs event challenge' do
         post '/api/slack/event',
              type: 'url_verification',
@@ -416,11 +454,14 @@ describe Api::Endpoints::SlackEndpoint do
         response = JSON.parse(last_response.body)
         expect(response).to eq('challenge' => 'challenge')
       end
+
       context 'with an activity' do
         let(:activity) { Fabricate(:user_activity, user: user) }
+
         before do
           allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
         end
+
         it 'unfurls a strava URL' do
           expect_any_instance_of(User).to receive(:sync_strava_activity!)
             .with(activity.strava_id)
@@ -454,25 +495,27 @@ describe Api::Endpoints::SlackEndpoint do
                authed_users: ['U04KB5WQR']
           expect(last_response.status).to eq 201
 
-          expect(activity.reload.bragged_at).to_not be nil
+          expect(activity.reload.bragged_at).not_to be_nil
         end
       end
     end
-    after do
-      ENV.delete('SLACK_VERIFICATION_TOKEN')
-    end
   end
+
   context 'with a dev slack verification token' do
     let(:token) { 'slack-verification-token' }
     let(:team) { Fabricate(:team) }
+
     before do
       ENV['SLACK_VERIFICATION_TOKEN_DEV'] = token
     end
+
     after do
       ENV.delete('SLACK_VERIFICATION_TOKEN_DEV')
     end
+
     context 'slack events' do
       let(:user) { Fabricate(:user, team: team) }
+
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/event',
              type: 'url_verification',
@@ -482,6 +525,7 @@ describe Api::Endpoints::SlackEndpoint do
         response = JSON.parse(last_response.body)
         expect(response['error']).to eq 'Message token is not coming from Slack.'
       end
+
       it 'performs event challenge' do
         post '/api/slack/event',
              type: 'url_verification',

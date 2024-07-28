@@ -4,74 +4,96 @@ describe UserActivity do
   before do
     allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
   end
+
   context 'hidden?' do
     context 'default' do
       let(:activity) { Fabricate(:user_activity) }
+
       it 'is not hidden' do
         expect(activity.hidden?).to be false
       end
     end
+
     context 'private' do
       context 'private and user is private' do
         let(:user) { Fabricate(:user, private_activities: false) }
         let(:activity) { Fabricate(:user_activity, user: user, private: true) }
+
         it 'is hidden' do
           expect(activity.hidden?).to be true
         end
       end
+
       context 'private but user is public' do
         let(:user) { Fabricate(:user, private_activities: true) }
         let(:activity) { Fabricate(:user_activity, user: user, private: true) }
+
         it 'is not hidden' do
           expect(activity.hidden?).to be false
         end
       end
+
       context 'public but user is private' do
         let(:user) { Fabricate(:user, private_activities: false) }
         let(:activity) { Fabricate(:user_activity, user: user, private: false) }
+
         it 'is hidden' do
           expect(activity.hidden?).to be false
         end
       end
     end
+
     context 'visibility' do
       context 'user has not set followers_only_activities' do
         let(:user) { Fabricate(:user, followers_only_activities: false) }
+
         context 'only_me' do
           let(:activity) { Fabricate(:user_activity, user: user, visibility: 'only_me') }
+
           it 'is hidden' do
             expect(activity.hidden?).to be true
           end
         end
+
         context 'followers_only' do
           let(:activity) { Fabricate(:user_activity, user: user, visibility: 'followers_only') }
+
           it 'is hidden' do
             expect(activity.hidden?).to be true
           end
         end
+
         context 'everyone' do
           let(:activity) { Fabricate(:user_activity, user: user, visibility: 'everyone') }
+
           it 'is not hidden' do
             expect(activity.hidden?).to be false
           end
         end
       end
+
       context 'user has set followers_only_activities' do
         let(:user) { Fabricate(:user, followers_only_activities: true) }
+
         context 'only_me' do
           let(:activity) { Fabricate(:user_activity, user: user, visibility: 'only_me') }
+
           it 'is hidden' do
             expect(activity.hidden?).to be true
           end
         end
+
         context 'followers_only' do
           let(:activity) { Fabricate(:user_activity, user: user, visibility: 'followers_only') }
+
           it 'is not hidden' do
             expect(activity.hidden?).to be false
           end
         end
+
         context 'everyone' do
           let(:activity) { Fabricate(:user_activity, user: user, visibility: 'everyone') }
+
           it 'is not hidden' do
             expect(activity.hidden?).to be false
           end
@@ -79,16 +101,19 @@ describe UserActivity do
       end
     end
   end
+
   context 'brag!' do
     let(:team) { Fabricate(:team) }
     let(:user) { Fabricate(:user, team: team) }
     let!(:activity) { Fabricate(:user_activity, user: user) }
+
     before do
       allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
       allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
       allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
       allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1503435956.000247')
     end
+
     it 'sends a message to the subscribed channel' do
       expect(user.team.slack_client).to receive(:chat_postMessage).with(
         activity.to_slack.merge(
@@ -98,6 +123,7 @@ describe UserActivity do
       ).and_return('ts' => 1)
       expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
     end
+
     it 'warns if the bot leaves the channel' do
       expect {
         expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)
@@ -105,8 +131,9 @@ describe UserActivity do
           raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
         }
         expect(activity.brag!).to eq []
-      }.to_not change(User, :count)
+      }.not_to change(User, :count)
     end
+
     it 'warns if the account goes inactive' do
       expect {
         expect {
@@ -115,9 +142,10 @@ describe UserActivity do
             raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
           }
           expect(activity.brag!).to eq []
-        }.to_not change(User, :count)
-      }.to_not change(UserActivity, :count)
+        }.not_to change(User, :count)
+      }.not_to change(UserActivity, :count)
     end
+
     it 'informs user on restricted_action' do
       expect {
         expect(user).to receive(:dm!).with(text: "I wasn't allowed to post into <#channel_id> because of a Slack workspace preference, please contact your Slack admin.")
@@ -126,13 +154,15 @@ describe UserActivity do
           raise Slack::Web::Api::Errors::SlackError, 'restricted_action'
         }
         expect(activity.brag!).to eq []
-      }.to_not change(User, :count)
+      }.not_to change(User, :count)
     end
   end
+
   context 'unbrag!' do
     let(:team) { Fabricate(:team) }
     let(:user) { Fabricate(:user, team: team) }
     let!(:activity) { Fabricate(:user_activity, user: user) }
+
     before do
       activity.update_attributes!(
         bragged_at: Time.now.utc,
@@ -142,6 +172,7 @@ describe UserActivity do
         ]
       )
     end
+
     it 'deletes message' do
       expect(activity.user.team.slack_client).to receive(:chat_delete).with(
         channel: 'channel1',
@@ -157,10 +188,12 @@ describe UserActivity do
       expect(activity.reload.channel_messages).to eq []
     end
   end
+
   context 'miles' do
     let(:team) { Fabricate(:team, units: 'mi') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:user_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -187,10 +220,12 @@ describe UserActivity do
         ]
       )
     end
+
     context 'with all fields' do
       before do
         team.activity_fields = ['All']
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -223,10 +258,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'with none fields' do
       before do
         team.activity_fields = ['None']
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -244,10 +281,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'with all header fields' do
       before do
         team.activity_fields = %w[Title Url User Description Date Athlete]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -265,10 +304,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without athlete' do
       before do
         team.activity_fields = %w[Title Url User Description Date]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -283,10 +324,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without user' do
       before do
         team.activity_fields = %w[Title Url Description Date]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -301,10 +344,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without description' do
       before do
         team.activity_fields = %w[Title Url User Date]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -319,10 +364,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without date' do
       before do
         team.activity_fields = %w[Title Url Description]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -337,10 +384,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without url' do
       before do
         team.activity_fields = %w[Title]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -353,10 +402,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without title' do
       before do
         team.activity_fields = %w[Url]
       end
+
       it 'to_slack' do
         expect(activity.to_slack).to eq(
           attachments: [
@@ -370,10 +421,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'without an athlete' do
       before do
         user.athlete.destroy
       end
+
       it 'to_slack' do
         expect(activity.reload.to_slack).to eq(
           attachments: [
@@ -398,10 +451,12 @@ describe UserActivity do
         )
       end
     end
+
     context 'with a zero speed' do
       before do
         activity.update_attributes!(average_speed: 0.0)
       end
+
       it 'to_slack' do
         expect(activity.reload.to_slack).to eq(
           attachments: [
@@ -428,10 +483,12 @@ describe UserActivity do
       end
     end
   end
+
   context 'km' do
     let(:team) { Fabricate(:team, units: 'km') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:user_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -459,10 +516,12 @@ describe UserActivity do
       )
     end
   end
+
   context 'both' do
     let(:team) { Fabricate(:team, units: 'both') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:user_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -490,10 +549,12 @@ describe UserActivity do
       )
     end
   end
+
   context 'swim activity in yards' do
     let(:team) { Fabricate(:team) }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:swim_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -517,10 +578,12 @@ describe UserActivity do
       )
     end
   end
+
   context 'swim activity in meters' do
     let(:team) { Fabricate(:team, units: 'km') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:swim_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -544,10 +607,12 @@ describe UserActivity do
       )
     end
   end
+
   context 'swim activity in both' do
     let(:team) { Fabricate(:team, units: 'both') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:swim_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -571,10 +636,12 @@ describe UserActivity do
       )
     end
   end
+
   context 'ride activities in kilometers/hour' do
     let(:team) { Fabricate(:team, units: 'km') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:ride_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -599,10 +666,12 @@ describe UserActivity do
       )
     end
   end
+
   context 'ride activities in both' do
     let(:team) { Fabricate(:team, units: 'both') }
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:ride_activity, user: user) }
+
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [
@@ -627,43 +696,52 @@ describe UserActivity do
       )
     end
   end
+
   context 'map' do
     context 'with a summary polyline' do
       let(:activity) { Fabricate(:user_activity) }
+
       it 'start_latlng' do
         expect(activity.start_latlng).to eq([37.82822, -122.26348])
       end
     end
+
     context 'with a blank summary polyline' do
       let(:map) { Fabricate.build(:map, summary_polyline: '') }
       let(:activity) { Fabricate(:user_activity, map: map) }
+
       it 'start_latlng' do
-        expect(activity.start_latlng).to be nil
+        expect(activity.start_latlng).to be_nil
       end
     end
   end
+
   context 'maps' do
     context 'without maps' do
       let(:team) { Fabricate(:team, maps: 'off') }
       let(:user) { Fabricate(:user, team: team) }
       let(:activity) { Fabricate(:user_activity, user: user) }
       let(:attachment) { activity.to_slack[:attachments].first }
+
       it 'to_slack' do
-        expect(attachment.keys).to_not include :image_url
-        expect(attachment.keys).to_not include :thumb_url
+        expect(attachment.keys).not_to include :image_url
+        expect(attachment.keys).not_to include :thumb_url
       end
     end
+
     context 'with thumbnail' do
       let(:team) { Fabricate(:team, maps: 'thumb') }
       let(:user) { Fabricate(:user, team: team) }
       let(:activity) { Fabricate(:user_activity, user: user) }
       let(:attachment) { activity.to_slack[:attachments].first }
+
       it 'to_slack' do
-        expect(attachment.keys).to_not include :image_url
+        expect(attachment.keys).not_to include :image_url
         expect(attachment[:thumb_url]).to eq "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
       end
     end
   end
+
   describe 'create_from_strava!' do
     let(:user) { Fabricate(:user) }
     let(:detailed_activity) do
@@ -675,13 +753,16 @@ describe UserActivity do
         )
       )
     end
+
     it 'creates an activity' do
       expect {
         UserActivity.create_from_strava!(user, detailed_activity)
       }.to change(UserActivity, :count).by(1)
     end
+
     context 'with another existing activity' do
       let!(:activity) { Fabricate(:user_activity, user: user) }
+
       it 'creates another activity' do
         expect {
           UserActivity.create_from_strava!(user, detailed_activity)
@@ -689,22 +770,27 @@ describe UserActivity do
         expect(user.reload.activities.count).to eq 2
       end
     end
+
     context 'with an existing activity' do
       let!(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+
       it 'does not create another activity' do
         expect {
           UserActivity.create_from_strava!(user, detailed_activity)
-        }.to_not change(UserActivity, :count)
+        }.not_to change(UserActivity, :count)
       end
+
       it 'does not cause a save without changes' do
-        expect_any_instance_of(UserActivity).to_not receive(:save!)
+        expect_any_instance_of(UserActivity).not_to receive(:save!)
         UserActivity.create_from_strava!(user, detailed_activity)
       end
+
       it 'updates an existing activity' do
         activity.update_attributes!(name: 'Original')
         UserActivity.create_from_strava!(user, detailed_activity)
         expect(activity.reload.name).to eq 'First Time Breaking 14'
       end
+
       context 'concurrently' do
         before do
           expect(UserActivity).to receive(:where).with(
@@ -712,12 +798,13 @@ describe UserActivity do
           ).and_return([])
           allow(UserActivity).to receive(:where).and_call_original
         end
+
         it 'does not create a duplicate activity' do
           expect {
             expect {
               UserActivity.create_from_strava!(user, detailed_activity)
             }.to raise_error(Mongo::Error::OperationFailure)
-          }.to_not change(UserActivity, :count)
+          }.not_to change(UserActivity, :count)
         end
       end
     end

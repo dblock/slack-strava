@@ -18,15 +18,17 @@ describe Api::Endpoints::StatusEndpoint do
 
     context 'with an inactive team' do
       let!(:team) { Fabricate(:team, active: false) }
+
       it 'returns a status with ping' do
         status = client.status
         expect(status.teams_count).to eq 1
-        expect(status).to_not respond_to(:ping)
+        expect(status).not_to respond_to(:ping)
       end
     end
 
     context 'with an active team' do
       let!(:team) { Fabricate(:team) }
+
       it 'returns a status with ping' do
         status = client.status
         expect(status.teams_count).to eq 1
@@ -39,16 +41,20 @@ describe Api::Endpoints::StatusEndpoint do
       let!(:team) { Fabricate(:team) }
       let!(:user) { Fabricate(:user, team: team) }
       let!(:connected_user) { Fabricate(:user, team: team, access_token: 'xyz') }
+
       before do
         allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
       end
+
       it 'returns a status with distance and users' do
         status = client.status
         expect(status.connected_users_count).to eq 1
       end
+
       context 'with activities' do
         let!(:activity1) { Fabricate(:user_activity, user: connected_user, distance: 12_345_678_100) }
         let!(:activity2) { Fabricate(:user_activity, user: connected_user, distance: 54_321_678_100) }
+
         it 'returns a status with distance and users' do
           status = client.status
           expect(status.total_distance_in_miles_s).to eq '41425095.12 miles'

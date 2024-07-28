@@ -377,7 +377,7 @@ class Team
     <<~EOS
       Welcome to Slava!
       Invite #{bot_mention} to a channel to publish activities to it.
-      Type \"*connect*\" to connect your Strava account."
+      Type "*connect*" to connect your Strava account."
     EOS
   end
 
