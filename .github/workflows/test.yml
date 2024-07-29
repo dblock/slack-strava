@@ -24,8 +24,8 @@ jobs:
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.7.0
         with:
-          mongodb-version: "5"
-          mongodb-db: slack_arena_test
+          mongodb-version: "7"
+          mongodb-db: slack_strava_test
       - name: Run tests
         uses: GabrielBB/xvfb-action@v1
         with:
