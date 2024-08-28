@@ -61,7 +61,7 @@ class TeamLeaderboard
   end
 
   def aggreate_options
-    aggreate_options = { team_id: team.id }
+    aggreate_options = { team_id: team.id, _type: 'UserActivity' }
     aggreate_options.merge!('channel_messages.channel' => channel_id) if channel_id
     aggreate_options
   end

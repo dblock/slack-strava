@@ -53,6 +53,7 @@ describe TeamLeaderboard do
     let!(:user1_swim_activity_2) { Fabricate(:swim_activity, user: user1, team: team) }
     let!(:user2_activity_1) { Fabricate(:user_activity, user: user2, team: team) }
     let!(:another_activity) { Fabricate(:user_activity, user: Fabricate(:user, team: Fabricate(:team))) }
+    let!(:club_activity) { Fabricate(:club_activity, team: team) }
 
     TeamLeaderboard::MEASURABLE_VALUES.each do |metric|
       context metric do
