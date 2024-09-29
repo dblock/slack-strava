@@ -71,7 +71,7 @@ class Activity
       average_heartrate: response.average_heartrate,
       max_heartrate: response.max_heartrate,
       pr_count: response.pr_count,
-      type: response.type,
+      type: response.sport_type,
       total_elevation_gain: response.total_elevation_gain,
       private: response.private,
       visibility: response.visibility,

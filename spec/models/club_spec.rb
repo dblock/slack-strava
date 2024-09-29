@@ -10,7 +10,7 @@ describe Club do
         club.sync_last_strava_activity!
       }.to change(club.activities, :count).by(1)
       activity = club.activities.last
-      expect(activity.strava_id).to eq 'b1cbe401792d703084b56eb0bb9ac455'
+      expect(activity.strava_id).to eq '777e317fcba7e7c78d6ad584fd7219d8'
       expect(activity.name).to eq 'Hard as fuck run home — tired + lots of aches '
     end
 
@@ -28,14 +28,14 @@ describe Club do
 
     it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
       # first activity from the cassette
-      club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+      club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
       expect {
         club.sync_new_strava_activities!
       }.to change(club.activities, :count).by(7)
     end
 
     it 'updates the existing duplicate', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
-      activity = club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+      activity = club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
       tt = activity.reload.updated_at.utc
       Timecop.travel(Time.now + 1.hour)
       club.sync_new_strava_activities!
@@ -78,8 +78,8 @@ describe Club do
 
       it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
         # first activity from the cassette
-        club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
-        club2.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
+        club2.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
         expect {
           club.sync_new_strava_activities!
         }.to change(club.activities, :count).by(7)
@@ -89,9 +89,9 @@ describe Club do
       end
 
       it 'updates the existing duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
-        activity = club.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        activity = club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
         tt = activity.reload.updated_at.utc
-        activity2 = club2.activities.create!(team: club.team, strava_id: 'b1cbe401792d703084b56eb0bb9ac455')
+        activity2 = club2.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
         tt2 = activity.reload.updated_at.utc
         Timecop.travel(Time.now + 1.hour)
         club.sync_new_strava_activities!
