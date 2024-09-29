@@ -34,6 +34,15 @@ Lint/RaiseException:
 Lint/StructNewOverride:
   Enabled: true
 
+Style/HashSyntax:
+  Enabled: false
+
+Style/ArgumentsForwarding:
+  Enabled: false
+
+Naming/BlockForwarding:
+  Enabled: false
+
 inherit_from: .rubocop_todo.yml
 
 require:

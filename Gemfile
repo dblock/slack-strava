@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-ruby '2.7.7'
+ruby '3.3.3'
 
 gem 'grape'
 gem 'hashie'
@@ -19,7 +19,7 @@ gem 'rack', '~> 3.0.0'
 gem 'rack-robotz'
 gem 'rack-server-pages'
 gem 'ruby-enum'
-gem 'slack-ruby-bot-server'
+gem 'slack-ruby-bot-server', '~> 0.12'
 gem 'slack-ruby-bot-server-mailchimp'
 gem 'slack-ruby-client'
 gem 'strava-ruby-client'
