@@ -165,7 +165,7 @@ GEM
     nokogiri (1.16.7)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    open-weather-ruby-client (0.5.0)
+    open-weather-ruby-client (0.4.0)
       activesupport
       faraday (>= 2.0.1)
       faraday-multipart
@@ -337,7 +337,7 @@ DEPENDENCIES
   newrelic-slack-ruby-bot
   newrelic_rpm
   nokogiri
-  open-weather-ruby-client
+  open-weather-ruby-client (= 0.4.0)
   polylines
   puma
   rack (~> 3.0.0)
