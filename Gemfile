@@ -2,6 +2,9 @@ source 'http://rubygems.org'
 
 ruby '3.3.3'
 
+gem 'base64'
+gem 'bigdecimal'
+gem 'csv'
 gem 'grape'
 gem 'hashie'
 gem 'httparty'

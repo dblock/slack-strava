@@ -39,6 +39,7 @@ GEM
     crack (1.0.0)
       bigdecimal
       rexml
+    csv (3.3.0)
     dante (0.2.0)
     database_cleaner (1.8.5)
     declarative (0.0.20)
@@ -319,7 +320,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  base64
+  bigdecimal
   capybara
+  csv
   database_cleaner
   fabrication
   faker
