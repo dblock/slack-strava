@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2024/10/05: Upgraded to open-weather-ruby-client 0.5.0, using OneCall API 3.0 - [@dblock](https://github.com/dblock).
 * 2024/09/29: Upgraded to Ruby 3.3.3 - [@dblock](https://github.com/dblock).
 * 2024/07/28: Fixed syncing activities that are created out of order - [@dblock](https://github.com/dblock).
 * 2024/07/21: Remove deleted activities from Slack - [@dblock](https://github.com/dblock).
