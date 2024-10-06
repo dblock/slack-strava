@@ -156,30 +156,52 @@ describe User do
         before do
           # end of first activity in user_sync_new_strava_activities.yml, with two more a few days ago
           Timecop.travel(activities[:april_04][:dt] + 4.hours)
-          # april 04: recent under 9 hours
-          allow_any_instance_of(OpenWeather::Client).to receive(:one_call).with(
-            exclude: %w[minutely hourly daily], lat: activities[:april_04][:lat], lon: activities[:april_04][:lon]
-          ).and_return(weather)
-          # march 28, historical data within 5 days
-          allow_any_instance_of(OpenWeather::Client).to receive(:one_call).with(
-            activities[:march_28].merge(exclude: ['hourly'])
-          ).and_return(weather)
-          # march 26, more than 5 days old, too old
         end
 
         after do
           Timecop.return
         end
 
-        it 'fetches weather for all activities' do
-          expect {
-            user.sync_new_strava_activities!
-          }.to change(user.activities, :count).by(3)
-          expect(user.activities[0].weather).to be_nil
-          expect(user.activities[1].weather).not_to be_nil
-          expect(user.activities[1].weather.temp).to eq 294.31
-          expect(user.activities[2].weather).not_to be_nil
-          expect(user.activities[2].weather.temp).to eq 294.31
+        context 'with weather' do
+          before do
+            # april 04: recent under 9 hours
+            allow_any_instance_of(OpenWeather::Client).to receive(:one_call).with(
+              exclude: %w[minutely hourly daily], lat: activities[:april_04][:lat], lon: activities[:april_04][:lon]
+            ).and_return(weather)
+            # march 28, historical data within 5 days
+            allow_any_instance_of(OpenWeather::Client).to receive(:one_call).with(
+              activities[:march_28].merge(exclude: ['hourly'])
+            ).and_return(weather)
+            # march 26, more than 5 days old, too old
+          end
+
+          it 'fetches weather for all activities' do
+            expect {
+              user.sync_new_strava_activities!
+            }.to change(user.activities, :count).by(3)
+            expect(user.activities[0].weather).to be_nil
+            expect(user.activities[1].weather).not_to be_nil
+            expect(user.activities[1].weather.temp).to eq 294.31
+            expect(user.activities[2].weather).not_to be_nil
+            expect(user.activities[2].weather.temp).to eq 294.31
+          end
+        end
+
+        context 'without weather' do
+          before do
+            weather = double(OpenWeather::Models::OneCall::Weather)
+            allow(weather).to receive(:current).and_return(nil)
+            allow_any_instance_of(OpenWeather::Client).to receive(:one_call).and_return(weather)
+          end
+
+          it 'does not fail' do
+            expect {
+              user.sync_new_strava_activities!
+            }.to change(user.activities, :count).by(3)
+            expect(user.activities[0].weather).to be_nil
+            expect(user.activities[1].weather).to be_nil
+            expect(user.activities[2].weather).to be_nil
+          end
         end
       end
 
