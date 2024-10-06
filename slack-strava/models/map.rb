@@ -53,7 +53,10 @@ class Map
   end
 
   def to_s
-    "proxy=#{proxy_image_url}, png=#{png_size} byte(s)"
+    [
+      "proxy=#{proxy_image_url}",
+      png ? "png=#{png_size} byte(s)" : nil
+    ].compact.join(', ')
   end
 
   def delete_png!
