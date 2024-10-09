@@ -1,6 +1,7 @@
 class UserActivity < Activity
   field :start_date, type: DateTime
   field :start_date_local, type: DateTime
+  field :start_date_local_utc_offset, type: Integer
 
   belongs_to :user, inverse_of: :activities
   embeds_one :map
@@ -17,10 +18,14 @@ class UserActivity < Activity
       (visibility == 'followers_only' && !user.followers_only_activities?)
   end
 
+  def start_date_local_in_local_time
+    start_date_local_utc_offset ? start_date_local.getlocal(start_date_local_utc_offset) : start_date_local
+  end
+
   def start_date_local_s
     return unless start_date_local
 
-    start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')
+    start_date_local_in_local_time.strftime('%A, %B %d, %Y at %I:%M %p')
   end
 
   def brag!
@@ -68,7 +73,8 @@ class UserActivity < Activity
   def attrs_from_strava(response)
     Activity.attrs_from_strava(response).merge(
       start_date: response.start_date,
-      start_date_local: response.start_date_local
+      start_date_local: response.start_date_local,
+      start_date_local_utc_offset: response.start_date_local.utc_offset
     )
   end
 

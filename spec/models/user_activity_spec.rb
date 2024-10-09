@@ -760,6 +760,26 @@ describe UserActivity do
       }.to change(UserActivity, :count).by(1)
     end
 
+    context 'created activity' do
+      let(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+      let(:formatted_time) { 'Wednesday, March 28, 2018 at 07:51 PM' }
+
+      it 'has the correct time zone data' do
+        expect(detailed_activity.start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')).to eq formatted_time
+        expect(detailed_activity.start_date_local.utc_offset).to eq(-14_400)
+      end
+
+      it 'stores the correct time zone' do
+        expect(activity.start_date_local_in_local_time.utc_offset).to eq(-14_400)
+        expect(activity.start_date_local_s).to eq formatted_time
+      end
+
+      it 'preserves the correct time zone across reloads' do
+        expect(activity.reload.start_date_local_s).to eq formatted_time
+        expect(activity.start_date_local_in_local_time.utc_offset).to eq(-14_400)
+      end
+    end
+
     context 'with another existing activity' do
       let!(:activity) { Fabricate(:user_activity, user: user) }
 
