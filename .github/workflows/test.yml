@@ -19,7 +19,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.3.3"
+          ruby-version: "3.3.5"
           bundler-cache: true
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.7.0
