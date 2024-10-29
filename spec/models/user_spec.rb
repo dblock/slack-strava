@@ -138,7 +138,7 @@ describe User do
         let!(:activity) { Fabricate(:user_activity, user: user, start_date: DateTime.new(2018, 4, 1)) }
 
         it 'syncs activities since the first one' do
-          expect(user).to receive(:sync_strava_activities!).with(after: activity.start_date.to_i)
+          expect(user).to receive(:sync_strava_activities!).with({ after: activity.start_date.to_i })
           user.sync_new_strava_activities!
         end
       end
@@ -219,7 +219,7 @@ describe User do
             [{ ts: '1503425956.000247', channel: 'channel' }]
           end
           user.sync_and_brag!
-          expect(user_instance_2).to receive(:sync_strava_activities!).with(after: 1_522_072_635)
+          expect(user_instance_2).to receive(:sync_strava_activities!).with({ after: 1_522_072_635 })
           user_instance_2.sync_and_brag!
           expect(bragged_activities).to eq(['Restarting the Engine', 'First Time Breaking 14'])
         end
@@ -305,7 +305,7 @@ describe User do
         end
 
         it 'updates activities since activities_at' do
-          expect(user).to receive(:sync_strava_activities!).with(after: user.activities_at.to_i)
+          expect(user).to receive(:sync_strava_activities!).with({ after: user.activities_at.to_i })
           user.sync_new_strava_activities!
         end
 
@@ -504,9 +504,11 @@ describe User do
 
     it 'sends message to all channels a user is a member of', vcr: { cassette_name: 'slack/users_conversations_conversations_members' } do
       expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
-        message: 'message',
-        channel: 'C0HNSS6H5',
-        as_user: true
+        {
+          message: 'message',
+          channel: 'C0HNSS6H5',
+          as_user: true
+        }
       ).and_return(ts: '1503425956.000247')
       expect(user.inform!(message: 'message').count).to eq(1)
     end
@@ -528,30 +530,34 @@ describe User do
 
     it 'uses the default message' do
       expect(user).to receive(:dm!).with(
-        text: 'Please connect your Strava account.',
-        attachments: [{
-          fallback: "Please connect your Strava account at #{url}.",
-          actions: [{
-            type: 'button',
-            text: 'Click Here',
-            url: url
+        {
+          text: 'Please connect your Strava account.',
+          attachments: [{
+            fallback: "Please connect your Strava account at #{url}.",
+            actions: [{
+              type: 'button',
+              text: 'Click Here',
+              url: url
+            }]
           }]
-        }]
+        }
       )
       user.dm_connect!
     end
 
     it 'uses a custom message' do
       expect(user).to receive(:dm!).with(
-        text: 'Please reconnect your account.',
-        attachments: [{
-          fallback: "Please reconnect your account at #{url}.",
-          actions: [{
-            type: 'button',
-            text: 'Click Here',
-            url: url
+        {
+          text: 'Please reconnect your account.',
+          attachments: [{
+            fallback: "Please reconnect your account at #{url}.",
+            actions: [{
+              type: 'button',
+              text: 'Click Here',
+              url: url
+            }]
           }]
-        }]
+        }
       )
       user.dm_connect!('Please reconnect your account')
     end

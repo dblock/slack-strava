@@ -118,7 +118,7 @@ class Activity
 
   def reset_bragged_at(dt = 48.hours)
     return unless bragged_at
-    return unless private_changed? || visibility_changed?
+    return unless private_changed? || visibility_changed? || saved_change_to_private? || saved_change_to_visibility?
     return if channel_messages.any?
     return if bragged_at < Time.now.utc - dt
 

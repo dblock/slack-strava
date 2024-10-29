@@ -22,8 +22,8 @@ gem 'rack', '~> 3.0.0'
 gem 'rack-robotz'
 gem 'rack-server-pages'
 gem 'ruby-enum'
-gem 'slack-ruby-bot-server', '~> 0.12'
 gem 'slack-ruby-bot-server-mailchimp'
+gem 'slack-ruby-bot-server-rtm'
 gem 'slack-ruby-client', '~> 2.4.0'
 gem 'strava-ruby-client'
 gem 'stripe', '~> 1.58.0'
@@ -44,7 +44,7 @@ end
 
 group :test do
   gem 'capybara'
-  gem 'database_cleaner'
+  gem 'database_cleaner-mongoid'
   gem 'fabrication'
   gem 'faker'
   gem 'faraday-rack'

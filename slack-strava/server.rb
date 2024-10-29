@@ -1,5 +1,5 @@
 module SlackStrava
-  class Server < SlackRubyBotServer::Server
+  class Server < SlackRubyBotServer::RealTime::Server
     on :channel_joined do |client, data|
       message = "Welcome to Slava! Please DM \"*connect*\" to <@#{client.self.id}> to publish your activities in this channel."
       logger.info "#{client.owner.name}: joined ##{data.channel['name']}."

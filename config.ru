@@ -8,7 +8,7 @@ Bundler.require :default, ENV.fetch('RACK_ENV', nil)
 require 'slack-ruby-bot-server'
 require 'slack-strava'
 
-SlackRubyBotServer.configure do |config|
+SlackRubyBotServer::RealTime.configure do |config|
   config.server_class = SlackStrava::Server
 end
 

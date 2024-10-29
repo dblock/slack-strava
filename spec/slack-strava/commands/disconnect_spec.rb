@@ -19,7 +19,7 @@ describe SlackStrava::Commands::Disconnect do
 
         it 'disconnects a user' do
           expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
-          expect(user).to receive(:dm!).with(text: 'Your Strava account has been successfully disconnected.')
+          expect(user).to receive(:dm!).with({ text: 'Your Strava account has been successfully disconnected.' })
           expect(user).to receive(:refresh_access_token!)
           expect(user.strava_client).to receive(:deauthorize).and_return(Hashie::Mash.new(access_token: 'token'))
           message_hook.call(client, Hashie::Mash.new(channel: 'channel', user: SlackRubyBot.config.user, text: "#{SlackRubyBot.config.user} disconnect"))
@@ -35,7 +35,7 @@ describe SlackStrava::Commands::Disconnect do
 
         it 'fails to disconnect a user' do
           expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
-          expect(user).to receive(:dm!).with(text: 'Your Strava account is not connected.')
+          expect(user).to receive(:dm!).with({ text: 'Your Strava account is not connected.' })
           message_hook.call(client, Hashie::Mash.new(channel: 'channel', user: SlackRubyBot.config.user, text: "#{SlackRubyBot.config.user} disconnect"))
         end
       end

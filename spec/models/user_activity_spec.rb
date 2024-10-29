@@ -175,14 +175,18 @@ describe UserActivity do
 
     it 'deletes message' do
       expect(activity.user.team.slack_client).to receive(:chat_delete).with(
-        channel: 'channel1',
-        ts: 'ts',
-        as_user: true
+        {
+          channel: 'channel1',
+          ts: 'ts',
+          as_user: true
+        }
       )
       expect(activity.user.team.slack_client).to receive(:chat_delete).with(
-        channel: 'channel2',
-        ts: 'ts',
-        as_user: true
+        {
+          channel: 'channel2',
+          ts: 'ts',
+          as_user: true
+        }
       )
       activity.unbrag!
       expect(activity.reload.channel_messages).to eq []

@@ -364,7 +364,7 @@ class Team
   end
 
   def subscribed!
-    return unless subscribed? && subscribed_changed?
+    return unless subscribed? && (subscribed_changed? || saved_change_to_subscribed?)
 
     inform_everyone!(text: subscribed_text)
   end
@@ -383,7 +383,7 @@ class Team
 
   def activated!
     return unless active? && activated_user_id && bot_user_id
-    return unless active_changed? || activated_user_id_changed?
+    return unless active_changed? || activated_user_id_changed? || saved_change_to_active? || saved_change_to_activated_user_id?
 
     inform_activated!
   end
@@ -398,7 +398,7 @@ class Team
   end
 
   def update_subscribed_at
-    return unless subscribed? && subscribed_changed?
+    return unless subscribed? && (subscribed_changed? || saved_change_to_subscribed?)
 
     self.subscribed_at = subscribed? ? DateTime.now.utc : nil
   end

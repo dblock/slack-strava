@@ -19,15 +19,17 @@ describe SlackStrava::Commands::Connect do
       it 'connects a user', vcr: { cassette_name: 'slack/user_info' } do
         expect(User).to receive(:find_create_or_update_by_slack_id!).and_return(user)
         expect(user).to receive(:dm!).with(
-          text: 'Please connect your Strava account.',
-          attachments: [{
-            fallback: "Please connect your Strava account at #{url}.",
-            actions: [{
-              type: 'button',
-              text: 'Click Here',
-              url: url
+          {
+            text: 'Please connect your Strava account.',
+            attachments: [{
+              fallback: "Please connect your Strava account at #{url}.",
+              actions: [{
+                type: 'button',
+                text: 'Click Here',
+                url: url
+              }]
             }]
-          }]
+          }
         )
         message_hook.call(client, Hashie::Mash.new(channel: 'channel', user: SlackRubyBot.config.user, text: "#{SlackRubyBot.config.user} connect"))
       end

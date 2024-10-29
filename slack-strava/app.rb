@@ -216,7 +216,7 @@ module SlackStrava
         team = Team.where(stripe_customer_id: subscription.customer).first
         team ||= Team.where(team_id: metadata.team_id).first
 
-        next if team&.subscribed? && team&.active?
+        next if team&.subscribed? && team.active?
 
         if team
           if team.active?

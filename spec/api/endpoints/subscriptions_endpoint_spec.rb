@@ -40,9 +40,11 @@ describe Api::Endpoints::SubscriptionsEndpoint do
 
       context 'with an active subscription' do
         before do
-          allow(stripe_customer).to receive(:subscriptions).and_return([
-                                                                         double(Stripe::Subscription)
-                                                                       ])
+          allow(stripe_customer).to receive(:subscriptions).and_return(
+            [
+              double(Stripe::Subscription)
+            ]
+          )
         end
 
         it 'fails to create a subscription' do
@@ -101,14 +103,16 @@ describe Api::Endpoints::SubscriptionsEndpoint do
 
       it 'creates a subscription' do
         expect(Stripe::Customer).to receive(:create).with(
-          source: 'token',
-          plan: 'slava-yearly',
-          email: 'foo@bar.com',
-          metadata: {
-            id: team._id,
-            team_id: team.team_id,
-            name: team.name,
-            domain: team.domain
+          {
+            source: 'token',
+            plan: 'slava-yearly',
+            email: 'foo@bar.com',
+            metadata: {
+              id: team._id,
+              team_id: team.team_id,
+              name: team.name,
+              domain: team.domain
+            }
           }
         ).and_return('id' => 'customer_id')
         expect_any_instance_of(Team).to receive(:inform!).once

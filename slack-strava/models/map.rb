@@ -66,7 +66,7 @@ class Map
   private
 
   def update_decoded_summary_polyline
-    unless summary_polyline && (summary_polyline_changed? || decoded_summary_polyline.nil?)
+    unless summary_polyline && (summary_polyline_changed? || saved_change_to_summary_polyline? || decoded_summary_polyline.nil?)
       return
     end
 
@@ -88,8 +88,8 @@ class Map
   end
 
   def update_png
-    return if png_changed?
-    return unless summary_polyline_changed? || png.nil?
+    return if png_changed? || saved_change_to_png?
+    return unless summary_polyline_changed? || saved_change_to_summary_polyline? || png.nil?
     return unless user_activity.user.team.proxy_maps
 
     update_png!
