@@ -45,13 +45,14 @@
             team_id: "<%= team ? team.id : nil %>"
           };
 
+          var team = {
+            id: "<%= team && team.team_id %>",
+            name: <%= JSON::generate(ERB::Util.html_escape(team && team.name)) %>,
+          };
+
+          SlackStrava.message('Update credit card for team <b>' + team.name + '</b>.');
+
           if (data.stripe_token && data.stripe_token.length > 0) {
-
-            var team = {
-              id: <%= team ? "'#{team._id}'" : 'null' %>,
-              name: <%= team ? "'#{team.name}'" : 'null' %>
-            };
-
             $.ajax({
               type: 'POST',
               url: '/api/credit_cards',
@@ -63,7 +64,6 @@
               },
               error: SlackStrava.error
             });
-
           } else if (!data.team_id || data.team_id.length == 0) {
             SlackStrava.errorMessage("Team not found.")
             $('form').remove();

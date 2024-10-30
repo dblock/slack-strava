@@ -2,9 +2,6 @@
   <head>
     <title>Slava: Connect to Strava</title>
     <%= partial 'public/partials/_head.html' %>
-    <%
-      user = User.where(id: request.params['state']).first
-    %>
   </head>
   <body style='text-align: center'>
     <p style='margin: 50px;'>
@@ -25,12 +22,12 @@
           <% user = User.where(id: request.params['state']).first %>
 
           var data = {
-            code: "<%= request.params['code'] %>"
+            code: <%= JSON.generate(request.params['code']) %>
           };
 
           var user = {
             id: '<%= user && user.id %>',
-            name: '<%= user && user.user_name %>'
+            name: <%= JSON.generate(ERB::Util.html_escape(user && user.user_name)) %>
           }
 
           if (user.id && data.code) {
@@ -40,7 +37,7 @@
               url: '/api/users/' + user.id,
               data: data,
               success: function(data) {
-                SlackStrava.message('Successfully connected <b>' + data.user_name + '</b> to Strava. You can now return to Slack.');
+                SlackStrava.message('Successfully connected <b>' + user.name + '</b> to Strava. You can now return to Slack.');
               },
               error: SlackStrava.error
             });

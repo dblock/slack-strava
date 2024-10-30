@@ -25,6 +25,25 @@ describe 'Subscribe', :js, type: :feature do
     end
   end
 
+  [
+    Faker::Lorem.word,
+    "#{Faker::Lorem.word}'s",
+    '💥 team', 'команда',
+    "\"#{Faker::Lorem.word}'s\"",
+    "#{Faker::Lorem.word}\n#{Faker::Lorem.word}",
+    "<script>alert('xss');</script>",
+    '<script>alert("xss");</script>'
+  ].each do |team_name|
+    context "team #{team_name}" do
+      let!(:team) { Fabricate(:team, name: team_name) }
+
+      it 'displays subscribe page' do
+        visit "/subscribe?team_id=#{team.team_id}"
+        expect(find_by_id('messages')).to have_text("Subscribe team #{team.name.gsub("\n", ' ')} for $9.99/yr.")
+      end
+    end
+  end
+
   context 'for a team' do
     let!(:team) { Fabricate(:team) }
 

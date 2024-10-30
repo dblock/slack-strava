@@ -17,6 +17,26 @@ describe 'Update cc', :js, type: :feature do
       end
     end
 
+    [
+      Faker::Lorem.word,
+      "#{Faker::Lorem.word}'s",
+      '💥 team', 'команда',
+      "\"#{Faker::Lorem.word}'s\"",
+      "#{Faker::Lorem.word}\n#{Faker::Lorem.word}",
+      "<script>alert('xss');</script>",
+      '<script>alert("xss");</script>'
+    ].each do |team_name|
+      context "team #{team_name}" do
+        let!(:team) { Fabricate(:team, name: team_name, stripe_customer_id: 'stripe_customer_id') }
+
+        it 'displays update cc page' do
+          visit "/update_cc?team_id=#{team.team_id}"
+          expect(find('h1')).to have_text('Slava: Update Credit Card Info')
+          expect(find_by_id('messages')).to have_text("Update credit card for team #{team.name.gsub("\n", ' ')}.")
+        end
+      end
+    end
+
     context 'a team with a stripe customer ID' do
       let!(:team) { Fabricate(:team, stripe_customer_id: 'stripe_customer_id') }
 

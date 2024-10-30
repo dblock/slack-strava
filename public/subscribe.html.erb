@@ -26,8 +26,8 @@
           <% team = Team.where(team_id: request.params['team_id']).first %>
 
           var team = {
-            id: '<%= team && team.team_id %>',
-            name: '<%= team && team.name %>',
+            id: "<%= team && team.team_id %>",
+            name: <%= JSON::generate(ERB::Util.html_escape(team && team.name)) %>,
             subscribed: <%= !!(team && team.subscribed) %>,
           }
 
