@@ -1,14 +1,17 @@
 var SlackStrava = {};
 
 SlackStrava.message = function(text) {
+  $('#messages').removeClass('has-error');
   $('#messages').fadeOut('slow', function() {
     $('#messages').fadeIn('slow').html(text)
   });
 };
 
-SlackStrava.errorMessage = function(message) {
-  SlackStrava.message(message)
+SlackStrava.errorMessage = function(text) {
   $('#messages').addClass('has-error');
+  $('#messages').fadeOut('slow', function() {
+    $('#messages').fadeIn('slow').html(text)
+  });
 };
 
 SlackStrava.error = function(xhr) {

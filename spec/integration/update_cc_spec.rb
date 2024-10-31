@@ -20,7 +20,8 @@ describe 'Update cc', :js, type: :feature do
     [
       Faker::Lorem.word,
       "#{Faker::Lorem.word}'s",
-      '💥 team', 'команда',
+      '💥 team',
+      'команда',
       "\"#{Faker::Lorem.word}'s\"",
       "#{Faker::Lorem.word}\n#{Faker::Lorem.word}",
       "<script>alert('xss');</script>",
