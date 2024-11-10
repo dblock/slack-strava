@@ -18,7 +18,7 @@ Fabricator(:user_activity) do
   calories 870.2
   map { Fabricate.build(:map) }
   weather { Fabricate.build(:weather) }
-  before_validation do
+  before_create do
     self.team ||= user.team
   end
   after_create do
