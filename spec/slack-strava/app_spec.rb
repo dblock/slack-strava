@@ -70,6 +70,15 @@ describe SlackStrava::App do
         expect(team.reload.subscribed?).to be false
       end
 
+      it 'skips inactive teams' do
+        customer.subscriptions.data.first['status'] = 'canceled'
+        expect_any_instance_of(Team).not_to receive(:inform!)
+        expect_any_instance_of(Team).not_to receive(:inform_admin!)
+        team.update_attributes!(active: false)
+        subject.send(:check_subscribed_teams!)
+        expect(team.reload.subscribed?).to be true
+      end
+
       it 'notifies no active subscriptions' do
         customer.subscriptions.data = []
         expect(Stripe::Customer).to receive(:retrieve).and_return(customer)
