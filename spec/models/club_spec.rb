@@ -135,6 +135,13 @@ describe Club do
       expect(club.sync_activities?).to be false
     end
 
+    it 'disables sync on not_in_channel' do
+      expect(club.sync_activities?).to be true
+      allow(club.strava_client).to receive(:club_activities).and_raise(Slack::Web::Api::Errors::NotInChannel.new('not_in_channel'))
+      expect { club.sync_last_strava_activity! }.to raise_error Slack::Web::Api::Errors::NotInChannel
+      expect(club.sync_activities?).to be false
+    end
+
     context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
       before do
         club.update_attributes!(refresh_token: nil, token_expires_at: nil)

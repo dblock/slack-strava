@@ -153,6 +153,8 @@ class Club
       logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
       club_activity
     end
+  rescue Slack::Web::Api::Errors::NotInChannel => e
+    handle_slack_error e
   rescue Faraday::ResourceNotFound => e
     handle_not_found_error e
   rescue Strava::Errors::Fault => e
@@ -169,6 +171,12 @@ class Club
     set sync_activities: false
     logger.error e
     dm! 'Your club can no longer be found on Strava. Please disconnect and reconnect it via /slava clubs.'
+    raise e
+  end
+
+  def handle_slack_error(e)
+    set sync_activities: false
+    logger.error e
     raise e
   end
 
