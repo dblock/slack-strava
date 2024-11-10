@@ -317,6 +317,17 @@ class User
     activated_user? || is_admin? || is_owner?
   end
 
+  def medal_s
+    case team.leaderboard(metric: 'Distance').find(_id)
+    when 1
+      '🥇'
+    when 2
+      '🥈'
+    when 3
+      '🥉'
+    end
+  end
+
   before_destroy :try_to_revoke_access_token
 
   private

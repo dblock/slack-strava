@@ -23,15 +23,16 @@ class ActivityFields
   define :DESCRIPTION, 'Description'
   define :URL, 'Url'
   define :USER, 'User'
+  define :MEDAL, 'Medal'
   define :ATHLETE, 'Athlete'
   define :DATE, 'Date'
 
   HEADER_VALUES = %w[
-    Title Description Url User Athlete Date
+    Title Description Url User Medal Athlete Date
   ].freeze
 
   DEFAULT_VALUES = [
-    'Title', 'Description', 'Url', 'User', 'Athlete', 'Date',
+    'Title', 'Description', 'Url', 'User', 'Medal', 'Athlete', 'Date',
     'Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Weather'
   ].freeze
 

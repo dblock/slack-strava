@@ -318,7 +318,7 @@ describe User do
 
           it 'retrieves last activity details and rebrags it with udpated description' do
             updated_last_activity = last_activity.to_slack
-            updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> on #{last_activity.start_date_local_s}\n\ndetailed description"
+            updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> 🥇 on #{last_activity.start_date_local_s}\n\ndetailed description"
             expect_any_instance_of(User).to receive(:update!).with(
               updated_last_activity,
               last_activity.channel_messages
@@ -647,6 +647,45 @@ describe User do
           .with(access_token: user.access_token)
           .and_return(access_token: user.access_token)
         user.destroy
+      end
+    end
+
+    describe '#medal_s' do
+      let!(:user) { Fabricate(:user) }
+
+      it 'no activities' do
+        expect(user.medal_s).to be_nil
+      end
+
+      context 'with an activity' do
+        let!(:activity) { Fabricate(:user_activity, user: user) }
+
+        context 'ranked first' do
+          before do
+            Fabricate(:user_activity, user: Fabricate(:user, team: user.team), distance: activity.distance - 1)
+          end
+
+          it 'returns a gold medal' do
+            expect(user.medal_s).to eq '🥇'
+          end
+        end
+
+        {
+          0 => '🥇',
+          1 => '🥈',
+          2 => '🥉',
+          3 => nil
+        }.each_pair do |count, medal|
+          context "ranked #{count + 1}" do
+            before do
+              count.times { Fabricate(:user_activity, user: Fabricate(:user, team: user.team), distance: activity.distance + 1) }
+            end
+
+            it "returns #{medal}" do
+              expect(user.medal_s).to eq medal
+            end
+          end
+        end
       end
     end
   end

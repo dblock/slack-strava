@@ -39,11 +39,11 @@ describe ActivityFields do
     end
 
     it 'raise an error on an invalid value' do
-      expect { ActivityFields.parse_s('invalid, elapsed time') }.to raise_error SlackStrava::Error, 'Invalid field: invalid, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories, Weather, Title, Description, Url, User, Athlete and Date.'
+      expect { ActivityFields.parse_s('invalid, elapsed time') }.to raise_error SlackStrava::Error, 'Invalid field: invalid, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories, Weather, Title, Description, Url, User, Medal, Athlete and Date.'
     end
 
     it 'raise an error on invalid fields' do
-      expect { ActivityFields.parse_s('invalid, elapsed time, whatever') }.to raise_error SlackStrava::Error, 'Invalid fields: invalid and whatever, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories, Weather, Title, Description, Url, User, Athlete and Date.'
+      expect { ActivityFields.parse_s('invalid, elapsed time, whatever') }.to raise_error SlackStrava::Error, 'Invalid fields: invalid and whatever, possible values are Default, All, None, Type, Distance, Time, Moving Time, Elapsed Time, Pace, Speed, Elevation, Max Speed, Heart Rate, Max Heart Rate, PR Count, Calories, Weather, Title, Description, Url, User, Medal, Athlete and Date.'
     end
   end
 end

@@ -205,7 +205,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run 🏃', short: true },
@@ -237,7 +237,7 @@ describe UserActivity do
               fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run 🏃', short: true },
@@ -275,7 +275,7 @@ describe UserActivity do
               fallback: "#{activity.name} via #{activity.user.slack_mention}",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               author_name: user.athlete.name,
               author_link: user.athlete.strava_url,
@@ -299,6 +299,53 @@ describe UserActivity do
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
               text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
+              author_name: user.athlete.name,
+              author_link: user.athlete.strava_url,
+              author_icon: user.athlete.profile_medium
+            }
+          ]
+        )
+      end
+    end
+
+    context 'with all header fields and medal' do
+      before do
+        team.activity_fields = %w[Title Url User Medal Description Date Athlete]
+      end
+
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} via #{activity.user.slack_mention}",
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
+              author_name: user.athlete.name,
+              author_link: user.athlete.strava_url,
+              author_icon: user.athlete.profile_medium
+            }
+          ]
+        )
+      end
+    end
+
+    context 'ranked second' do
+      before do
+        team.activity_fields = %w[Title Url User Medal Description Date Athlete]
+        Fabricate(:user_activity, user: Fabricate(:user, team: team), distance: activity.distance + 1)
+      end
+
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [
+            {
+              fallback: "#{activity.name} via #{activity.user.slack_mention}",
+              title: activity.name,
+              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
+              text: "<@#{activity.user.user_name}> 🥈 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               author_name: user.athlete.name,
               author_link: user.athlete.strava_url,
@@ -438,7 +485,7 @@ describe UserActivity do
               fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run 🏃', short: true },
@@ -468,7 +515,7 @@ describe UserActivity do
               fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s",
               title: activity.name,
               title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
               image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
               fields: [
                 { title: 'Type', value: 'Run 🏃', short: true },
@@ -500,7 +547,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 22.54km 2h6m26s 5m37s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run 🏃', short: true },
@@ -533,7 +580,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
             image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
             fields: [
               { title: 'Type', value: 'Run 🏃', short: true },
@@ -566,7 +613,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 2050yd 37m 1m48s/100yd",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
             fields: [
               { title: 'Type', value: 'Swim 🏊', short: true },
               { title: 'Distance', value: '2050yd', short: true },
@@ -595,7 +642,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 1874m 37m 1m58s/100m",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
             fields: [
               { title: 'Type', value: 'Swim 🏊', short: true },
               { title: 'Distance', value: '1874m', short: true },
@@ -624,7 +671,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 2050yd 1874m 37m 1m48s/100yd 1m58s/100m",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
             fields: [
               { title: 'Type', value: 'Swim 🏊', short: true },
               { title: 'Distance', value: '2050yd 1874m', short: true },
@@ -653,7 +700,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 28.1km 1h10m7s 2m30s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
             fields: [
               { title: 'Type', value: 'Ride 🚴', short: true },
               { title: 'Distance', value: '28.1km', short: true },
@@ -683,7 +730,7 @@ describe UserActivity do
             fallback: "#{activity.name} via #{activity.user.slack_mention} 17.46mi 28.1km 1h10m7s 4m01s/mi 2m30s/km",
             title: activity.name,
             title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
+            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
             fields: [
               { title: 'Type', value: 'Ride 🚴', short: true },
               { title: 'Distance', value: '17.46mi 28.1km', short: true },

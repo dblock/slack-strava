@@ -93,6 +93,13 @@ class TeamLeaderboard
     end
   end
 
+  def find(user_id)
+    position = aggregate!.find_index do |row|
+      row[:_id][:user_id] == user_id
+    end
+    position && position >= 0 ? position + 1 : nil
+  end
+
   def to_s
     top = aggregate!.map { |row|
       next unless row[metric_field] > 0
