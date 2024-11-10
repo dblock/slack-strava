@@ -93,9 +93,9 @@ class TeamLeaderboard
     end
   end
 
-  def find(user_id)
+  def find(user_id, activity_type)
     position = aggregate!.find_index do |row|
-      row[:_id][:user_id] == user_id
+      row[:_id][:user_id] == user_id && row[:_id][:type] == activity_type
     end
     position && position >= 0 ? position + 1 : nil
   end

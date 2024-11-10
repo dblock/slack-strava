@@ -317,8 +317,8 @@ class User
     activated_user? || is_admin? || is_owner?
   end
 
-  def medal_s
-    case team.leaderboard(metric: 'Distance').find(_id)
+  def medal_s(activity_type)
+    case team.leaderboard(metric: 'Distance').find(_id, activity_type)
     when 1
       '🥇'
     when 2

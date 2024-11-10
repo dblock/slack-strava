@@ -124,7 +124,7 @@ class UserActivity < Activity
       if display_field?(ActivityFields::USER) || display_field?(ActivityFields::DATE)
         [
           if display_field?(ActivityFields::USER)
-            ["<@#{user.user_name}>", display_field?(ActivityFields::MEDAL) ? user.medal_s : nil].compact.join(' ')
+            ["<@#{user.user_name}>", display_field?(ActivityFields::MEDAL) ? user.medal_s(type) : nil].compact.join(' ')
           end,
           display_field?(ActivityFields::DATE) ? start_date_local_s : nil
         ].compact.join(' on ')

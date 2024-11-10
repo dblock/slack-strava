@@ -654,7 +654,7 @@ describe User do
       let!(:user) { Fabricate(:user) }
 
       it 'no activities' do
-        expect(user.medal_s).to be_nil
+        expect(user.medal_s('Run')).to be_nil
       end
 
       context 'with an activity' do
@@ -666,7 +666,7 @@ describe User do
           end
 
           it 'returns a gold medal' do
-            expect(user.medal_s).to eq '🥇'
+            expect(user.medal_s('Run')).to eq '🥇'
           end
         end
 
@@ -682,8 +682,26 @@ describe User do
             end
 
             it "returns #{medal}" do
-              expect(user.medal_s).to eq medal
+              expect(user.medal_s('Run')).to eq medal
             end
+          end
+        end
+      end
+
+      context 'with an activity of a different type' do
+        let!(:activity) { Fabricate(:user_activity, user: user) }
+
+        context 'ranked first' do
+          before do
+            Fabricate(:swim_activity, user: user)
+          end
+
+          it 'returns a gold medal' do
+            expect(user.medal_s('Swim')).to eq '🥈'
+          end
+
+          it 'returns a silver medal' do
+            expect(user.medal_s('Run')).to eq '🥇'
           end
         end
       end
