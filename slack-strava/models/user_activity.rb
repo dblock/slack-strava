@@ -187,7 +187,8 @@ class UserActivity < Activity
     blocks.concat(photos.map(&:to_slack)) if display_field?(ActivityFields::PHOTOS) && photos.any?
 
     {
-      blocks: blocks
+      blocks: blocks,
+      attachments: []
     }
   end
 

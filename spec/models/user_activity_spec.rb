@@ -200,6 +200,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -238,6 +239,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -282,6 +284,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -305,6 +308,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -328,6 +332,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -352,6 +357,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -375,6 +381,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -397,6 +404,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -419,6 +427,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -440,6 +449,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
@@ -456,6 +466,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*#{activity.name}*" } },
             { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
@@ -471,6 +482,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.strava_id}>*" } },
             { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
@@ -486,6 +498,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -524,6 +537,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -562,6 +576,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -601,6 +616,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -640,6 +656,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -674,6 +691,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -708,6 +726,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -742,6 +761,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -777,6 +797,7 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
+        attachments: [],
         blocks: [
           { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
@@ -832,6 +853,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
@@ -870,6 +892,7 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
+          attachments: [],
           blocks: [
             { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
