@@ -192,6 +192,20 @@ class UserActivity < Activity
     }
   end
 
+  def to_slack_attachment
+    result = {}
+    result[:title] = name || strava_id
+    result[:title_link] = strava_url
+    result[:fallback] = "#{name} via #{user.slack_mention} #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
+    result[:text] = ["<@#{user.user_name}> on #{start_date_local_s}", description].compact.join("\n\n")
+    result[:image_url] = map.proxy_image_url
+    result[:fields] = slack_fields
+    result[:author_name] = user.athlete&.name
+    result[:author_link] = user.athlete&.strava_url
+    result[:author_icon] = user.athlete&.profile_medium
+    result
+  end
+
   def to_s
     "id=#{strava_id}, name=#{name}, date=#{start_date_local&.iso8601}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, #{map}"
   end

@@ -48,7 +48,7 @@ module Api
               channel: event.channel,
               ts: event.message_ts,
               unfurls: {
-                link.url => activity.to_slack
+                link.url => activity.to_slack_attachment
               }.to_json
             )
 

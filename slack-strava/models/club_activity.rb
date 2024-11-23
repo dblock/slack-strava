@@ -67,20 +67,23 @@ class ClubActivity < Activity
   end
 
   def to_slack
-    attachment = {}
-    attachment[:fallback] = "#{name} by #{athlete_name} via #{club.name}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
-    attachment[:title] = name
-    attachment[:title_link] = club.strava_url
-    attachment[:text] = "#{athlete_name}, #{club.name}"
-    fields = slack_fields
-    attachment[:fields] = fields if fields
-    attachment[:thumb_url] = club.logo
-
     {
       attachments: [
-        attachment
+        to_slack_attachment
       ]
     }
+  end
+
+  def to_slack_attachment
+    result = {}
+    result[:fallback] = "#{name} by #{athlete_name} via #{club.name}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
+    result[:title] = name
+    result[:title_link] = club.strava_url
+    result[:text] = "#{athlete_name}, #{club.name}"
+    fields = slack_fields
+    result[:fields] = fields if fields
+    result[:thumb_url] = club.logo
+    result
   end
 
   def validate_team
