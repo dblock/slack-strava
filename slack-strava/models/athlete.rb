@@ -44,9 +44,18 @@ class Athlete
 
   def to_slack
     {
-      author_name: name,
-      author_link: strava_url,
-      author_icon: profile_medium
+      type: 'context',
+      elements: [
+        {
+          type: 'mrkdwn',
+          text: "<#{strava_url}|#{name}>"
+        },
+        {
+          type: 'image',
+          image_url: profile_medium,
+          alt_text: ''
+        }
+      ]
     }
   end
 

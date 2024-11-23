@@ -200,27 +200,33 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-            image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-            fields: [
-              { title: 'Type', value: 'Run 🏃', short: true },
-              { title: 'Distance', value: '14.01mi', short: true },
-              { title: 'Moving Time', value: '2h6m26s', short: true },
-              { title: 'Elapsed Time', value: '2h8m6s', short: true },
-              { title: 'Pace', value: '9m02s/mi', short: true },
-              { title: 'Speed', value: '6.6mph', short: true },
-              { title: 'Elevation', value: '475.4ft', short: true },
-              { title: 'Weather', value: '70°F Rain', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
-          }
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Run 🏃' },
+                { title: 'Distance', value: '14.01mi' },
+                { title: 'Moving Time', value: '2h6m26s' },
+                { title: 'Elapsed Time', value: '2h8m6s' },
+                { title: 'Pace', value: '9m02s/mi' },
+                { title: 'Speed', value: '6.6mph' },
+                { title: 'Elevation', value: '475.4ft' },
+                { title: 'Weather', value: '70°F Rain' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
+          },
+          { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
         ]
       )
     end
@@ -232,32 +238,38 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              fields: [
-                { title: 'Type', value: 'Run 🏃', short: true },
-                { title: 'Distance', value: '14.01mi', short: true },
-                { title: 'Moving Time', value: '2h6m26s', short: true },
-                { title: 'Elapsed Time', value: '2h8m6s', short: true },
-                { title: 'Pace', value: '9m02s/mi', short: true },
-                { title: 'Speed', value: '6.6mph', short: true },
-                { title: 'Elevation', value: '475.4ft', short: true },
-                { title: 'Max Speed', value: '20.8mph', short: true },
-                { title: 'Heart Rate', value: '140.3bpm', short: true },
-                { title: 'Max Heart Rate', value: '178.0bpm', short: true },
-                { title: 'PR Count', value: '3', short: true },
-                { title: 'Calories', value: '870.2', short: true },
-                { title: 'Weather', value: '70°F Rain', short: true }
-              ],
-              author_name: user.athlete.name,
-              author_link: user.athlete.strava_url,
-              author_icon: user.athlete.profile_medium
-            }
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: [
+                  { title: 'Type', value: 'Run 🏃' },
+                  { title: 'Distance', value: '14.01mi' },
+                  { title: 'Moving Time', value: '2h6m26s' },
+                  { title: 'Elapsed Time', value: '2h8m6s' },
+                  { title: 'Pace', value: '9m02s/mi' },
+                  { title: 'Speed', value: '6.6mph' },
+                  { title: 'Elevation', value: '475.4ft' },
+                  { title: 'Max Speed', value: '20.8mph' },
+                  { title: 'Heart Rate', value: '140.3bpm' },
+                  { title: 'Max Heart Rate', value: '178.0bpm' },
+                  { title: 'PR Count', value: '3' },
+                  { title: 'Calories', value: '870.2' },
+                  { title: 'Weather', value: '70°F Rain' }
+                ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+              }
+            },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -270,17 +282,17 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              author_name: user.athlete.name,
-              author_link: user.athlete.strava_url,
-              author_icon: user.athlete.profile_medium
-            }
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -293,17 +305,17 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              author_name: user.athlete.name,
-              author_link: user.athlete.strava_url,
-              author_icon: user.athlete.profile_medium
-            }
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -316,17 +328,17 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              author_name: user.athlete.name,
-              author_link: user.athlete.strava_url,
-              author_icon: user.athlete.profile_medium
-            }
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -340,17 +352,17 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> 🥈 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              author_name: user.athlete.name,
-              author_link: user.athlete.strava_url,
-              author_icon: user.athlete.profile_medium
-            }
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥈 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -363,14 +375,16 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
-            }
+              type: 'context',
+              elements: [
+                { type: 'mrkdwn', text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -383,14 +397,16 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: activity.name,
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
-            }
+              type: 'context',
+              elements: [
+                { type: 'mrkdwn', text: 'Tuesday, February 20, 2018 at 10:02 AM' }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -403,14 +419,15 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention}",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
-            }
+              type: 'context',
+              elements: [
+                { type: 'mrkdwn', text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -423,14 +440,10 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
-            {
-              fallback: activity.name,
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: 'Great run!',
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
-            }
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -443,12 +456,9 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
-            {
-              fallback: activity.name,
-              title: activity.name,
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
-            }
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*#{activity.name}*" } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -461,13 +471,9 @@ describe UserActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
-            {
-              fallback: activity.strava_id,
-              title: activity.strava_id,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
-            }
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.strava_id}>*" } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -479,25 +485,33 @@ describe UserActivity do
       end
 
       it 'to_slack' do
-        expect(activity.reload.to_slack).to eq(
-          attachments: [
+        expect(activity.to_slack).to eq(
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              fields: [
-                { title: 'Type', value: 'Run 🏃', short: true },
-                { title: 'Distance', value: '14.01mi', short: true },
-                { title: 'Moving Time', value: '2h6m26s', short: true },
-                { title: 'Elapsed Time', value: '2h8m6s', short: true },
-                { title: 'Pace', value: '9m02s/mi', short: true },
-                { title: 'Speed', value: '6.6mph', short: true },
-                { title: 'Elevation', value: '475.4ft', short: true },
-                { title: 'Weather', value: '70°F Rain', short: true }
+              type: 'context',
+              elements: [
+                { type: 'mrkdwn', text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
               ]
-            }
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: [
+                  { title: 'Type', value: 'Run 🏃' },
+                  { title: 'Distance', value: '14.01mi' },
+                  { title: 'Moving Time', value: '2h6m26s' },
+                  { title: 'Elapsed Time', value: '2h8m6s' },
+                  { title: 'Pace', value: '9m02s/mi' },
+                  { title: 'Speed', value: '6.6mph' },
+                  { title: 'Elevation', value: '475.4ft' },
+                  { title: 'Weather', value: '70°F Rain' }
+                ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+              }
+            },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -509,26 +523,32 @@ describe UserActivity do
       end
 
       it 'to_slack' do
-        expect(activity.reload.to_slack).to eq(
-          attachments: [
+        expect(activity.to_slack).to eq(
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
             {
-              fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s",
-              title: activity.name,
-              title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-              text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-              image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-              fields: [
-                { title: 'Type', value: 'Run 🏃', short: true },
-                { title: 'Distance', value: '14.01mi', short: true },
-                { title: 'Moving Time', value: '2h6m26s', short: true },
-                { title: 'Elapsed Time', value: '2h8m6s', short: true },
-                { title: 'Elevation', value: '475.4ft', short: true },
-                { title: 'Weather', value: '70°F Rain', short: true }
-              ],
-              author_name: user.athlete.name,
-              author_link: user.athlete.strava_url,
-              author_icon: user.athlete.profile_medium
-            }
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: [
+                  { title: 'Type', value: 'Run 🏃' },
+                  { title: 'Distance', value: '14.01mi' },
+                  { title: 'Moving Time', value: '2h6m26s' },
+                  { title: 'Elapsed Time', value: '2h8m6s' },
+                  { title: 'Elevation', value: '475.4ft' },
+                  { title: 'Weather', value: '70°F Rain' }
+                ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+              }
+            },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
           ]
         )
       end
@@ -542,27 +562,33 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 22.54km 2h6m26s 5m37s/km",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-            image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-            fields: [
-              { title: 'Type', value: 'Run 🏃', short: true },
-              { title: 'Distance', value: '22.54km', short: true },
-              { title: 'Moving Time', value: '2h6m26s', short: true },
-              { title: 'Elapsed Time', value: '2h8m6s', short: true },
-              { title: 'Pace', value: '5m37s/km', short: true },
-              { title: 'Speed', value: '10.7km/h', short: true },
-              { title: 'Elevation', value: '144.9m', short: true },
-              { title: 'Weather', value: '21°C Rain', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
-          }
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Run 🏃' },
+                { title: 'Distance', value: '22.54km' },
+                { title: 'Moving Time', value: '2h6m26s' },
+                { title: 'Elapsed Time', value: '2h8m6s' },
+                { title: 'Pace', value: '5m37s/km' },
+                { title: 'Speed', value: '10.7km/h' },
+                { title: 'Elevation', value: '144.9m' },
+                { title: 'Weather', value: '21°C Rain' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
+          },
+          { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
         ]
       )
     end
@@ -575,27 +601,33 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-            image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-            fields: [
-              { title: 'Type', value: 'Run 🏃', short: true },
-              { title: 'Distance', value: '14.01mi 22.54km', short: true },
-              { title: 'Moving Time', value: '2h6m26s', short: true },
-              { title: 'Elapsed Time', value: '2h8m6s', short: true },
-              { title: 'Pace', value: '9m02s/mi 5m37s/km', short: true },
-              { title: 'Speed', value: '6.6mph 10.7km/h', short: true },
-              { title: 'Elevation', value: '475.4ft 144.9m', short: true },
-              { title: 'Weather', value: '70°F 21°C Rain', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
-          }
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          { type: 'section', text: { type: 'plain_text', text: activity.description, emoji: true } },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Run 🏃' },
+                { title: 'Distance', value: '14.01mi 22.54km' },
+                { title: 'Moving Time', value: '2h6m26s' },
+                { title: 'Elapsed Time', value: '2h8m6s' },
+                { title: 'Pace', value: '9m02s/mi 5m37s/km' },
+                { title: 'Speed', value: '6.6mph 10.7km/h' },
+                { title: 'Elevation', value: '475.4ft 144.9m' },
+                { title: 'Weather', value: '70°F 21°C Rain' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
+          },
+          { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
         ]
       )
     end
@@ -608,22 +640,27 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 2050yd 37m 1m48s/100yd",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
-            fields: [
-              { title: 'Type', value: 'Swim 🏊', short: true },
-              { title: 'Distance', value: '2050yd', short: true },
-              { title: 'Time', value: '37m', short: true },
-              { title: 'Pace', value: '1m48s/100yd', short: true },
-              { title: 'Speed', value: '1.9mph', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Swim 🏊' },
+                { title: 'Distance', value: '2050yd' },
+                { title: 'Time', value: '37m' },
+                { title: 'Pace', value: '1m48s/100yd' },
+                { title: 'Speed', value: '1.9mph' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
       )
@@ -637,22 +674,27 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 1874m 37m 1m58s/100m",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
-            fields: [
-              { title: 'Type', value: 'Swim 🏊', short: true },
-              { title: 'Distance', value: '1874m', short: true },
-              { title: 'Time', value: '37m', short: true },
-              { title: 'Pace', value: '1m58s/100m', short: true },
-              { title: 'Speed', value: '3.0km/h', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Swim 🏊' },
+                { title: 'Distance', value: '1874m' },
+                { title: 'Time', value: '37m' },
+                { title: 'Pace', value: '1m58s/100m' },
+                { title: 'Speed', value: '3.0km/h' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
       )
@@ -666,22 +708,27 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 2050yd 1874m 37m 1m48s/100yd 1m58s/100m",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
-            fields: [
-              { title: 'Type', value: 'Swim 🏊', short: true },
-              { title: 'Distance', value: '2050yd 1874m', short: true },
-              { title: 'Time', value: '37m', short: true },
-              { title: 'Pace', value: '1m48s/100yd 1m58s/100m', short: true },
-              { title: 'Speed', value: '1.9mph 3.0km/h', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Swim 🏊' },
+                { title: 'Distance', value: '2050yd 1874m' },
+                { title: 'Time', value: '37m' },
+                { title: 'Pace', value: '1m48s/100yd 1m58s/100m' },
+                { title: 'Speed', value: '1.9mph 3.0km/h' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
       )
@@ -695,23 +742,28 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 28.1km 1h10m7s 2m30s/km",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
-            fields: [
-              { title: 'Type', value: 'Ride 🚴', short: true },
-              { title: 'Distance', value: '28.1km', short: true },
-              { title: 'Moving Time', value: '1h10m7s', short: true },
-              { title: 'Elapsed Time', value: '1h13m30s', short: true },
-              { title: 'Pace', value: '2m30s/km', short: true },
-              { title: 'Speed', value: '24.0km/h', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Ride 🚴' },
+                { title: 'Distance', value: '28.1km' },
+                { title: 'Moving Time', value: '1h10m7s' },
+                { title: 'Elapsed Time', value: '1h13m30s' },
+                { title: 'Pace', value: '2m30s/km' },
+                { title: 'Speed', value: '24.0km/h' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
       )
@@ -725,23 +777,28 @@ describe UserActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
           {
-            fallback: "#{activity.name} via #{activity.user.slack_mention} 17.46mi 28.1km 1h10m7s 4m01s/mi 2m30s/km",
-            title: activity.name,
-            title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-            text: "<@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM",
-            fields: [
-              { title: 'Type', value: 'Ride 🚴', short: true },
-              { title: 'Distance', value: '17.46mi 28.1km', short: true },
-              { title: 'Moving Time', value: '1h10m7s', short: true },
-              { title: 'Elapsed Time', value: '1h13m30s', short: true },
-              { title: 'Pace', value: '4m01s/mi 2m30s/km', short: true },
-              { title: 'Speed', value: '14.9mph 24.0km/h', short: true }
-            ],
-            author_name: user.athlete.name,
-            author_link: user.athlete.strava_url,
-            author_icon: user.athlete.profile_medium
+            type: 'context',
+            elements: [
+              { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+              { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+            ]
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Ride 🚴' },
+                { title: 'Distance', value: '17.46mi 28.1km' },
+                { title: 'Moving Time', value: '1h10m7s' },
+                { title: 'Elapsed Time', value: '1h13m30s' },
+                { title: 'Pace', value: '4m01s/mi 2m30s/km' },
+                { title: 'Speed', value: '14.9mph 24.0km/h' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
       )
@@ -772,11 +829,37 @@ describe UserActivity do
       let(:team) { Fabricate(:team, maps: 'off') }
       let(:user) { Fabricate(:user, team: team) }
       let(:activity) { Fabricate(:user_activity, user: user) }
-      let(:attachment) { activity.to_slack[:attachments].first }
 
       it 'to_slack' do
-        expect(attachment.keys).not_to include :image_url
-        expect(attachment.keys).not_to include :thumb_url
+        expect(activity.to_slack).to eq(
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
+            {
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { text: { emoji: true, text: 'Great run!', type: 'plain_text' }, type: 'section' },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: [
+                  { title: 'Type', value: 'Run 🏃' },
+                  { title: 'Distance', value: '14.01mi' },
+                  { title: 'Moving Time', value: '2h6m26s' },
+                  { title: 'Elapsed Time', value: '2h8m6s' },
+                  { title: 'Pace', value: '9m02s/mi' },
+                  { title: 'Speed', value: '6.6mph' },
+                  { title: 'Elevation', value: '475.4ft' },
+                  { title: 'Weather', value: '70°F Rain' }
+                ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+              }
+            }
+          ]
+        )
       end
     end
 
@@ -784,11 +867,42 @@ describe UserActivity do
       let(:team) { Fabricate(:team, maps: 'thumb') }
       let(:user) { Fabricate(:user, team: team) }
       let(:activity) { Fabricate(:user_activity, user: user) }
-      let(:attachment) { activity.to_slack[:attachments].first }
 
       it 'to_slack' do
-        expect(attachment.keys).not_to include :image_url
-        expect(attachment[:thumb_url]).to eq "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+        expect(activity.to_slack).to eq(
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
+            {
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { text: { emoji: true, text: 'Great run!', type: 'plain_text' }, type: 'section' },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: [
+                  { title: 'Type', value: 'Run 🏃' },
+                  { title: 'Distance', value: '14.01mi' },
+                  { title: 'Moving Time', value: '2h6m26s' },
+                  { title: 'Elapsed Time', value: '2h8m6s' },
+                  { title: 'Pace', value: '9m02s/mi' },
+                  { title: 'Speed', value: '6.6mph' },
+                  { title: 'Elevation', value: '475.4ft' },
+                  { title: 'Weather', value: '70°F Rain' }
+                ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+              },
+              accessory: {
+                alt_text: '',
+                type: 'image',
+                image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+              }
+            }
+          ]
+        )
       end
     end
   end

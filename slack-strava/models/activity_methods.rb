@@ -325,6 +325,15 @@ module ActivityMethods
     fields.any? ? fields : nil
   end
 
+  def slack_fields_s
+    fields = slack_fields
+    return unless fields&.any?
+
+    fields.map { |block|
+      "*#{block[:title]}*: #{block[:value]}"
+    }.join("\n")
+  end
+
   # Convert speed (m/s) to pace (min/mile or min/km) in the format of 'x:xx'
   # http://yizeng.me/2017/02/25/convert-speed-to-pace-programmatically-using-ruby
   def convert_meters_per_second_to_pace(speed, unit = :mi)

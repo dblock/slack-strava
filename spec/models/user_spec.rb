@@ -215,13 +215,18 @@ describe User do
           user_instance_2 = User.find(user._id)
           bragged_activities = []
           allow_any_instance_of(User).to receive(:inform!) do |_, args|
-            bragged_activities << args[:attachments].first[:title]
+            bragged_activities << args[:blocks][0][:text][:text]
             [{ ts: '1503425956.000247', channel: 'channel' }]
           end
           user.sync_and_brag!
           expect(user_instance_2).to receive(:sync_strava_activities!).with({ after: 1_522_072_635 })
           user_instance_2.sync_and_brag!
-          expect(bragged_activities).to eq(['Restarting the Engine', 'First Time Breaking 14'])
+          expect(bragged_activities).to eq(
+            [
+              '*<https://www.strava.com/activities/1473024961|Restarting the Engine>*',
+              '*<https://www.strava.com/activities/1477353766|First Time Breaking 14>*'
+            ]
+          )
         end
 
         it 'warns on error' do
@@ -316,9 +321,9 @@ describe User do
             allow(user).to receive(:latest_bragged_activity).and_return(last_activity)
           end
 
-          it 'retrieves last activity details and rebrags it with udpated description' do
+          it 'retrieves last activity details and rebrags it with updated description' do
             updated_last_activity = last_activity.to_slack
-            updated_last_activity[:attachments].first[:text] = "<@#{user.user_name}> 🥇 on #{last_activity.start_date_local_s}\n\ndetailed description"
+            updated_last_activity[:blocks].insert(2, { type: 'section', text: { text: 'detailed description', type: 'plain_text', emoji: true } })
             expect_any_instance_of(User).to receive(:update!).with(
               updated_last_activity,
               last_activity.channel_messages

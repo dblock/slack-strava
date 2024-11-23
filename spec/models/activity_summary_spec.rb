@@ -3,11 +3,11 @@ require 'spec_helper'
 describe ActivitySummary do
   let(:activity_summary) { Fabricate(:activity_summary) }
 
-  describe '#to_slack_attachment' do
-    let(:slack_attachment) { activity_summary.to_slack_attachment }
+  describe '#to_slack' do
+    let(:data) { activity_summary.to_slack }
 
     it 'returns a slack attachment' do
-      expect(slack_attachment).to eq(
+      expect(data).to eq(
         {
           fallback: '14.01mi in 2h6m26s',
           fields: [

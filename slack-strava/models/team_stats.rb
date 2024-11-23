@@ -13,7 +13,7 @@ class TeamStats
 
   def to_slack
     any? ? {
-      attachments: values.map(&:to_slack_attachment)
+      attachments: values.map(&:to_slack)
     } : { text: 'There are no activities in this channel.' }
   end
 

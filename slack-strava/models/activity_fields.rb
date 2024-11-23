@@ -18,6 +18,7 @@ class ActivityFields
   define :PR_COUNT, 'PR Count'
   define :CALORIES, 'Calories'
   define :WEATHER, 'Weather'
+  define :PHOTOS, 'Photos'
 
   define :TITLE, 'Title'
   define :DESCRIPTION, 'Description'
@@ -33,7 +34,7 @@ class ActivityFields
 
   DEFAULT_VALUES = [
     'Title', 'Description', 'Url', 'User', 'Medal', 'Athlete', 'Date',
-    'Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Weather'
+    'Type', 'Distance', 'Time', 'Moving Time', 'Elapsed Time', 'Pace', 'Speed', 'Elevation', 'Weather', 'Photos'
   ].freeze
 
   def self.parse_s(values)

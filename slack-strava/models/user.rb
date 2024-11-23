@@ -286,7 +286,8 @@ class User
       raise "Activity athlete ID #{detailed_activity.athlete.id} does not match #{athlete.athlete_id}."
     end
 
-    UserActivity.create_from_strava!(self, detailed_activity) || activities.where(strava_id: detailed_activity.id).first
+    activity = UserActivity.create_from_strava!(self, detailed_activity)
+    activity || activities.where(strava_id: detailed_activity.id).first
   rescue Strava::Errors::Fault => e
     handle_strava_error e
   end

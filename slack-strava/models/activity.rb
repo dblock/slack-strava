@@ -51,14 +51,6 @@ class Activity
     "https://www.strava.com/activities/#{strava_id}"
   end
 
-  def to_slack
-    {
-      attachments: [
-        to_slack_attachment
-      ]
-    }
-  end
-
   def self.attrs_from_strava(response)
     {
       strava_id: response.id,

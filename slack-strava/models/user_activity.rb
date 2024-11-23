@@ -6,6 +6,7 @@ class UserActivity < Activity
   belongs_to :user, inverse_of: :activities
   embeds_one :map
   embeds_one :weather
+  embeds_many :photos
 
   index(user_id: 1, start_date: 1)
   index('map._id' => 1)
@@ -26,6 +27,10 @@ class UserActivity < Activity
     return unless start_date_local
 
     start_date_local_in_local_time.strftime('%A, %B %d, %Y at %I:%M %p')
+  end
+
+  def update_photos!(photos)
+    update_attributes!(photos: photos.map { |photo| Photo.attrs_from_strava(photo) })
   end
 
   def brag!
@@ -74,7 +79,8 @@ class UserActivity < Activity
     Activity.attrs_from_strava(response).merge(
       start_date: response.start_date,
       start_date_local: response.start_date_local,
-      start_date_local_utc_offset: response.start_date_local.utc_offset
+      start_date_local_utc_offset: response.start_date_local.utc_offset,
+      photos: response.photos&.primary ? [Photo.attrs_from_strava(response.photos&.primary)] : []
     )
   end
 
@@ -97,55 +103,92 @@ class UserActivity < Activity
     activity
   end
 
-  def to_slack_attachment
-    result = {}
-
+  def display_title_s
     if display_field?(ActivityFields::TITLE) && display_field?(ActivityFields::URL)
-      result[:title] = name || strava_id
-      result[:title_link] = strava_url
+      "*<#{strava_url}|#{name || strava_id}>*"
     elsif display_field?(ActivityFields::TITLE)
-      result[:title] = name || strava_id
+      "*#{name || strava_id}*"
     elsif display_field?(ActivityFields::URL)
-      result[:title] = strava_id
-      result[:title_link] = strava_url
+      "*<#{strava_url}|#{strava_id}>*"
+    end
+  end
+
+  def display_medal_s
+    return unless display_field?(ActivityFields::MEDAL)
+
+    user.medal_s(type)
+  end
+
+  def display_user_s
+    return unless display_field?(ActivityFields::USER)
+
+    "<@#{user.user_name}>"
+  end
+
+  def display_user_with_medal_s
+    ary = [
+      display_athlete_s,
+      display_user_s,
+      display_medal_s
+    ].compact
+
+    ary.any? ? ary.join(' ') : nil
+  end
+
+  def display_date_s
+    return unless display_field?(ActivityFields::DATE)
+
+    start_date_local_s
+  end
+
+  def display_athlete_s
+    return unless display_field?(ActivityFields::ATHLETE) && user.athlete
+
+    "<#{user.athlete.strava_url}|#{user.athlete.name}>"
+  end
+
+  def display_context_s
+    ary = [
+      display_user_with_medal_s,
+      display_date_s
+    ].compact
+
+    ary.any? ? ary.join(' on ') : nil
+  end
+
+  def context_block
+    elements = []
+    elements << { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name.to_s } if user.athlete && display_field?(ActivityFields::ATHLETE)
+    elements << { type: 'mrkdwn', text: display_context_s }
+
+    {
+      type: 'context',
+      elements: elements
+    }
+  end
+
+  def to_slack
+    blocks = []
+
+    blocks << { type: 'section', text: { type: 'mrkdwn', text: display_title_s } }
+    blocks << context_block if display_field?(ActivityFields::MEDAL) || display_field?(ActivityFields::ATHLETE) || display_field?(ActivityFields::USER) || display_field?(ActivityFields::DATE)
+    blocks << { type: 'section', text: { type: 'plain_text', text: description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION)
+
+    fields_text = slack_fields_s
+    if map&.polyline? && team.maps == 'full'
+      blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text } } if fields_text
+      blocks << { type: 'image', image_url: map.proxy_image_url, alt_text: '' }
+    elsif map&.polyline? && team.maps == 'thumb' && fields_text
+      blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text }, accessory: { type: 'image', image_url: map.proxy_image_url, alt_text: '' } }
+    elsif fields_text
+      blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text } }
     end
 
-    result_fallback = [
-      display_field?(ActivityFields::TITLE) ? name : nil,
-      display_field?(ActivityFields::USER) ? "via #{user.slack_mention}" : nil,
-      display_field?(ActivityFields::DISTANCE) ? distance_s : nil,
-      display_field?(ActivityFields::MOVING_TIME) ? moving_time_in_hours_s : nil,
-      display_field?(ActivityFields::PACE) ? pace_s : nil
-    ].compact.join(' ')
+    blocks.concat(photos.map(&:to_slack)) if display_field?(ActivityFields::PHOTOS) && photos.any?
 
-    result[:fallback] = result_fallback.blank? ? strava_id : result_fallback
-
-    result_text = [
-      if display_field?(ActivityFields::USER) || display_field?(ActivityFields::DATE)
-        [
-          if display_field?(ActivityFields::USER)
-            ["<@#{user.user_name}>", display_field?(ActivityFields::MEDAL) ? user.medal_s(type) : nil].compact.join(' ')
-          end,
-          display_field?(ActivityFields::DATE) ? start_date_local_s : nil
-        ].compact.join(' on ')
-      end,
-      display_field?(ActivityFields::DESCRIPTION) ? description : nil
-    ].compact.join("\n\n")
-
-    result[:text] = result_text unless result_text.blank?
-
-    if map
-      if team.maps == 'full'
-        result[:image_url] = map.proxy_image_url
-      elsif team.maps == 'thumb'
-        result[:thumb_url] = map.proxy_image_url
-      end
-    end
-
-    result_fields = slack_fields
-    result[:fields] = result_fields if result_fields && result_fields.any?
-    result.merge!(user.athlete.to_slack) if user.athlete && display_field?(ActivityFields::ATHLETE)
-    result
+    {
+      blocks: blocks
+    }
   end
 
   def to_s

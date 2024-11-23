@@ -1,5 +1,7 @@
 ### Changelog
 
+* 2024/11/23: Include primary activity photo - [@dblock](https://github.com/dblock).
+* 2024/11/23: Render activities as blocks - [@dblock](https://github.com/dblock).
 * 2024/11/10: Added medal field - [@dblock](https://github.com/dblock).
 * 2024/10/09: Upgraded to Ruby 3.3.5 - [@dblock](https://github.com/dblock).
 * 2024/10/09: Fixed incorrect local time - [@dblock](https://github.com/dblock).

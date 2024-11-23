@@ -43,7 +43,7 @@ class ActivitySummary
     stats.to_hash.symbolize_keys
   end
 
-  def to_slack_attachment
+  def to_slack
     result = {}
     result[:fallback] = "#{distance_s} in #{moving_time_in_hours_s}"
     result[:fields] = slack_fields

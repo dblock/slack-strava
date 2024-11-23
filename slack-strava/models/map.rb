@@ -37,6 +37,10 @@ class Map
     decoded_summary_polyline[-1]
   end
 
+  def polyline?
+    decoded_summary_polyline&.any?
+  end
+
   def image_url
     return unless decoded_summary_polyline&.any?
 
