@@ -44,12 +44,14 @@ module Api
             next unless activity
 
             logger.info "UNFURL: #{link.url}, #{activity}"
+
+            unfurls = { link.url => { blocks: activity.to_slack_blocks } }
+            logger.debug(unfurls)
+
             team.activated_user_slack_client.chat_unfurl(
               channel: event.channel,
               ts: event.message_ts,
-              unfurls: {
-                link.url => activity.to_slack_attachment
-              }.to_json
+              unfurls: unfurls.to_json
             )
 
             activity.update_attributes!(bragged_at: Time.now.utc)

@@ -471,7 +471,7 @@ describe Api::Endpoints::SlackEndpoint do
             channel: 'C1',
             ts: '1547842100.001400',
             unfurls: {
-              activity.strava_url => activity.to_slack_attachment
+              activity.strava_url => { 'blocks' => activity.to_slack_blocks }
             }.to_json
           )
 
