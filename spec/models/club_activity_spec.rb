@@ -158,24 +158,48 @@ describe ClubActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        attachments: [],
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{activity.name}>*" } },
+          { type: 'context', elements: [{ type: 'mrkdwn', text: "#{activity.athlete_name} via #{club.name}" }] },
           {
-            fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
-            title: activity.name,
-            title_link: club.strava_url,
-            text: "#{activity.athlete_name}, #{club.name}",
-            fields: [
-              { title: 'Type', value: 'Run 🏃', short: true },
-              { title: 'Distance', value: '14.01mi', short: true },
-              { title: 'Moving Time', value: '2h6m26s', short: true },
-              { title: 'Elapsed Time', value: '2h8m6s', short: true },
-              { title: 'Pace', value: '9m02s/mi', short: true },
-              { title: 'Speed', value: '6.6mph', short: true },
-              { title: 'Elevation', value: '475.4ft', short: true }
-            ],
-            thumb_url: club.logo
+            type: 'section',
+            accessory: { type: 'image', alt_text: club.name, image_url: club.logo },
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Run 🏃' },
+                { title: 'Distance', value: '14.01mi' },
+                { title: 'Moving Time', value: '2h6m26s' },
+                { title: 'Elapsed Time', value: '2h8m6s' },
+                { title: 'Pace', value: '9m02s/mi' },
+                { title: 'Speed', value: '6.6mph' },
+                { title: 'Elevation', value: '475.4ft' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
+      )
+    end
+
+    it 'to_slack_attachment' do
+      expect(activity.to_slack_attachment).to eq(
+        {
+          fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
+          title: activity.name,
+          title_link: club.strava_url,
+          text: "#{activity.athlete_name}, #{club.name}",
+          fields: [
+            { title: 'Type', value: 'Run 🏃', short: true },
+            { title: 'Distance', value: '14.01mi', short: true },
+            { title: 'Moving Time', value: '2h6m26s', short: true },
+            { title: 'Elapsed Time', value: '2h8m6s', short: true },
+            { title: 'Pace', value: '9m02s/mi', short: true },
+            { title: 'Speed', value: '6.6mph', short: true },
+            { title: 'Elevation', value: '475.4ft', short: true }
+          ],
+          thumb_url: club.logo
+        }
       )
     end
   end
@@ -187,24 +211,48 @@ describe ClubActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        attachments: [],
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{activity.name}>*" } },
+          { type: 'context', elements: [{ type: 'mrkdwn', text: "#{activity.athlete_name} via #{club.name}" }] },
           {
-            fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 22.54km 2h6m26s 5m37s/km",
-            title: activity.name,
-            title_link: club.strava_url,
-            text: "#{activity.athlete_name}, #{club.name}",
-            fields: [
-              { title: 'Type', value: 'Run 🏃', short: true },
-              { title: 'Distance', value: '22.54km', short: true },
-              { title: 'Moving Time', value: '2h6m26s', short: true },
-              { title: 'Elapsed Time', value: '2h8m6s', short: true },
-              { title: 'Pace', value: '5m37s/km', short: true },
-              { title: 'Speed', value: '10.7km/h', short: true },
-              { title: 'Elevation', value: '144.9m', short: true }
-            ],
-            thumb_url: club.logo
+            type: 'section',
+            accessory: { type: 'image', alt_text: club.name, image_url: club.logo },
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Run 🏃' },
+                { title: 'Distance', value: '22.54km' },
+                { title: 'Moving Time', value: '2h6m26s' },
+                { title: 'Elapsed Time', value: '2h8m6s' },
+                { title: 'Pace', value: '5m37s/km' },
+                { title: 'Speed', value: '10.7km/h' },
+                { title: 'Elevation', value: '144.9m' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
+      )
+    end
+
+    it 'to_slack_attachment' do
+      expect(activity.to_slack_attachment).to eq(
+        {
+          fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 22.54km 2h6m26s 5m37s/km",
+          title: activity.name,
+          title_link: club.strava_url,
+          text: "#{activity.athlete_name}, #{club.name}",
+          fields: [
+            { title: 'Type', value: 'Run 🏃', short: true },
+            { title: 'Distance', value: '22.54km', short: true },
+            { title: 'Moving Time', value: '2h6m26s', short: true },
+            { title: 'Elapsed Time', value: '2h8m6s', short: true },
+            { title: 'Pace', value: '5m37s/km', short: true },
+            { title: 'Speed', value: '10.7km/h', short: true },
+            { title: 'Elevation', value: '144.9m', short: true }
+          ],
+          thumb_url: club.logo
+        }
       )
     end
   end
@@ -216,24 +264,48 @@ describe ClubActivity do
 
     it 'to_slack' do
       expect(activity.to_slack).to eq(
-        attachments: [
+        attachments: [],
+        blocks: [
+          { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{activity.name}>*" } },
+          { type: 'context', elements: [{ type: 'mrkdwn', text: "#{activity.athlete_name} via #{club.name}" }] },
           {
-            fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
-            title: activity.name,
-            title_link: club.strava_url,
-            text: "#{activity.athlete_name}, #{club.name}",
-            fields: [
-              { title: 'Type', value: 'Run 🏃', short: true },
-              { title: 'Distance', value: '14.01mi 22.54km', short: true },
-              { title: 'Moving Time', value: '2h6m26s', short: true },
-              { title: 'Elapsed Time', value: '2h8m6s', short: true },
-              { title: 'Pace', value: '9m02s/mi 5m37s/km', short: true },
-              { title: 'Speed', value: '6.6mph 10.7km/h', short: true },
-              { title: 'Elevation', value: '475.4ft 144.9m', short: true }
-            ],
-            thumb_url: club.logo
+            type: 'section',
+            accessory: { type: 'image', alt_text: club.name, image_url: club.logo },
+            text: {
+              type: 'mrkdwn',
+              text: [
+                { title: 'Type', value: 'Run 🏃' },
+                { title: 'Distance', value: '14.01mi 22.54km' },
+                { title: 'Moving Time', value: '2h6m26s' },
+                { title: 'Elapsed Time', value: '2h8m6s' },
+                { title: 'Pace', value: '9m02s/mi 5m37s/km' },
+                { title: 'Speed', value: '6.6mph 10.7km/h' },
+                { title: 'Elevation', value: '475.4ft 144.9m' }
+              ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+            }
           }
         ]
+      )
+    end
+
+    it 'to_slack_attachment' do
+      expect(activity.to_slack_attachment).to eq(
+        {
+          fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 22.54km 2h6m26s 9m02s/mi 5m37s/km",
+          title: activity.name,
+          title_link: club.strava_url,
+          text: "#{activity.athlete_name}, #{club.name}",
+          fields: [
+            { title: 'Type', value: 'Run 🏃', short: true },
+            { title: 'Distance', value: '14.01mi 22.54km', short: true },
+            { title: 'Moving Time', value: '2h6m26s', short: true },
+            { title: 'Elapsed Time', value: '2h8m6s', short: true },
+            { title: 'Pace', value: '9m02s/mi 5m37s/km', short: true },
+            { title: 'Speed', value: '6.6mph 10.7km/h', short: true },
+            { title: 'Elevation', value: '475.4ft 144.9m', short: true }
+          ],
+          thumb_url: club.logo
+        }
       )
     end
   end
@@ -247,15 +319,23 @@ describe ClubActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
-            {
-              fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
-              title: activity.name,
-              title_link: club.strava_url,
-              text: "#{activity.athlete_name}, #{club.name}",
-              thumb_url: club.logo
-            }
+          attachments: [],
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{activity.name}>*" } },
+            { type: 'context', elements: [{ type: 'mrkdwn', text: "#{activity.athlete_name} via #{club.name}" }] }
           ]
+        )
+      end
+
+      it 'to_slack_attachment' do
+        expect(activity.to_slack_attachment).to eq(
+          {
+            fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
+            title: activity.name,
+            title_link: club.strava_url,
+            text: "#{activity.athlete_name}, #{club.name}",
+            thumb_url: club.logo
+          }
         )
       end
     end
@@ -265,20 +345,40 @@ describe ClubActivity do
 
       it 'to_slack' do
         expect(activity.to_slack).to eq(
-          attachments: [
+          attachments: [],
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{activity.name}>*" } },
+            { type: 'context', elements: [{ type: 'mrkdwn', text: "#{activity.athlete_name} via #{club.name}" }] },
             {
-              fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
-              title: activity.name,
-              title_link: club.strava_url,
-              text: "#{activity.athlete_name}, #{club.name}",
-              fields: [
-                { title: 'Pace', value: '9m02s/mi', short: true },
-                { title: 'Elevation', value: '475.4ft', short: true },
-                { title: 'Type', value: 'Run 🏃', short: true }
-              ],
-              thumb_url: club.logo
+              type: 'section',
+              accessory: { type: 'image', alt_text: club.name, image_url: club.logo },
+              text: {
+                type: 'mrkdwn',
+                text: [
+                  { title: 'Pace', value: '9m02s/mi' },
+                  { title: 'Elevation', value: '475.4ft' },
+                  { title: 'Type', value: 'Run 🏃' }
+                ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+              }
             }
           ]
+        )
+      end
+
+      it 'to_slack_attachment' do
+        expect(activity.to_slack_attachment).to eq(
+          {
+            fallback: "#{activity.name} by #{activity.athlete_name} via #{club.name}, 14.01mi 2h6m26s 9m02s/mi",
+            title: activity.name,
+            title_link: club.strava_url,
+            text: "#{activity.athlete_name}, #{club.name}",
+            fields: [
+              { title: 'Pace', value: '9m02s/mi', short: true },
+              { title: 'Elevation', value: '475.4ft', short: true },
+              { title: 'Type', value: 'Run 🏃', short: true }
+            ],
+            thumb_url: club.logo
+          }
         )
       end
     end

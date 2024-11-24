@@ -66,12 +66,34 @@ class ClubActivity < Activity
     )
   end
 
+  def display_context_s
+    ary = [
+      athlete_name,
+      club.name
+    ].compact
+
+    ary.any? ? ary.join(' on ') : nil
+  end
+
   def to_slack
     {
-      attachments: [
-        to_slack_attachment
+      blocks: to_slack_blocks,
+      attachments: []
+    }
+  end
+
+  def to_slack_blocks
+    blocks = []
+    blocks << { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{name || strava_id}>*" } }
+    blocks << {
+      type: 'context',
+      elements: [
+        { type: 'mrkdwn', text: "#{athlete_name} via #{club.name}" }
       ]
     }
+    slack_fields_text = slack_fields_s
+    blocks << { type: 'section', text: { type: 'mrkdwn', text: slack_fields_text }, accessory: { type: 'image', image_url: club.logo, alt_text: club.name.to_s } } if slack_fields_text
+    blocks
   end
 
   def to_slack_attachment

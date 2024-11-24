@@ -168,6 +168,13 @@ class UserActivity < Activity
   end
 
   def to_slack
+    {
+      blocks: to_slack_blocks,
+      attachments: []
+    }
+  end
+
+  def to_slack_blocks
     blocks = []
 
     blocks << { type: 'section', text: { type: 'mrkdwn', text: display_title_s } }
@@ -186,10 +193,7 @@ class UserActivity < Activity
 
     blocks.concat(photos.map(&:to_slack)) if display_field?(ActivityFields::PHOTOS) && photos.any?
 
-    {
-      blocks: blocks,
-      attachments: []
-    }
+    blocks
   end
 
   def to_slack_attachment
