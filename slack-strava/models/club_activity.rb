@@ -96,18 +96,6 @@ class ClubActivity < Activity
     blocks
   end
 
-  def to_slack_attachment
-    result = {}
-    result[:fallback] = "#{name} by #{athlete_name} via #{club.name}, #{distance_s} #{moving_time_in_hours_s} #{pace_s}"
-    result[:title] = name
-    result[:title_link] = club.strava_url
-    result[:text] = "#{athlete_name}, #{club.name}"
-    fields = slack_fields
-    result[:fields] = fields if fields
-    result[:thumb_url] = club.logo
-    result
-  end
-
   def validate_team
     return if team_id && club.team_id == team_id
 

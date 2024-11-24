@@ -198,29 +198,6 @@ describe UserActivity do
     let(:user) { Fabricate(:user, team: team) }
     let(:activity) { Fabricate(:user_activity, user: user) }
 
-    it 'to_slack_attachment' do
-      expect(activity.to_slack_attachment).to eq(
-        fallback: "#{activity.name} via #{activity.user.slack_mention} 14.01mi 2h6m26s 9m02s/mi",
-        title: activity.name,
-        title_link: "https://www.strava.com/activities/#{activity.strava_id}",
-        text: "<@#{activity.user.user_name}> on Tuesday, February 20, 2018 at 10:02 AM\n\nGreat run!",
-        image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png",
-        fields: [
-          { title: 'Type', value: 'Run 🏃', short: true },
-          { title: 'Distance', value: '14.01mi', short: true },
-          { title: 'Moving Time', value: '2h6m26s', short: true },
-          { title: 'Elapsed Time', value: '2h8m6s', short: true },
-          { title: 'Pace', value: '9m02s/mi', short: true },
-          { title: 'Speed', value: '6.6mph', short: true },
-          { title: 'Elevation', value: '475.4ft', short: true },
-          { title: 'Weather', value: '70°F Rain', short: true }
-        ],
-        author_name: user.athlete.name,
-        author_link: user.athlete.strava_url,
-        author_icon: user.athlete.profile_medium
-      )
-    end
-
     it 'to_slack' do
       expect(activity.to_slack).to eq(
         attachments: [],
