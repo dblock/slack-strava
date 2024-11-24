@@ -194,10 +194,6 @@ describe Activity do
   end
 
   context 'access changes' do
-    before do
-      allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
-    end
-
     describe 'privacy changes' do
       context 'a private, bragged activity that was not posted to any channels' do
         let!(:activity) { Fabricate(:user_activity, private: true, bragged_at: Time.now.utc) }

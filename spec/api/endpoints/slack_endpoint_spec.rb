@@ -458,44 +458,63 @@ describe Api::Endpoints::SlackEndpoint do
       context 'with an activity' do
         let(:activity) { Fabricate(:user_activity, user: user) }
 
-        before do
-          allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
+        let(:payload) do
+          {
+            token: token,
+            team_id: team.team_id,
+            api_app_id: 'A19GAJ72T',
+            event: {
+              type: 'link_shared',
+              user: user.user_id,
+              channel: 'C1',
+              message_ts: '1547842100.001400',
+              links: [{
+                url: activity.strava_url,
+                domain: 'strava.com'
+              }]
+            },
+            type: 'event_callback',
+            event_id: 'EvFGTNRKLG',
+            event_time: 1_547_842_101,
+            authed_users: ['U04KB5WQR']
+          }
         end
 
-        it 'unfurls a strava URL' do
-          expect_any_instance_of(User).to receive(:sync_strava_activity!)
-            .with(activity.strava_id)
-            .and_return(activity)
+        context 'with a user connected to Strava' do
+          before do
+            user.update_attributes!(access_token: 'token', connected_to_strava_at: Time.now)
+          end
 
-          expect_any_instance_of(Slack::Web::Client).to receive(:chat_unfurl).with(
-            channel: 'C1',
-            ts: '1547842100.001400',
-            unfurls: {
-              activity.strava_url => { 'blocks' => activity.to_slack_blocks }
-            }.to_json
-          )
+          it 'unfurls a strava URL' do
+            expect_any_instance_of(User).to receive(:sync_strava_activity!)
+              .with(activity.strava_id)
+              .and_return(activity)
 
-          post '/api/slack/event',
-               token: token,
-               team_id: team.team_id,
-               api_app_id: 'A19GAJ72T',
-               event: {
-                 type: 'link_shared',
-                 user: user.user_id,
-                 channel: 'C1',
-                 message_ts: '1547842100.001400',
-                 links: [{
-                   url: activity.strava_url,
-                   domain: 'strava.com'
-                 }]
-               },
-               type: 'event_callback',
-               event_id: 'EvFGTNRKLG',
-               event_time: 1_547_842_101,
-               authed_users: ['U04KB5WQR']
-          expect(last_response.status).to eq 201
+            expect_any_instance_of(Slack::Web::Client).to receive(:chat_unfurl).with(
+              channel: 'C1',
+              ts: '1547842100.001400',
+              unfurls: {
+                activity.strava_url => { 'blocks' => activity.to_slack_blocks }
+              }.to_json
+            )
 
-          expect(activity.reload.bragged_at).not_to be_nil
+            post '/api/slack/event', payload
+            expect(last_response.status).to eq 201
+            expect(activity.reload.bragged_at).not_to be_nil
+          end
+        end
+
+        context 'with a user that has not connected to Strava' do
+          before do
+            user.update_attributes!(access_token: nil, connected_to_strava_at: nil)
+          end
+
+          it 'does not unfurl' do
+            expect_any_instance_of(User).not_to receive(:sync_strava_activity!)
+            expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_unfurl)
+            post '/api/slack/event', payload
+            expect(last_response.status).to eq 201
+          end
         end
       end
     end

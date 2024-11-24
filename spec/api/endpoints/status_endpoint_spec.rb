@@ -42,10 +42,6 @@ describe Api::Endpoints::StatusEndpoint do
       let!(:user) { Fabricate(:user, team: team) }
       let!(:connected_user) { Fabricate(:user, team: team, access_token: 'xyz') }
 
-      before do
-        allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
-      end
-
       it 'returns a status with distance and users' do
         status = client.status
         expect(status.connected_users_count).to eq 1

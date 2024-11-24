@@ -40,13 +40,21 @@ module Api
             m = link.url.match(%r{strava\.com/activities/(?<strava_id>\d+)\b})
             next unless m && m[:strava_id]
 
-            activity = user.sync_strava_activity!(m[:strava_id])
-            next unless activity
+            unless user.connected_to_strava?
+              logger.info "UNFURL: #{link.url}, #{user}, not connected to Strava"
+              next
+            end
 
-            logger.info "UNFURL: #{link.url}, #{activity}"
+            activity = user.sync_strava_activity!(m[:strava_id])
+
+            if activity.nil?
+              logger.info "UNFURL: #{link.url}, #{user}, missing activity"
+              next
+            end
 
             unfurls = { link.url => { blocks: activity.to_slack_blocks } }
-            logger.debug(unfurls)
+            logger.info "UNFURL: #{link.url}, #{user}, #{activity}"
+            logger.debug unfurls
 
             team.activated_user_slack_client.chat_unfurl(
               channel: event.channel,
