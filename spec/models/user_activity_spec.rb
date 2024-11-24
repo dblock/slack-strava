@@ -1,10 +1,6 @@
 require 'spec_helper'
 
 describe UserActivity do
-  before do
-    allow(HTTParty).to receive_message_chain(:get, :body).and_return('PNG')
-  end
-
   context 'hidden?' do
     context 'default' do
       let(:activity) { Fabricate(:user_activity) }

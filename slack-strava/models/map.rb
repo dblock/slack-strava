@@ -84,6 +84,8 @@ class Map
   end
 
   def update_png!
+    return unless user_activity.user.team.proxy_maps
+
     url = image_url
     return unless url
 
@@ -94,7 +96,6 @@ class Map
   def update_png
     return if png_changed? || saved_change_to_png?
     return unless summary_polyline_changed? || saved_change_to_summary_polyline? || png.nil?
-    return unless user_activity.user.team.proxy_maps
 
     update_png!
   end
