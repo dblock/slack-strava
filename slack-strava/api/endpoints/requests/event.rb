@@ -33,6 +33,7 @@ module Api
 
         def unfurl!
           return unless event&.links && user
+          return if user.is_bot
 
           event.links.each do |link|
             next unless link.domain == 'strava.com'

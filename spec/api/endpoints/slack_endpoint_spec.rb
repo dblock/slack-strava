@@ -516,6 +516,19 @@ describe Api::Endpoints::SlackEndpoint do
             expect(last_response.status).to eq 201
           end
         end
+
+        context 'with a bot user' do
+          before do
+            user.update_attributes!(is_bot: true)
+          end
+
+          it 'does not unfurl' do
+            expect_any_instance_of(User).not_to receive(:sync_strava_activity!)
+            expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_unfurl)
+            post '/api/slack/event', payload
+            expect(last_response.status).to eq 201
+          end
+        end
       end
     end
   end
