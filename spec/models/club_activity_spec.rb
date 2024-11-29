@@ -34,6 +34,7 @@ describe ClubActivity do
         }
         expect(activity.brag!).to be_nil
       }.not_to change(Club, :count)
+      expect(club.reload.sync_activities).to be false
     end
 
     it 'warns if the account goes inactive' do
@@ -46,6 +47,7 @@ describe ClubActivity do
           expect(activity.brag!).to be_nil
         }.not_to change(Club, :count)
       }.not_to change(ClubActivity, :count)
+      expect(club.reload.sync_activities).to be false
     end
 
     it 'informs admin on restricted_action' do
@@ -57,6 +59,7 @@ describe ClubActivity do
         }
         expect(activity.brag!).to be_nil
       }.not_to change(Club, :count)
+      expect(club.reload.sync_activities).to be false
     end
 
     it 'informs admin on is_archived channel' do

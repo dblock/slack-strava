@@ -18,24 +18,24 @@ describe Api::Endpoints::SlackEndpoint do
     context 'interactive buttons' do
       let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
 
-      context 'without a club' do
-        let(:club) do
-          Club.new(
-            name: 'Orchard Street Runners',
-            description: 'www.orchardstreetrunners.com',
-            url: 'OrchardStreetRunners',
-            city: 'New York',
-            state: 'New York',
-            country: 'United States',
-            member_count: 146,
-            logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/43749/1121181/4/medium.jpg'
-          )
-        end
+      let(:osr) do
+        Club.new(
+          name: 'Orchard Street Runners',
+          description: 'www.orchardstreetrunners.com',
+          url: 'OrchardStreetRunners',
+          city: 'New York',
+          state: 'New York',
+          country: 'United States',
+          member_count: 146,
+          logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/43749/1121181/4/medium.jpg'
+        )
+      end
 
+      context 'without a club' do
         it 'connects club', vcr: { cassette_name: 'strava/retrieve_a_club' } do
           expect {
             expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
-              club.to_slack.merge(
+              osr.to_slack.merge(
                 as_user: true,
                 channel: 'C12345',
                 text: "A club has been connected by #{user.slack_mention}."
@@ -60,6 +60,38 @@ describe Api::Endpoints::SlackEndpoint do
 
       context 'with a club' do
         let!(:club) { Fabricate(:club, team: team) }
+
+        context 'with sync disabled' do
+          before do
+            club.update_attributes!(sync_activities: false)
+          end
+
+          it 'reconnects the existing club', vcr: { cassette_name: 'strava/retrieve_a_club' } do
+            expect {
+              expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+                osr.to_slack.merge(
+                  as_user: true,
+                  channel: club.channel_id,
+                  text: "A club has been connected by #{user.slack_mention}."
+                )
+              )
+              expect_any_instance_of(Strava::Api::Client).to receive(:paginate)
+              expect_any_instance_of(Club).to receive(:sync_last_strava_activity!)
+              post '/api/slack/action', payload: {
+                actions: [{ name: 'strava_id', value: '43749' }],
+                channel: { id: club.channel_id, name: 'runs' },
+                user: { id: user.user_id },
+                team: { id: team.team_id },
+                token: token,
+                callback_id: 'club-connect-channel'
+              }.to_json
+              expect(last_response.status).to eq 201
+              response = JSON.parse(last_response.body)
+              expect(response['attachments'][0]['actions'][0]['text']).to eq 'Disconnect'
+            }.not_to change(Club, :count)
+            expect(club.reload.sync_activities).to be true
+          end
+        end
 
         it 'disconnects club' do
           expect {
@@ -259,6 +291,30 @@ describe Api::Endpoints::SlackEndpoint do
               expect(response['attachments'].count).to eq 6
               expect(response['attachments'][0]['title']).to eq nyrr_club.name
               expect(response['attachments'][1]['title']).to eq club.name
+              expect(response['attachments'][1]['actions'].first['text']).to eq 'Disconnect'
+              expect(response['attachments'][1]['text']).not_to include "\nSync disabled."
+            end
+          end
+
+          context 'with another disabled club in the channel' do
+            let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
+            let!(:club) { Fabricate(:club, team: team, channel_id: 'channel', sync_activities: false) }
+
+            it 'lists both clubs a user is a member of and the connected club', vcr: { cassette_name: 'strava/list_athlete_clubs' } do
+              post '/api/slack/command',
+                   command: '/slava',
+                   text: 'clubs',
+                   channel_id: 'channel',
+                   channel_name: 'channel_name',
+                   user_id: user.user_id,
+                   team_id: team.team_id,
+                   token: token
+              response = JSON.parse(last_response.body)
+              expect(response['attachments'].count).to eq 6
+              expect(response['attachments'][0]['title']).to eq nyrr_club.name
+              expect(response['attachments'][1]['title']).to eq club.name
+              expect(response['attachments'][1]['actions'].first['text']).to eq 'Connect'
+              expect(response['attachments'][1]['text']).to include "\nSync disabled."
             end
           end
 

@@ -125,7 +125,7 @@ describe Club do
         Faraday::ResourceNotFound.new(404, body: { 'message' => 'Not Found', 'errors' => [] })
       )
       expect(club.team.slack_client).to receive(:chat_postMessage).with(
-        club.to_slack.merge(
+        hash_including(
           text: 'Your club can no longer be found on Strava. Please disconnect and reconnect it via /slava clubs.',
           channel: club.channel_id,
           as_user: true

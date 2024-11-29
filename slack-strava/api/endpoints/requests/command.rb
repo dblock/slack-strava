@@ -101,17 +101,19 @@ module Api
 
           strava_id = arg
           strava_club = Club.attrs_from_strava(user.strava_client.club(strava_id))
-          club = Club.create!(
+          club = user.team.clubs.where(channel_id: channel_id).first
+          club ||= Club.new(team: user.team, channel_id: channel_id)
+          club.assign_attributes(
             strava_club.merge(
+              sync_activities: true,
               access_token: user.access_token,
               refresh_token: user.refresh_token,
               token_expires_at: user.token_expires_at,
               token_type: user.token_type,
-              team: user.team,
-              channel_id: channel_id,
               channel_name: channel_name
             )
           )
+          club.save!
           logger.info "Connected #{club}, #{user}, #{user.team}."
           user.team.slack_client.chat_postMessage(
             club.to_slack.merge(

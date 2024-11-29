@@ -83,12 +83,18 @@ class Club
     "<##{channel_id}>"
   end
 
+  def disabled_s
+    return unless persisted? && !sync_activities?
+
+    'Sync disabled.'
+  end
+
   def to_slack
     {
       attachments: [{
         title: name,
         title_link: strava_url,
-        text: [description, location, member_count_s].compact.join("\n"),
+        text: [description, location, member_count_s, disabled_s].compact.join("\n"),
         thumb_url: logo,
         color: '#FC4C02'
       }]
@@ -100,13 +106,13 @@ class Club
       attachments: [{
         title: name,
         title_link: strava_url,
-        text: [description, location, member_count_s].compact.join("\n"),
+        text: [description, location, member_count_s, disabled_s].compact.join("\n"),
         thumb_url: logo,
         color: '#FC4C02',
-        callback_id: "club-#{persisted? ? 'disconnect' : 'connect'}-channel",
+        callback_id: "club-#{persisted? && sync_activities? ? 'disconnect' : 'connect'}-channel",
         actions: [{
           name: 'strava_id',
-          text: persisted? ? 'Disconnect' : 'Connect',
+          text: persisted? && sync_activities? ? 'Disconnect' : 'Connect',
           type: 'button',
           value: strava_id
         }]
