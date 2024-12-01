@@ -30,7 +30,7 @@ class Club
 
   has_many :activities, class_name: 'ClubActivity', dependent: :destroy
 
-  scope :connected_to_strava, -> { where(:access_token.ne => nil) }
+  scope :connected_to_strava, -> { where(:access_token.ne => nil, sync_activities: true) }
 
   def to_s
     "strava_id=#{strava_id}, name=#{name}, url=#{strava_url}, channel_id=#{channel_id}, channel_name=#{channel_name}, #{team}"

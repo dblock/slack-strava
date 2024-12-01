@@ -233,5 +233,15 @@ describe Club do
     end
 
     pending 'uses a lock'
+
+    context 'connected_to_strava' do
+      let!(:club) { Fabricate(:club) }
+      let!(:club_not_connected_to_strava) { Fabricate(:club, access_token: nil) }
+      let!(:club_sync_activities_false) { Fabricate(:club, access_token: 'token', sync_activities: false) }
+
+      it 'includes only clubs connected to strava with sync_activities' do
+        expect(described_class.connected_to_strava.count).to eq 1
+      end
+    end
   end
 end
