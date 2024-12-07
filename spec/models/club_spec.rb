@@ -119,6 +119,36 @@ describe Club do
         expect(club.token_expires_at).to be_nil
       end
     end
+    it 'disconnects club on refresh token failure' do
+      allow(club.strava_client).to receive(:club_activities).and_raise(
+        Strava::Errors::Fault.new(
+          401,
+          body: {
+            'message' => 'Bad Request',
+            'errors' => [
+              {
+                'resource' => 'RefreshToken',
+                'field' => 'refresh_token',
+                'code' => 'invalid'
+              }
+            ]
+          }
+        )
+      )
+      expect(club.team.slack_client).to receive(:chat_postMessage).with(
+        club.to_slack.merge(
+          text: 'There was an authorization problem refreshing the club access token. Please reconnect the club via /slava clubs.',
+          channel: club.channel_id,
+          as_user: true
+        )
+      ).and_return('ts' => 1)
+      expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
+      expect(club.access_token).to be_nil
+      expect(club.token_type).to be_nil
+      expect(club.refresh_token).to be_nil
+      expect(club.token_expires_at).to be_nil
+    end
+
     it 'disables sync on 404' do
       expect(club.sync_activities?).to be true
       allow(club.strava_client).to receive(:club_activities).and_raise(

@@ -189,9 +189,16 @@ class Club
   def handle_strava_error(e)
     logger.error e
     case e.message
-    when /Forbidden/, /Authorization Error/
+    when 'Forbidden', 'Authorization Error'
       reset_access_tokens!
       dm! 'There was an authorization problem. Please reconnect the club via /slava clubs.'
+    when 'Bad Request'
+      error = e.errors&.first
+      code = error && error['code']
+      if code == 'invalid'
+        reset_access_tokens!
+        dm! 'There was an authorization problem refreshing the club access token. Please reconnect the club via /slava clubs.'
+      end
     end
     raise e
   end
