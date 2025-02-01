@@ -9,9 +9,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Firefox
-        uses: browser-actions/setup-firefox@latest
+        uses: browser-actions/setup-firefox@v1.5.2
         with:
-          firefox-version: "108.0"
+          firefox-version: "134.0.1"
       - name: Download geckodriver
         uses: browser-actions/setup-geckodriver@latest
         with:
