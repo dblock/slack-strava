@@ -844,7 +844,7 @@ describe UserActivity do
             text: {
               type: 'mrkdwn',
               text: [
-                { title: 'Type', value: 'AlpineSki ⛷️' },
+                { title: 'Type', value: 'Alpine Ski ⛷️' },
                 { title: 'Distance', value: '14.35mi' },
                 { title: 'Moving Time', value: '1h15m54s' },
                 { title: 'Elapsed Time', value: '5h40m27s' }

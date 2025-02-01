@@ -237,8 +237,12 @@ module ActivityMethods
     end
   end
 
+  def type_s
+    type&.underscore&.split('_')&.collect(&:capitalize)&.join(' ')
+  end
+
   def type_with_emoji
-    [type, emoji].compact.join(' ')
+    [type_s, emoji].compact.join(' ')
   end
 
   private
