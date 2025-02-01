@@ -962,87 +962,231 @@ describe UserActivity do
 
   describe 'create_from_strava!' do
     let(:user) { Fabricate(:user) }
-    let(:detailed_activity) do
-      Strava::Models::Activity.new(
-        JSON.parse(
-          File.read(
-            File.join(__dir__, '../fabricators/activity.json')
+
+    context 'a detailed activity' do
+      let(:detailed_activity) do
+        Strava::Models::Activity.new(
+          JSON.parse(
+            File.read(
+              File.join(__dir__, '../fabricators/activity.json')
+            )
           )
         )
-      )
-    end
-
-    it 'creates an activity' do
-      expect {
-        UserActivity.create_from_strava!(user, detailed_activity)
-      }.to change(UserActivity, :count).by(1)
-    end
-
-    context 'created activity' do
-      let(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
-      let(:formatted_time) { 'Wednesday, March 28, 2018 at 07:51 PM' }
-
-      it 'has the correct time zone data' do
-        expect(detailed_activity.start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')).to eq formatted_time
-        expect(detailed_activity.start_date_local.utc_offset).to eq(-14_400)
       end
 
-      it 'stores the correct time zone' do
-        expect(activity.start_date_local_in_local_time.utc_offset).to eq(-14_400)
-        expect(activity.start_date_local_s).to eq formatted_time
-      end
-
-      it 'preserves the correct time zone across reloads' do
-        expect(activity.reload.start_date_local_s).to eq formatted_time
-        expect(activity.start_date_local_in_local_time.utc_offset).to eq(-14_400)
-      end
-    end
-
-    context 'with another existing activity' do
-      let!(:activity) { Fabricate(:user_activity, user: user) }
-
-      it 'creates another activity' do
+      it 'creates an activity' do
         expect {
           UserActivity.create_from_strava!(user, detailed_activity)
         }.to change(UserActivity, :count).by(1)
-        expect(user.reload.activities.count).to eq 2
+      end
+
+      context 'created activity' do
+        let(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+        let(:formatted_time) { 'Wednesday, March 28, 2018 at 07:51 PM' }
+
+        it 'has the correct time zone data' do
+          expect(detailed_activity.start_date_local.strftime('%A, %B %d, %Y at %I:%M %p')).to eq formatted_time
+          expect(detailed_activity.start_date_local.utc_offset).to eq(-14_400)
+        end
+
+        it 'stores the correct time zone' do
+          expect(activity.start_date_local_in_local_time.utc_offset).to eq(-14_400)
+          expect(activity.start_date_local_s).to eq formatted_time
+        end
+
+        it 'preserves the correct time zone across reloads' do
+          expect(activity.reload.start_date_local_s).to eq formatted_time
+          expect(activity.start_date_local_in_local_time.utc_offset).to eq(-14_400)
+        end
+      end
+
+      context 'with another existing activity' do
+        let!(:activity) { Fabricate(:user_activity, user: user) }
+
+        it 'creates another activity' do
+          expect {
+            UserActivity.create_from_strava!(user, detailed_activity)
+          }.to change(UserActivity, :count).by(1)
+          expect(user.reload.activities.count).to eq 2
+        end
+      end
+
+      context 'with an existing activity' do
+        let!(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+
+        it 'does not create another activity' do
+          expect {
+            UserActivity.create_from_strava!(user, detailed_activity)
+          }.not_to change(UserActivity, :count)
+        end
+
+        it 'does not cause a save without changes' do
+          expect_any_instance_of(UserActivity).not_to receive(:save!)
+          UserActivity.create_from_strava!(user, detailed_activity)
+        end
+
+        it 'updates an existing activity' do
+          activity.update_attributes!(name: 'Original')
+          UserActivity.create_from_strava!(user, detailed_activity)
+          expect(activity.reload.name).to eq 'First Time Breaking 14'
+        end
+
+        context 'concurrently' do
+          before do
+            expect(UserActivity).to receive(:where).with(
+              strava_id: detailed_activity.id, team_id: user.team.id, user_id: user.id
+            ).and_return([])
+            allow(UserActivity).to receive(:where).and_call_original
+          end
+
+          it 'does not create a duplicate activity' do
+            expect {
+              expect {
+                UserActivity.create_from_strava!(user, detailed_activity)
+              }.to raise_error(Mongo::Error::OperationFailure)
+            }.not_to change(UserActivity, :count)
+          end
+        end
       end
     end
 
-    context 'with an existing activity' do
-      let!(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
-
-      it 'does not create another activity' do
-        expect {
-          UserActivity.create_from_strava!(user, detailed_activity)
-        }.not_to change(UserActivity, :count)
+    context 'a ride' do
+      let(:detailed_activity) do
+        Strava::Models::Activity.new(
+          JSON.parse(
+            File.read(
+              File.join(__dir__, '../fabricators/ride_activity.json')
+            )
+          )
+        )
       end
 
-      it 'does not cause a save without changes' do
-        expect_any_instance_of(UserActivity).not_to receive(:save!)
-        UserActivity.create_from_strava!(user, detailed_activity)
-      end
+      context 'a new activity' do
+        let(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
 
-      it 'updates an existing activity' do
-        activity.update_attributes!(name: 'Original')
-        UserActivity.create_from_strava!(user, detailed_activity)
-        expect(activity.reload.name).to eq 'First Time Breaking 14'
-      end
-
-      context 'concurrently' do
-        before do
-          expect(UserActivity).to receive(:where).with(
-            strava_id: detailed_activity.id, team_id: user.team.id, user_id: user.id
-          ).and_return([])
-          allow(UserActivity).to receive(:where).and_call_original
+        it 'has the correct type' do
+          expect(activity.type).to eq 'Ride'
         end
 
-        it 'does not create a duplicate activity' do
+        it 'has a photo' do
+          expect(activity.photos.count).to eq(1)
+          expect(activity.photos.first.to_slack).to eq(
+            alt_text: '',
+            image_url: 'https://dgtzuqphqg23d.cloudfront.net/Bv93zv5t_mr57v0wXFbY_JyvtucgmU5Ym6N9z_bKeUI-128x96.jpg',
+            type: 'image'
+          )
+        end
+
+        it 'to_slack' do
+          expect(activity.to_slack).to eq(
+            attachments: [],
+            blocks: [
+              { type: 'section', text: { type: 'mrkdwn', text: '*<https://www.strava.com/activities/1493471377|Evening Ride>*' } },
+              {
+                type: 'context',
+                elements: [
+                  { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                  { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Friday, February 16, 2018 at 06:52 AM" }
+                ]
+              },
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: [
+                    { title: 'Type', value: 'Ride 🚴' },
+                    { title: 'Distance', value: '17.46mi' },
+                    { title: 'Moving Time', value: '1h10m7s' },
+                    { title: 'Elapsed Time', value: '1h13m30s' },
+                    { title: 'Pace', value: '4m01s/mi' },
+                    { title: 'Speed', value: '14.9mph' },
+                    { title: 'Elevation', value: '1692.9ft' }
+                  ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+                }
+              },
+              {
+                type: 'image',
+                alt_text: '',
+                image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+              },
+              {
+                type: 'image',
+                alt_text: '',
+                image_url: 'https://dgtzuqphqg23d.cloudfront.net/Bv93zv5t_mr57v0wXFbY_JyvtucgmU5Ym6N9z_bKeUI-128x96.jpg'
+              }
+            ]
+          )
+        end
+      end
+
+      context 'an existing activity' do
+        let!(:activity) do
+          Fabricate(
+            :ride_activity,
+            strava_id: detailed_activity.id,
+            user: user,
+            photos: [
+              Photo.new(
+                unique_id: 'uuid',
+                urls: {
+                  '100' => '100.jpg'
+                }
+              )
+            ]
+          )
+        end
+
+        before do
           expect {
-            expect {
-              UserActivity.create_from_strava!(user, detailed_activity)
-            }.to raise_error(Mongo::Error::OperationFailure)
+            UserActivity.create_from_strava!(user, detailed_activity)
           }.not_to change(UserActivity, :count)
+
+          activity.reload
+        end
+
+        it 'has the correct type' do
+          expect(activity.type).to eq 'Ride'
+        end
+
+        it 'to_slack' do
+          expect(activity.to_slack).to eq(
+            attachments: [],
+            blocks: [
+              { type: 'section', text: { type: 'mrkdwn', text: '*<https://www.strava.com/activities/1493471377|Evening Ride>*' } },
+              {
+                type: 'context',
+                elements: [
+                  { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                  { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Friday, February 16, 2018 at 06:52 AM" }
+                ]
+              },
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: [
+                    { title: 'Type', value: 'Ride 🚴' },
+                    { title: 'Distance', value: '17.46mi' },
+                    { title: 'Moving Time', value: '1h10m7s' },
+                    { title: 'Elapsed Time', value: '1h13m30s' },
+                    { title: 'Pace', value: '4m01s/mi' },
+                    { title: 'Speed', value: '14.9mph' },
+                    { title: 'Elevation', value: '1692.9ft' }
+                  ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
+                }
+              },
+              {
+                type: 'image',
+                alt_text: '',
+                image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png"
+              },
+              {
+                type: 'image',
+                alt_text: '',
+                image_url: 'https://dgtzuqphqg23d.cloudfront.net/Bv93zv5t_mr57v0wXFbY_JyvtucgmU5Ym6N9z_bKeUI-128x96.jpg'
+              }
+            ]
+          )
         end
       end
     end

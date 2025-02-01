@@ -29,10 +29,6 @@ class UserActivity < Activity
     start_date_local_in_local_time.strftime('%A, %B %d, %Y at %I:%M %p')
   end
 
-  def update_photos!(photos)
-    update_attributes!(photos: photos.map { |photo| Photo.attrs_from_strava(photo) })
-  end
-
   def brag!
     return if bragged_at
 
