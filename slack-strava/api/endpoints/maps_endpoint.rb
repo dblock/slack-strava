@@ -33,6 +33,7 @@ module Api
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, #{png.size} byte(s)."
             body png
           else
+            Api::Middleware.logger.debug headers
             redirect activity.map.image_url
           end
         end
