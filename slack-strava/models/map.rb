@@ -26,7 +26,7 @@ class Map
   end
 
   def polyline?
-    summary_polyline && decoded_summary_polyline&.any?
+    !!(summary_polyline && decoded_summary_polyline&.any?)
   end
 
   def start_latlng
@@ -49,6 +49,8 @@ class Map
   end
 
   def proxy_image_url
+    return unless polyline?
+
     "#{SlackRubyBotServer::Service.url}/api/maps/#{id}.png"
   end
 

@@ -876,6 +876,23 @@ describe UserActivity do
   end
 
   context 'maps' do
+    context 'with an empty polyline' do
+      let(:team) { Fabricate(:team, maps: 'thumb') }
+      let(:user) { Fabricate(:user, team:) }
+      let(:activity) { Fabricate(:user_activity, user:, map: { summary_polyline: '' }) }
+      let(:embed) { activity.to_discord[:embeds].first }
+
+      it 'does not insert an empty point to the decoded polyline' do
+        expect(activity.map.decoded_summary_polyline).to be_nil
+      end
+
+      it 'does not have a polyline' do
+        expect(activity.map.polyline?).to be false
+        expect(activity.map.image_url).to be_nil
+        expect(activity.map.proxy_image_url).to be_nil
+      end
+    end
+
     context 'without maps' do
       let(:team) { Fabricate(:team, maps: 'off') }
       let(:user) { Fabricate(:user, team: team) }
