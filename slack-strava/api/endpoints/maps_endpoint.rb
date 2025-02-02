@@ -17,7 +17,7 @@ module Api
           elsif activity.hidden?
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, hidden (403)."
             error!('Access Denied', 403)
-          elsif activity.map.nil?
+          elsif !activity.map&.polyline?
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
             error!('Map Not Found', 404)
           elsif activity.user.team.proxy_maps

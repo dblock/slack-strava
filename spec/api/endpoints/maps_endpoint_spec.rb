@@ -142,5 +142,19 @@ describe Api::Endpoints::MapsEndpoint do
         expect(last_response.status).to eq 403
       end
     end
+
+    context 'without a polyline' do
+      let(:user) { Fabricate(:user, private_activities: false) }
+      let(:activity) { Fabricate(:user_activity, user: user) }
+
+      before do
+        activity.map.update_attributes!(summary_polyline: nil)
+      end
+
+      it 'does not return map' do
+        get "/api/maps/#{activity.map.id}.png"
+        expect(last_response.status).to eq 404
+      end
+    end
   end
 end
