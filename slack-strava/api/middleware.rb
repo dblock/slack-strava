@@ -7,6 +7,16 @@ module Api
       end
     end
 
+    def self.cache
+      @cache ||= begin
+        tmp_dir = File.join(Dir.tmpdir, 'slack-strava')
+        # TODO: use an LRU with a max size
+        # on DigitalOcean a filled up temporary storage causes the container to be recycled
+        logger.info "Initializing file cache in #{tmp_dir}."
+        ActiveSupport::Cache::FileStore.new(tmp_dir)
+      end
+    end
+
     def self.instance
       @instance ||= Rack::Builder.new {
         use Rack::Cors do

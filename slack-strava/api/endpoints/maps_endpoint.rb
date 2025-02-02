@@ -17,11 +17,10 @@ module Api
           elsif activity.hidden?
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, hidden (403)."
             error!('Access Denied', 403)
+          elsif activity.map.nil?
+            Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
+            error!('Map Not Found', 404)
           elsif activity.user.team.proxy_maps
-            unless activity.map
-              Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, no map (404)."
-              error!('Map Not Found', 404)
-            end
             # will also re-fetch the map if needed
             activity.map.update_attributes!(png_retrieved_at: Time.now.utc)
             unless activity.map.png
@@ -32,8 +31,11 @@ module Api
             png = activity.map.png.data
             Api::Middleware.logger.debug "Map png for #{activity.user}, #{activity} for #{user_agent}, #{png.size} byte(s)."
             body png
+          elsif (png = activity.map.cached_png)
+            content_type 'image/png'
+            Api::Middleware.logger.debug "Map png cached for #{activity.user}, #{activity} for #{user_agent}, #{png.size} byte(s)."
+            body png
           else
-            Api::Middleware.logger.debug headers
             redirect activity.map.image_url
           end
         end

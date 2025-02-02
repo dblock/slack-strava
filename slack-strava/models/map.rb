@@ -45,7 +45,7 @@ class Map
     return unless decoded_summary_polyline&.any?
 
     google_maps_api_key = ENV.fetch('GOOGLE_STATIC_MAPS_API_KEY', nil)
-    "https://maps.googleapis.com/maps/api/staticmap?maptype=roadmap&path=enc:#{summary_polyline}&key=#{google_maps_api_key}&size=800x800&markers=color:yellow|label:S|#{start_latlng[0]},#{start_latlng[1]}&markers=color:green|label:F|#{end_latlng[0]},#{end_latlng[1]}"
+    "https://maps.googleapis.com/maps/api/staticmap?maptype=roadmap&path=enc:#{CGI.escape(summary_polyline)}&key=#{google_maps_api_key}&size=800x800&markers=color:yellow|label:S|#{start_latlng[0]},#{start_latlng[1]}&markers=color:green|label:F|#{end_latlng[0]},#{end_latlng[1]}"
   end
 
   def proxy_image_url
@@ -65,6 +65,17 @@ class Map
 
   def delete_png!
     update_attributes!(png: nil)
+  end
+
+  def cached_png
+    Api::Middleware.cache.read(image_url) || begin
+      url = image_url
+      return unless url
+
+      body = HTTParty.get(url).body
+      Api::Middleware.cache.write(image_url, body)
+      body
+    end
   end
 
   private
