@@ -331,7 +331,7 @@ describe Api::Endpoints::SlackEndpoint do
               expect(last_response.status).to eq 201
               response = JSON.parse(last_response.body)
               expect(response).to eq(
-                'text' => 'There are no activities with Distance in this channel.',
+                'text' => 'There are no activities with distance in this channel.',
                 'user' => user.user_id,
                 'channel' => 'channel'
               )

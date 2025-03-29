@@ -4,6 +4,7 @@ ruby '3.3.5'
 
 gem 'base64'
 gem 'bigdecimal'
+gem 'chronic'
 gem 'csv'
 gem 'grape'
 gem 'hashie'

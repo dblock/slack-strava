@@ -48,11 +48,13 @@ class TeamLeaderboard
   #   'Pace', 'Speed', 'Max Speed', 'Heart Rate', 'Max Heart Rate'
   # ].freeze
 
-  attr_accessor :team, :metric, :channel_id
+  attr_accessor :team, :metric, :start_date, :end_date, :channel_id
 
   def initialize(team, options = {})
     @team = team
     @metric = options[:metric]
+    @start_date = options[:start_date]
+    @end_date = options[:end_date]
     @channel_id = options[:channel_id]
   end
 
@@ -63,6 +65,13 @@ class TeamLeaderboard
   def aggreate_options
     aggreate_options = { team_id: team.id, _type: 'UserActivity' }
     aggreate_options.merge!('channel_messages.channel' => channel_id) if channel_id
+    if start_date && end_date
+      aggreate_options.merge!('start_date' => { '$gte' => start_date, '$lte' => end_date })
+    elsif start_date
+      aggreate_options.merge!('start_date' => { '$gte' => start_date })
+    elsif end_date
+      aggreate_options.merge!('start_date' => { '$lte' => end_date })
+    end
     aggreate_options
   end
 
@@ -70,6 +79,7 @@ class TeamLeaderboard
     @aggregate ||= begin
       raise SlackStrava::Error, "Missing value. Expected one of #{MEASURABLE_VALUES.or}." unless metric && !metric.blank?
       raise SlackStrava::Error, "Invalid value: #{metric}. Expected one of #{MEASURABLE_VALUES.or}." unless MEASURABLE_VALUES.map(&:downcase).include?(metric.downcase)
+      raise SlackStrava::Error, 'Invalid date range. End date cannot be before start date.' if @start_date && @end_date && @start_date > @end_date
 
       UserActivity.collection.aggregate(
         [
@@ -113,6 +123,17 @@ class TeamLeaderboard
         rank: row[:rank]
       ).to_s
     }.compact
-    top.any? ? top.join("\n") : "There are no activities with #{metric} in this channel."
+    if top.any?
+      top.join("\n")
+    else
+      [
+        'There are no activities',
+        metric_field == 'count' ? nil : "with #{metric.downcase}",
+        start_date && end_date ? "between #{start_date} and #{end_date}" : nil,
+        start_date && end_date.nil? ? "after #{start_date}" : nil,
+        start_date.nil? && end_date ? "before #{end_date}" : nil,
+        'in this channel.'
+      ].compact.join(' ')
+    end
   end
 end

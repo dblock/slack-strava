@@ -45,5 +45,45 @@ describe SlackStrava::Commands::Leaderboard do
       expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance').and_call_original
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard"))
     end
+
+    it 'does not include count in the message' do
+      expect(client.web_client).to receive(:chat_postMessage).with(
+        text: 'There are no activities in this channel.',
+        channel: 'DM',
+        as_user: true
+      )
+      expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'count').and_call_original
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard count"))
+    end
+
+    it 'parses start date' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      dt = Time.now - 2.days
+      expect(Chronic).to receive(:parse).with('two days ago', context: :past, guess: false).and_return(dt)
+      expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: dt).and_call_original
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard two days ago"))
+    end
+
+    it 'parses year' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: Time.new(2023, 1, 1), end_date: Time.new(2023, 1, 1).end_of_year).and_call_original
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard 2023"))
+    end
+
+    it 'parses a month' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      start_date = Time.new(2023, 9, 1, 0, 0, 0)
+      end_date = Time.new(2023, 10, 1, 0, 0, 0)
+      expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: start_date, end_date: end_date).and_call_original
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard September 2023"))
+    end
+
+    it 'parses an ISO date' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      start_date = Time.new(2023, 3, 1, 0, 0, 0)
+      end_date = Time.new(2023, 3, 2, 0, 0, 0)
+      expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'moving time', start_date: start_date, end_date: end_date).and_call_original
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard moving time 2023-03-01"))
+    end
   end
 end

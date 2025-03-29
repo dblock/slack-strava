@@ -192,6 +192,10 @@ module SlackStrava
             subscription_name = "#{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)})"
             logger.info "Checking #{team} subscription to #{subscription_name}, #{subscription.status}."
             case subscription.status
+            when 'active'
+              if subscription.cancel_at_period_end && (Time.now + 2.weeks > subscription.current_period_end)
+                logger.warn "Subscription for #{team} is active, but expires in under two weeks on #{subscription.current_period_end}."
+              end
             when 'past_due'
               logger.warn "Subscription for #{team} is #{subscription.status}, notifying."
               team.inform_everyone!(text: "Your subscription to #{subscription_name} is past due. #{team.update_cc_text}")
