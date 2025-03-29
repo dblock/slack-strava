@@ -62,6 +62,16 @@ module SlackStrava
               client.say(channel: data.channel, text: "Maps for team #{team.name} are#{changed ? ' now' : ''} *#{team.maps_s}*.")
               logger.info "SET: #{team} - maps set to #{team.maps}"
             end
+          when 'leaderboard'
+            changed = v && team.default_leaderboard != v
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the default leaderboard. Default leaderboard for team #{team.name} is *#{team.default_leaderboard_s}*.")
+              logger.info "SET: #{team} - not admin, default leaderboard remain set to #{team.default_leaderboard}"
+            else
+              team.update_attributes!(default_leaderboard: v) if Leaderboard.parse_expression(v) && changed
+              client.say(channel: data.channel, text: "Default leaderboard for team #{team.name} is#{changed ? ' now' : ''} *#{team.default_leaderboard_s}*.")
+              logger.info "SET: #{team} - default leaderboard set to #{team.default_leaderboard}"
+            end
           else
             raise "Invalid setting #{k}, type `help` for instructions."
           end
@@ -69,7 +79,8 @@ module SlackStrava
           messages = [
             "Activities for team #{team.name} display *#{team.units_s}*.",
             "Activity fields are *#{team.activity_fields_s}*.",
-            "Maps for team #{team.name} are *#{team.maps_s}*.",
+            "Maps are *#{team.maps_s}*.",
+            "Default leaderboard is *#{team.default_leaderboard_s}*.",
             "Your activities will #{user.sync_activities? ? '' : 'not '}sync.",
             "Your private activities will #{user.private_activities? ? '' : 'not '}be posted.",
             "Your followers only activities will #{user.followers_only_activities? ? '' : 'not '}be posted."

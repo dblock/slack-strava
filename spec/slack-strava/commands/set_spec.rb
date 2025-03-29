@@ -28,7 +28,8 @@ describe SlackStrava::Commands::Set do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
           'Activity fields are *set to default*.',
-          "Maps for team #{team.name} are *displayed in full*.",
+          'Maps are *displayed in full*.',
+          'Default leaderboard is *distance*.',
           'Your activities will sync.',
           'Your private activities will not be posted.',
           'Your followers only activities will be posted.'
@@ -341,6 +342,37 @@ describe SlackStrava::Commands::Set do
               end
             end
           end
+
+          context 'leaderboard' do
+            it 'shows current value of leaderboard' do
+              expect(message: "#{SlackRubyBot.config.user} set leaderboard").to respond_with_slack_message(
+                "Default leaderboard for team #{team.name} is *distance*."
+              )
+            end
+
+            it 'shows current value of leaderboard as set' do
+              team.update_attributes!(default_leaderboard: 'elapsed time')
+              expect(message: "#{SlackRubyBot.config.user} set leaderboard").to respond_with_slack_message(
+                "Default leaderboard for team #{team.name} is *elapsed time*."
+              )
+            end
+
+            it 'sets leaderboard to elapsed time' do
+              team.update_attributes!(default_leaderboard: 'distance')
+              expect(message: "#{SlackRubyBot.config.user} set leaderboard elapsed time").to respond_with_slack_message(
+                "Default leaderboard for team #{team.name} is now *elapsed time*."
+              )
+              expect(team.reload.default_leaderboard).to eq 'elapsed time'
+            end
+
+            it 'displays an error for an invalid leaderboard value' do
+              team.update_attributes!(default_leaderboard: 'distance')
+              expect(message: "#{SlackRubyBot.config.user} set leaderboard foobar").to respond_with_slack_message(
+                "Sorry, I don't understand 'foobar'."
+              )
+              expect(team.reload.default_leaderboard).to eq 'distance'
+            end
+          end
         end
 
         context 'not as a team admin' do
@@ -391,6 +423,22 @@ describe SlackStrava::Commands::Set do
                 "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change fields. Activity fields for team #{team.name} are *not displayed*."
               )
               expect(client.owner.activity_fields).to eq(['None'])
+            end
+          end
+
+          context 'leaderboard' do
+            it 'shows current value of leaderboard' do
+              expect(message: "#{SlackRubyBot.config.user} set leaderboard").to respond_with_slack_message(
+                "Default leaderboard for team #{team.name} is *distance*."
+              )
+            end
+
+            it 'cannot set leaderboard' do
+              team.update_attributes!(default_leaderboard: 'elapsed time')
+              expect(message: "#{SlackRubyBot.config.user} set leaderboard distance").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the default leaderboard. Default leaderboard for team #{team.name} is *elapsed time*."
+              )
+              expect(client.owner.default_leaderboard).to eq('elapsed time')
             end
           end
         end

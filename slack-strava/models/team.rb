@@ -11,6 +11,8 @@ class Team
   field :maps, type: String, default: 'full'
   validates_inclusion_of :maps, in: MapTypes.values
 
+  field :default_leaderboard, type: String
+
   field :stripe_customer_id, type: String
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
@@ -76,6 +78,10 @@ class Team
     else
       activity_fields.and
     end
+  end
+
+  def default_leaderboard_s
+    default_leaderboard || 'distance'
   end
 
   def asleep?(dt = 2.weeks)

@@ -56,6 +56,30 @@ describe SlackStrava::Commands::Leaderboard do
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard count"))
     end
 
+    context 'with a default team leaderboard' do
+      before do
+        team.update_attributes!(default_leaderboard: 'elapsed time since 2025')
+      end
+
+      it 'uses it without an expression' do
+        Timecop.freeze do
+          allow(client.web_client).to receive(:chat_postMessage)
+          start_date = Time.new(2025, 1, 1)
+          end_date = Time.now
+          expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'elapsed time', start_date: start_date, end_date: end_date).and_call_original
+          message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard"))
+        end
+      end
+
+      it 'ignores it with an expression' do
+        allow(client.web_client).to receive(:chat_postMessage)
+        dt = Time.now - 2.days
+        expect(Chronic).to receive(:parse).with('two days ago', context: :past, guess: false).and_return(dt)
+        expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: dt).and_call_original
+        message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard two days ago"))
+      end
+    end
+
     it 'parses start date' do
       allow(client.web_client).to receive(:chat_postMessage)
       dt = Time.now - 2.days

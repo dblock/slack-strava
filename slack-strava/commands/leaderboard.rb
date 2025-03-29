@@ -77,7 +77,7 @@ module SlackStrava
       end
 
       subscribe_command 'leaderboard' do |client, data, match|
-        leaderboard_options = Leaderboard.parse_expression(match['expression'])
+        leaderboard_options = Leaderboard.parse_expression(match['expression'] || client.owner.default_leaderboard)
         leaderboard_options = leaderboard_options.merge(channel_id: data.channel) unless data.channel[0] == 'D'
         leaderboard_s = client.owner.leaderboard(leaderboard_options).to_s
         client.web_client.chat_postMessage(

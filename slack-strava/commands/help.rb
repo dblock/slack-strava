@@ -26,6 +26,7 @@ module SlackStrava
         set units imperial|metric|both       - use imperial vs. metric units, or display both
         set fields all|none|...              - display all, none or certain activity fields
         set maps off|full|thumb              - change the way maps are displayed
+        set leaderboard elapsed time|...     - change the default leaderboard
         set sync true|false                  - sync activities (default is true)
         set private true|false               - sync private (only you) activities (default is false)
         set followers true|false             - sync followers only activities (default is true)
