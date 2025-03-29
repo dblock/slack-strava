@@ -10,6 +10,7 @@ module SlackStrava
           check_stripe_subscribers!
           deactivate_asleep_teams!
           check_trials!
+          prune_activities!
           prune_pngs!
           aggregate_stats!
         end
@@ -91,6 +92,18 @@ module SlackStrava
 
     def aggregate_stats!
       SystemStats.aggregate!
+    end
+
+    def prune_activities!
+      total = 0
+      log_info_without_repeat "Pruning activities for #{Team.count} team(s)."
+      Team.each do |team|
+        total += team.prune_activities!
+      rescue StandardError => e
+        logger.warn "Error pruning team #{team}, #{e.message}."
+        NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
+      end
+      log_info_without_repeat "Pruned #{total}/#{Activity.count} activities."
     end
 
     def prune_pngs!

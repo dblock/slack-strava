@@ -13,6 +13,9 @@ class Team
 
   field :default_leaderboard, type: String
 
+  field :retention, type: Integer, default: 30 * 24 * 60 * 60
+  before_validation :validate_retention
+
   field :stripe_customer_id, type: String
   field :subscribed, type: Boolean, default: false
   field :subscribed_at, type: DateTime
@@ -46,7 +49,7 @@ class Team
     when 'mi'
       'miles, feet, yards, and degrees Fahrenheit'
     when 'km'
-      'kilometers, meters, and degrees Celcius'
+      'kilometers, meters, and degrees Celsius'
     when 'both'
       'both units'
     else
@@ -363,7 +366,32 @@ class Team
     TeamLeaderboard.new(self, options)
   end
 
+  def prune_activities!
+    total = 0
+    activities.where(:updated_at.lt => prune_before_updated_at).each do |activity|
+      logger.info "Pruning #{self}, #{activity.id}."
+      activity.destroy!
+      total += 1
+    end
+    total
+  end
+
+  def retention_s
+    ChronicDuration.output(retention, format: :long)
+  end
+
   private
+
+  def validate_retention
+    return if retention.nil?
+
+    errors.add(:team, 'Retention must be at least 24 hours.') if retention < 24 * 60 * 60
+    errors.add(:team, 'Retention cannot exceed 6 months.') if retention > 6 * 30 * 24 * 60 * 60
+  end
+
+  def prune_before_updated_at
+    Time.now - (retention || (30 * 24 * 60 * 60))
+  end
 
   def destroy_subscribed_team
     raise 'cannot destroy a subscribed team' if subscribed?

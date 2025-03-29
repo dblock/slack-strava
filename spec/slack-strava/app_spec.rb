@@ -99,4 +99,35 @@ describe SlackStrava::App do
       subject.send(:check_trials!)
     end
   end
+
+  describe '#prune_activities!' do
+    let!(:first_team) { Fabricate(:team) }
+    let!(:second_team) { Fabricate(:team) }
+
+    before do
+      allow(Team).to receive(:each)
+        .and_yield(first_team)
+        .and_yield(second_team)
+    end
+
+    it 'calls prune_activities! on each team' do
+      expect(first_team).to receive(:prune_activities!)
+      expect(second_team).to receive(:prune_activities!)
+      expect(subject.logger).to receive(:info).with(/Pruning activities for \d+ team\(s\)\./)
+      expect(subject.logger).to receive(:info).with(%r{Pruned \d+/\d+ activities\.})
+      subject.send(:prune_activities!)
+    end
+
+    context 'with error during pruning' do
+      before do
+        allow_any_instance_of(Team).to receive(:prune_activities!).and_raise('Error')
+      end
+
+      it 'logs error and continues' do
+        expect(subject.logger).to receive(:warn).with(/Error pruning team .*, Error/).twice
+        expect(NewRelic::Agent).to receive(:notice_error).twice
+        subject.send(:prune_activities!)
+      end
+    end
+  end
 end

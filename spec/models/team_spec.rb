@@ -228,4 +228,88 @@ describe Team do
       team.destroy
     end
   end
+
+  describe '#prune_activities!' do
+    before do
+      # skip re-saving map in ActivityFabricator#after_create which updates timestamps
+      allow_any_instance_of(Map).to receive(:save!)
+    end
+
+    let!(:team) { Fabricate(:team) }
+    let!(:user) { Fabricate(:user, team: team) }
+    let!(:team2) { Fabricate(:team) }
+    let!(:user2) { Fabricate(:user, team: team2) }
+    let!(:recent_activity) { Fabricate(:user_activity, user: user, updated_at: Time.now - 15.days) }
+    let!(:old_activity) { Fabricate(:user_activity, user: user, updated_at: Time.now - 31.days) }
+    let!(:very_old_activity) { Fabricate(:user_activity, user: user, updated_at: Time.now - 60.days) }
+    let!(:other_team_activity) { Fabricate(:user_activity, team: team2, user: user2, updated_at: Time.now - 31.days) }
+
+    it 'removes activities older than 30 days' do
+      expect(team.activities.count).to eq 3
+      expect {
+        expect(team.prune_activities!).to eq 2
+      }.to change(team.activities, :count).by(-2)
+      expect(team.activities.count).to eq 1
+      expect(team.activities.first).to eq recent_activity
+    end
+
+    context 'with a retention period of 45 days' do
+      before do
+        team.update_attributes!(retention: 45 * 24 * 60 * 60)
+      end
+
+      it 'removes older activities' do
+        expect(team.activities.count).to eq 3
+        expect {
+          expect(team.prune_activities!).to eq 1
+        }.to change(team.activities, :count).by(-1)
+        expect(team.activities.count).to eq 2
+        expect(team.activities.first).to eq recent_activity
+      end
+    end
+
+    it 'does not affect other teams activities' do
+      expect {
+        team.prune_activities!
+      }.not_to change(other_team_activity.team.activities, :count)
+    end
+  end
+
+  describe '#retention' do
+    context 'default value' do
+      let(:team) { Fabricate(:team) }
+
+      it 'sets default retention to 30 days in seconds' do
+        expect(team.retention).to eq(30 * 24 * 60 * 60)
+      end
+    end
+
+    context 'validation' do
+      let(:team) { Fabricate(:team) }
+
+      it 'allows valid retention periods' do
+        [24 * 60 * 60, 7 * 24 * 60 * 60, 6 * 30 * 24 * 60 * 60].each do |retention|
+          team.retention = retention
+          expect(team).to be_valid
+        end
+      end
+
+      it 'rejects retention less than 24 hours' do
+        team.retention = 23 * 60 * 60
+        expect(team).not_to be_valid
+        expect(team.errors[:team]).to include('Retention must be at least 24 hours.')
+      end
+
+      it 'rejects retention more than 6 months' do
+        team.retention = (6 * 30 * 24 * 60 * 60) + 1
+        expect(team).not_to be_valid
+        expect(team.errors[:team]).to include('Retention cannot exceed 6 months.')
+      end
+
+      it 'allows nil retention' do
+        team.retention = nil
+        expect(team).to be_valid
+      end
+    end
+  end
 end

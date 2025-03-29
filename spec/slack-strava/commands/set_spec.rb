@@ -27,6 +27,7 @@ describe SlackStrava::Commands::Set do
       it 'shows current settings' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
+          'Activities are retained for *1 month*.',
           'Activity fields are *set to default*.',
           'Maps are *displayed in full*.',
           'Default leaderboard is *distance*.',
@@ -163,7 +164,7 @@ describe SlackStrava::Commands::Set do
           it 'shows current value of units set to km' do
             team.update_attributes!(units: 'km')
             expect(message: "#{SlackRubyBot.config.user} set units").to respond_with_slack_message(
-              "Activities for team #{team.name} display *kilometers, meters, and degrees Celcius*."
+              "Activities for team #{team.name} display *kilometers, meters, and degrees Celsius*."
             )
           end
 
@@ -179,7 +180,7 @@ describe SlackStrava::Commands::Set do
           it 'sets units to km' do
             team.update_attributes!(units: 'mi')
             expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(
-              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celcius*."
+              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celsius*."
             )
             expect(client.owner.units).to eq 'km'
             expect(team.reload.units).to eq 'km'
@@ -188,7 +189,7 @@ describe SlackStrava::Commands::Set do
           it 'sets units to metric' do
             team.update_attributes!(units: 'mi')
             expect(message: "#{SlackRubyBot.config.user} set units metric").to respond_with_slack_message(
-              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celcius*."
+              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celsius*."
             )
             expect(client.owner.units).to eq 'km'
             expect(team.reload.units).to eq 'km'
@@ -206,7 +207,7 @@ describe SlackStrava::Commands::Set do
           it 'changes units' do
             team.update_attributes!(units: 'mi')
             expect(message: "#{SlackRubyBot.config.user} set units km").to respond_with_slack_message(
-              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celcius*."
+              "Activities for team #{team.name} now display *kilometers, meters, and degrees Celsius*."
             )
             expect(client.owner.units).to eq 'km'
             expect(team.reload.units).to eq 'km'
@@ -373,6 +374,35 @@ describe SlackStrava::Commands::Set do
               expect(team.reload.default_leaderboard).to eq 'distance'
             end
           end
+
+          context 'retention' do
+            it 'shows current retention value' do
+              expect(message: "#{SlackRubyBot.config.user} set retention").to respond_with_slack_message(
+                "Activities in team #{team.name} are retained for *1 month*."
+              )
+            end
+
+            it 'shows changed retention value' do
+              team.update_attributes!(retention: 15 * 24 * 60 * 60)
+              expect(message: "#{SlackRubyBot.config.user} set retention").to respond_with_slack_message(
+                "Activities in team #{team.name} are retained for *15 days*."
+              )
+            end
+
+            it 'sets retention' do
+              expect(message: "#{SlackRubyBot.config.user} set retention 7 days").to respond_with_slack_message(
+                "Activities in team #{team.name} are now retained for *7 days*."
+              )
+              expect(team.reload.retention).to eq 7 * 24 * 60 * 60
+            end
+
+            it 'displays an error for an invalid retention value' do
+              expect(message: "#{SlackRubyBot.config.user} set retention foobar").to respond_with_slack_message(
+                'An invalid word "foobar" was used in the string to be parsed.'
+              )
+              expect(team.reload.retention).to eq 30 * 24 * 60 * 60
+            end
+          end
         end
 
         context 'not as a team admin' do
@@ -388,7 +418,7 @@ describe SlackStrava::Commands::Set do
             it 'cannot set units' do
               team.update_attributes!(units: 'km')
               expect(message: "#{SlackRubyBot.config.user} set units mi").to respond_with_slack_message(
-                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *kilometers, meters, and degrees Celcius*."
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *kilometers, meters, and degrees Celsius*."
               )
               expect(team.reload.units).to eq 'km'
             end
@@ -439,6 +469,21 @@ describe SlackStrava::Commands::Set do
                 "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the default leaderboard. Default leaderboard for team #{team.name} is *elapsed time*."
               )
               expect(client.owner.default_leaderboard).to eq('elapsed time')
+            end
+          end
+
+          context 'retention' do
+            it 'shows current value of retention' do
+              expect(message: "#{SlackRubyBot.config.user} set retention").to respond_with_slack_message(
+                "Activities in team #{team.name} are retained for *1 month*."
+              )
+            end
+
+            it 'cannot set leaderboard' do
+              expect(message: "#{SlackRubyBot.config.user} set retention 5 days").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change activity retention. Activities in team #{team.name} are retained for *1 month*."
+              )
+              expect(client.owner.retention).to eq(30 * 24 * 60 * 60)
             end
           end
         end

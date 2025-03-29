@@ -16,13 +16,14 @@ module SlackStrava
 
         Teams
         ------------
-        stats                                - stats in current channel for the past 30 days
+        stats                                - stats in current channel
         leaderboard distance|... [when]      - leaderboard by distance, etc.
           2025|last year|[month]|...
           since|between [date] [and [date]]
 
         Settings
         ------------
+        set retention [n] days|months|years  - set how long to retain user activities (default is 30 days)
         set units imperial|metric|both       - use imperial vs. metric units, or display both
         set fields all|none|...              - display all, none or certain activity fields
         set maps off|full|thumb              - change the way maps are displayed

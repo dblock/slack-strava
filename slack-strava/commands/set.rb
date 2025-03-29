@@ -72,12 +72,24 @@ module SlackStrava
               client.say(channel: data.channel, text: "Default leaderboard for team #{team.name} is#{changed ? ' now' : ''} *#{team.default_leaderboard_s}*.")
               logger.info "SET: #{team} - default leaderboard set to #{team.default_leaderboard}"
             end
+          when 'retention'
+            v = ChronicDuration.parse(v) if v
+            changed = v && team.retention != v
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change activity retention. Activities in team #{team.name} are retained for *#{team.retention_s}*.")
+              logger.info "SET: #{team} - not admin, default activity retention remains set to #{team.retention}"
+            else
+              team.update_attributes!(retention: v) if changed
+              client.say(channel: data.channel, text: "Activities in team #{team.name} are#{changed ? ' now' : ''} retained for *#{team.retention_s}*.")
+              logger.info "SET: #{team} - activity retention set to #{team.retention} (#{team.retention_s})"
+            end
           else
             raise "Invalid setting #{k}, type `help` for instructions."
           end
         else
           messages = [
             "Activities for team #{team.name} display *#{team.units_s}*.",
+            "Activities are retained for *#{team.retention_s}*.",
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps are *#{team.maps_s}*.",
             "Default leaderboard is *#{team.default_leaderboard_s}*.",
