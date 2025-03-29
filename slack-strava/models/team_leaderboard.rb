@@ -129,9 +129,9 @@ class TeamLeaderboard
       [
         'There are no activities',
         metric_field == 'count' ? nil : "with #{metric.downcase}",
-        start_date && end_date ? "between #{start_date} and #{end_date}" : nil,
-        start_date && end_date.nil? ? "after #{start_date}" : nil,
-        start_date.nil? && end_date ? "before #{end_date}" : nil,
+        start_date && end_date ? "between #{start_date.to_fs(:long)} and #{end_date.to_fs(:long)}" : nil,
+        start_date && end_date.nil? ? "after #{start_date.to_fs(:long)}" : nil,
+        start_date.nil? && end_date ? "before #{end_date.to_fs(:long)}" : nil,
         'in this channel.'
       ].compact.join(' ')
     end

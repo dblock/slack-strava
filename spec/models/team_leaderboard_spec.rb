@@ -60,7 +60,7 @@ describe TeamLeaderboard do
       let(:leaderboard) { TeamLeaderboard.new(team, metric: 'count', start_date: dt, end_date: dt + 1.day) }
 
       it 'returns no activities by default' do
-        expect(leaderboard.to_s).to eq "There are no activities between #{dt} and #{dt + 1.day} in this channel."
+        expect(leaderboard.to_s).to eq "There are no activities between #{dt.to_fs(:long)} and #{(dt + 1.day).to_fs(:long)} in this channel."
       end
     end
 
@@ -69,7 +69,7 @@ describe TeamLeaderboard do
       let(:leaderboard) { TeamLeaderboard.new(team, metric: 'count', start_date: dt) }
 
       it 'returns no activities by default' do
-        expect(leaderboard.to_s).to eq "There are no activities after #{dt} in this channel."
+        expect(leaderboard.to_s).to eq "There are no activities after #{dt.to_fs(:long)} in this channel."
       end
     end
 
@@ -78,7 +78,7 @@ describe TeamLeaderboard do
       let(:leaderboard) { TeamLeaderboard.new(team, metric: 'count', end_date: dt) }
 
       it 'returns no activities by default' do
-        expect(leaderboard.to_s).to eq "There are no activities before #{dt} in this channel."
+        expect(leaderboard.to_s).to eq "There are no activities before #{dt.to_fs(:long)} in this channel."
       end
     end
   end
