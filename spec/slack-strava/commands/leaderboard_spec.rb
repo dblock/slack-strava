@@ -85,5 +85,23 @@ describe SlackStrava::Commands::Leaderboard do
       expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'moving time', start_date: start_date, end_date: end_date).and_call_original
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard moving time 2023-03-01"))
     end
+
+    it 'parses since' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      Timecop.freeze do
+        start_date = Time.new(2023, 9, 1, 0, 0, 0)
+        end_date = Time.now
+        expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: start_date, end_date: end_date).and_call_original
+        message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard since September 2023"))
+      end
+    end
+
+    it 'parses between' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      start_date = Time.new(2023, 9, 1, 0, 0, 0)
+      end_date = Time.new(2024, 9, 1, 0, 0, 0)
+      expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: start_date, end_date: end_date).and_call_original
+      message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard between September 2023 and August 2024"))
+    end
   end
 end

@@ -12,6 +12,21 @@ module SlackStrava
           Time.new(year, 1, 1)
         end
 
+        def parse_date(date_time, guess = :first)
+          if year = Leaderboard.parse_year(date_time)
+            year
+          else
+            parsed = Chronic.parse(date_time, context: :past, guess: false)
+            if parsed.is_a?(Chronic::Span)
+              parsed.send(guess)
+            elsif parsed.is_a?(Time)
+              parsed
+            else
+              raise SlackStrava::Error, "Sorry, I don't understand '#{date_time}'."
+            end
+          end
+        end
+
         def parse_expression(expression)
           result = { metric: 'distance' }
           return result if expression.nil?
@@ -26,20 +41,34 @@ module SlackStrava
             break
           end
 
-          if expression.blank?
-            # pass
-          elsif year = Leaderboard.parse_year(expression)
-            result[:start_date] = year
-            result[:end_date] = year.end_of_year
+          if expression.match?(/^between(\s)/i)
+            expression = expression[('between'.length)..]&.strip
+            dates = expression.strip.split(/\s+and\s+/)
+            raise SlackStrava::Error, "Sorry, I don't understand '#{expression}'." unless dates.length == 2
+
+            result[:start_date] = Leaderboard.parse_date(dates[0], :first)
+            result[:end_date] = Leaderboard.parse_date(dates[1], :last)
           else
-            parsed = Chronic.parse(expression, context: :past, guess: false)
-            if parsed.is_a?(Chronic::Span)
-              result[:start_date] = parsed.first
-              result[:end_date] = parsed.last
-            elsif parsed.is_a?(Time)
-              result[:start_date] = parsed
+            if expression.match?(/^since(\s)/i)
+              expression = expression[('since'.length)..]&.strip
+              result[:end_date] = Time.now
+            end
+
+            if expression.blank?
+              # pass
+            elsif year = Leaderboard.parse_year(expression)
+              result[:start_date] = year
+              result[:end_date] ||= year.end_of_year
             else
-              raise SlackStrava::Error, "Sorry, I don't understand '#{expression}'."
+              parsed = Chronic.parse(expression, context: :past, guess: false)
+              if parsed.is_a?(Chronic::Span)
+                result[:start_date] = parsed.first
+                result[:end_date] ||= parsed.last
+              elsif parsed.is_a?(Time)
+                result[:start_date] = parsed
+              else
+                raise SlackStrava::Error, "Sorry, I don't understand '#{expression}'."
+              end
             end
           end
 
