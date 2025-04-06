@@ -606,30 +606,72 @@ describe User do
     pending 'takes a lock'
   end
 
-  describe '#rebrag_activity!', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
+  describe '#rebrag_activity!' do
     let!(:user) { Fabricate(:user, access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
-    let!(:activity) { Fabricate(:user_activity, user: user, team: user.team, strava_id: '1473024961') }
 
-    context 'a previously bragged activity' do
-      before do
-        activity.update_attributes!(
-          bragged_at: Time.now.utc,
-          channel_messages: [ChannelMessage.new(channel: 'channel1')]
-        )
+    context 'public', vcr: { cassette_name: 'strava/user_sync_new_strava_activities' } do
+      let!(:activity) { Fabricate(:user_activity, user: user, team: user.team, strava_id: '1473024961') }
+
+      context 'a previously bragged activity' do
+        before do
+          activity.update_attributes!(
+            bragged_at: Time.now.utc,
+            channel_messages: [ChannelMessage.new(channel: 'channel1')]
+          )
+        end
+
+        it 'rebrags' do
+          expect_any_instance_of(UserActivity).not_to receive(:brag!)
+          expect_any_instance_of(UserActivity).to receive(:rebrag!)
+          user.rebrag_activity!(activity)
+        end
       end
 
-      it 'rebrags' do
-        expect_any_instance_of(UserActivity).not_to receive(:brag!)
-        expect_any_instance_of(UserActivity).to receive(:rebrag!)
-        user.rebrag_activity!(activity)
+      context 'a new activity' do
+        it 'does not rebrag' do
+          expect_any_instance_of(UserActivity).not_to receive(:brag!)
+          expect_any_instance_of(UserActivity).not_to receive(:rebrag!)
+          user.rebrag_activity!(activity)
+        end
       end
     end
 
-    context 'a new activity' do
-      it 'does not rebrag' do
-        expect_any_instance_of(UserActivity).not_to receive(:brag!)
-        expect_any_instance_of(UserActivity).not_to receive(:rebrag!)
-        user.rebrag_activity!(activity)
+    context 'private', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_with_private' } do
+      let!(:activity) { Fabricate(:user_activity, user: user, team: user.team, strava_id: '1555582184') }
+
+      context 'a previously bragged public activity' do
+        before do
+          activity.update_attributes!(
+            bragged_at: Time.now.utc,
+            channel_messages: [ChannelMessage.new(channel: 'channel1')]
+          )
+        end
+
+        context 'when not allowing private activities' do
+          before do
+            user.update_attributes!(private_activities: false)
+          end
+
+          it 'unbrags' do
+            expect_any_instance_of(UserActivity).not_to receive(:brag!)
+            expect_any_instance_of(UserActivity).not_to receive(:rebrag!)
+            expect_any_instance_of(UserActivity).to receive(:unbrag!)
+            user.rebrag_activity!(activity)
+          end
+        end
+
+        context 'when allowing private activities' do
+          before do
+            user.update_attributes!(private_activities: true)
+          end
+
+          it 'rebrags' do
+            expect_any_instance_of(UserActivity).not_to receive(:brag!)
+            expect_any_instance_of(UserActivity).not_to receive(:unbrag!)
+            expect_any_instance_of(UserActivity).to receive(:rebrag!)
+            user.rebrag_activity!(activity)
+          end
+        end
       end
     end
   end

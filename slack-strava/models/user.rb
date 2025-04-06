@@ -254,7 +254,7 @@ class User
       return unless activity
       return unless activity.bragged_at
 
-      results = activity.rebrag!
+      results = activity.private? && !private_activities ? activity.unbrag! : activity.rebrag!
       return unless results
 
       results.map do |result|
