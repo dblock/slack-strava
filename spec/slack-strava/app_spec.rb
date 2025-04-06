@@ -130,4 +130,46 @@ describe SlackStrava::App do
       end
     end
   end
+
+  describe '#ensure_strava_webhook!' do
+    let(:webhook_instance) { StravaWebhook.instance }
+
+    context 'on localhost' do
+      before do
+        allow(SlackRubyBotServer::Service).to receive(:localhost?).and_return(true)
+      end
+
+      it 'is skipped' do
+        expect(webhook_instance).not_to receive(:ensure!)
+        subject.send(:ensure_strava_webhook!)
+      end
+    end
+
+    context 'not on localhost' do
+      before do
+        allow(SlackRubyBotServer::Service).to receive(:localhost?).and_return(false)
+      end
+
+      it 'is ensured' do
+        allow(SlackRubyBotServer::Service).to receive(:localhost?).and_return(false)
+        expect(webhook_instance).to receive(:ensure!)
+        subject.send(:ensure_strava_webhook!)
+      end
+
+      it 'handles Strava::Errors::Fault' do
+        allow(SlackRubyBotServer::Service).to receive(:localhost?).and_return(false)
+        expect(webhook_instance).to receive(:ensure!).and_raise(
+          Strava::Errors::Fault.new(
+            400,
+            body: {
+              'message' => 'Bad Request',
+              'errors' => []
+            }
+          )
+        )
+        expect(subject.logger).to receive(:error).with('Strava webhook installation failed ({"message"=>"Bad Request", "errors"=>[]}).')
+        subject.send(:ensure_strava_webhook!)
+      end
+    end
+  end
 end

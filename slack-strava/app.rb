@@ -73,6 +73,9 @@ module SlackStrava
 
       logger.info 'Ensuring Strava webhook.'
       StravaWebhook.instance.ensure!
+    rescue Strava::Errors::Fault => e
+      logger.error "Strava webhook installation failed (#{e.response[:body]})."
+      NewRelic::Agent.notice_error(e)
     end
 
     def check_trials!
