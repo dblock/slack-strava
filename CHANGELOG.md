@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2025/04/19: Fixed activity titles with emojis on mobile - [@dblock](https://github.com/dblock).
 * 2025/03/29: Added `set retention` - [@dblock](https://github.com/dblock).
 * 2025/03/29: Added leaderboard ranges - [@dblock](https://github.com/dblock).
 * 2024/11/29: Disable club sync on `invalid_auth` or `not_in_channel` - [@dblock](https://github.com/dblock).

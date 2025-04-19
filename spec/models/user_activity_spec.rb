@@ -154,6 +154,57 @@ describe UserActivity do
     end
   end
 
+  describe '#display_title_s' do
+    it 'displays the title with a link' do
+      activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
+      allow(activity).to receive(:display_field?).and_return(true)
+      expect(activity.display_title_s).to eq('*<https://www.strava.com/activities/123|Test Activity>*')
+    end
+
+    it 'falls back on title with ID link with emojis' do
+      activity = Fabricate(:user_activity, name: 'Survived 🐕 💥', strava_id: '123')
+      allow(activity).to receive(:display_field?).and_return(true)
+      expect(activity.display_title_s).to eq('*Survived 🐕 💥* <https://www.strava.com/activities/123|…>')
+    end
+
+    it 'displays the title only' do
+      activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
+      allow(activity).to receive(:display_field?).with(ActivityFields::URL).and_return(false)
+      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE).and_return(true)
+      expect(activity.display_title_s).to eq('*Test Activity*')
+    end
+
+    it 'displays the URL with ID only' do
+      activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
+      allow(activity).to receive(:display_field?).with(ActivityFields::URL).and_return(true)
+      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE).and_return(false)
+      expect(activity.display_title_s).to eq('*<https://www.strava.com/activities/123|123>*')
+    end
+
+    it 'displays neither' do
+      activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
+      allow(activity).to receive(:display_field?).with(ActivityFields::URL).and_return(false)
+      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE).and_return(false)
+      expect(activity.display_title_s).to be_nil
+    end
+  end
+
+  describe '#display_athlete_s' do
+    it 'displays first and last names with link' do
+      user = Fabricate(:user, athlete: Fabricate.build(:athlete, username: 'username', firstname: 'First', lastname: 'Last'))
+      activity = Fabricate(:user_activity, user: user)
+      allow(activity).to receive(:display_field?).and_return(true)
+      expect(activity.display_athlete_s).to eq('<https://www.strava.com/athletes/username|First Last>')
+    end
+
+    it 'falls back with name containing an emoji' do
+      user = Fabricate(:user, athlete: Fabricate.build(:athlete, username: 'username', firstname: '💥', lastname: '🐕'))
+      activity = Fabricate(:user_activity, user: user)
+      allow(activity).to receive(:display_field?).and_return(true)
+      expect(activity.display_athlete_s).to eq('💥 🐕 <https://www.strava.com/athletes/username|…>')
+    end
+  end
+
   context 'unbrag!' do
     let(:team) { Fabricate(:team) }
     let(:user) { Fabricate(:user, team: team) }

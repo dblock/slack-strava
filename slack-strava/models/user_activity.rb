@@ -101,7 +101,11 @@ class UserActivity < Activity
 
   def display_title_s
     if display_field?(ActivityFields::TITLE) && display_field?(ActivityFields::URL)
-      "*<#{strava_url}|#{name || strava_id}>*"
+      if /\p{Emoji_Presentation}/ =~ name
+        "*#{name}* <#{strava_url}|…>"
+      else
+        "*<#{strava_url}|#{name || strava_id}>*"
+      end
     elsif display_field?(ActivityFields::TITLE)
       "*#{name || strava_id}*"
     elsif display_field?(ActivityFields::URL)
@@ -140,7 +144,11 @@ class UserActivity < Activity
   def display_athlete_s
     return unless display_field?(ActivityFields::ATHLETE) && user.athlete
 
-    "<#{user.athlete.strava_url}|#{user.athlete.name}>"
+    if /\p{Emoji_Presentation}/ =~ user.athlete.name
+      "#{user.athlete.name} <#{user.athlete.strava_url}|…>"
+    else
+      "<#{user.athlete.strava_url}|#{user.athlete.name || user.athlete.id}>"
+    end
   end
 
   def display_context_s
