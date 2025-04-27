@@ -29,6 +29,10 @@ class UserActivity < Activity
     start_date_local_in_local_time.strftime('%A, %B %d, %Y at %I:%M %p')
   end
 
+  def parent_thread(channel_id)
+    super(channel_id, :start_date_local, start_date_local_in_local_time)
+  end
+
   def brag!
     return if bragged_at
 
@@ -38,7 +42,10 @@ class UserActivity < Activity
       []
     else
       logger.info "Bragging about #{user}, #{self}."
-      rc = user.inform!(to_slack)
+      message = to_slack
+      rc = user.connected_channels.map { |channel|
+        user.inform_channel!(message, channel, parent_thread(channel['id']))
+      }.flatten.compact
       update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
       rc
     end

@@ -27,6 +27,7 @@ describe SlackStrava::Commands::Set do
       it 'shows current settings' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
+          'Activities are *displayed individually*.',
           'Activities are retained for *1 month*.',
           'Activity fields are *set to default*.',
           'Maps are *displayed in full*.',
@@ -74,7 +75,8 @@ describe SlackStrava::Commands::Set do
           context 'with prior activities' do
             before do
               allow_any_instance_of(Map).to receive(:update_png!)
-              allow_any_instance_of(User).to receive(:inform!).and_return([{ ts: 'ts', channel: 'C1' }])
+              allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+              allow_any_instance_of(User).to receive(:inform_channel!).and_return([{ ts: 'ts', channel: 'C1' }])
               2.times { Fabricate(:user_activity, user: user) }
               user.brag!
             end
@@ -264,6 +266,46 @@ describe SlackStrava::Commands::Set do
               'Invalid value: foobar, possible values are full, off and thumb.'
             )
             expect(team.reload.maps).to eq 'full'
+          end
+        end
+
+        context 'threads' do
+          it 'shows current value of threads' do
+            expect(message: "#{SlackRubyBot.config.user} set threads").to respond_with_slack_message(
+              "Activities for team #{team.name} are *displayed individually*."
+            )
+          end
+
+          it 'shows current value of threads set to weekly' do
+            team.update_attributes!(threads: 'weekly')
+            expect(message: "#{SlackRubyBot.config.user} set threads").to respond_with_slack_message(
+              "Activities for team #{team.name} are *rolled up in a weekly thread*."
+            )
+          end
+
+          %w[daily weekly monthly].each do |threads|
+            it "sets threads to #{threads}" do
+              team.update_attributes!(threads: 'none')
+              expect(message: "#{SlackRubyBot.config.user} set threads #{threads}").to respond_with_slack_message(
+                "Activities for team #{team.name} are now *rolled up in a #{threads} thread*."
+              )
+              expect(team.reload.threads).to eq threads
+            end
+          end
+
+          it 'sets threads to none' do
+            team.update_attributes!(threads: 'daily')
+            expect(message: "#{SlackRubyBot.config.user} set threads none").to respond_with_slack_message(
+              "Activities for team #{team.name} are now *displayed individually*."
+            )
+            expect(team.reload.threads).to eq 'none'
+          end
+
+          it 'displays an error for an invalid threads value' do
+            expect(message: "#{SlackRubyBot.config.user} set threads foobar").to respond_with_slack_message(
+              'Invalid value: foobar, possible values are none, daily, weekly and monthly.'
+            )
+            expect(team.reload.threads).to eq 'none'
           end
         end
 

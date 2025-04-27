@@ -97,18 +97,22 @@ class User
     instance
   end
 
-  def inform!(message)
-    return if user_id && user_deleted?
+  def connected_channels
+    return nil unless user_id
+    return nil if user_deleted?
 
-    team.slack_channels.map { |channel|
-      next if user_id && !user_in_channel?(channel['id'])
-
-      inform_channel!(message, channel)
-    }.compact
+    team.slack_channels.select { |channel| user_in_channel?(channel['id']) }
   end
 
-  def inform_channel!(message, channel)
+  def inform!(message)
+    connected_channels&.map { |channel|
+      inform_channel!(message, channel)
+    }&.compact
+  end
+
+  def inform_channel!(message, channel, thread_ts = nil)
     message_with_channel = message.merge(channel: channel['id'], as_user: true)
+    message_with_channel[:thread_ts] = thread_ts if thread_ts
     logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
     rc = team.slack_client.chat_postMessage(message_with_channel)
 

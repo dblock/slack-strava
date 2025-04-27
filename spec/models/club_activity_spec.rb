@@ -26,6 +26,63 @@ describe ClubActivity do
       expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
     end
 
+    %i[daily weekly monthly].each do |threads|
+      context "with #{threads} threads" do
+        before do
+          team.update_attributes!(threads: threads)
+        end
+
+        context 'with a parent from today' do
+          let!(:thread_parent) do
+            Fabricate(
+              :club_activity,
+              club: club,
+              distance: 123,
+              bragged_at: Time.now.utc,
+              channel_messages: [
+                ChannelMessage.new(ts: 'ts', channel: club.channel_id)
+              ]
+            )
+          end
+
+          it 'threads the activity under a previous one' do
+            expect(club.team.slack_client).to receive(:chat_postMessage).with(
+              activity.to_slack.merge(
+                channel: club.channel_id,
+                as_user: true,
+                thread_ts: 'ts'
+              )
+            ).and_return('ts' => 1)
+            expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+          end
+        end
+
+        context 'with a parent from over a month ago' do
+          let!(:thread_parent) do
+            Fabricate(
+              :club_activity,
+              club: club,
+              distance: 123,
+              bragged_at: Time.now.utc - 1.month - 1.day,
+              channel_messages: [
+                ChannelMessage.new(ts: 'ts', channel: club.channel_id)
+              ]
+            )
+          end
+
+          it 'does not thread the activity under a previous one' do
+            expect(club.team.slack_client).to receive(:chat_postMessage).with(
+              activity.to_slack.merge(
+                channel: club.channel_id,
+                as_user: true
+              )
+            ).and_return('ts' => 1)
+            expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+          end
+        end
+      end
+    end
+
     it 'warns if the bot leaves the channel' do
       expect {
         expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)

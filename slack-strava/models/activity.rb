@@ -93,6 +93,31 @@ class Activity
     ).exists?
   end
 
+  # Look for the last activity thread.
+  def parent_thread(channel_id, timestamp_field = :bragged_at, now = nil)
+    return if team.threads.nil? || team.threads == 'none'
+
+    now ||= Time.now.utc
+
+    criteria = {
+      team_id: team.id,
+      'channel_messages.channel': channel_id
+    }
+
+    case team.threads
+    when 'daily'
+      criteria.merge!({ :"#{timestamp_field}".gte => now.beginning_of_day, :"#{timestamp_field}".lte => now.end_of_week })
+    when 'weekly'
+      criteria.merge!({ :"#{timestamp_field}".gte => now.beginning_of_week, :"#{timestamp_field}".lte => now.end_of_week })
+    when 'monthly'
+      criteria.merge!({ :"#{timestamp_field}".gte => now.beginning_of_month, :"#{timestamp_field}".lte => now.end_of_month })
+    end
+
+    parent_activity = Activity.where(criteria).order_by([:"#{timestamp_field}", :desc]).limit(1).first
+
+    parent_activity&.channel_messages&.first&.ts
+  end
+
   # Have we recently skipped bragging of an identically looking private or followers only activity?
   def privately_bragged?(dt = 48.hours)
     Activity.where(

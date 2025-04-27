@@ -62,6 +62,17 @@ module SlackStrava
               client.say(channel: data.channel, text: "Maps for team #{team.name} are#{changed ? ' now' : ''} *#{team.maps_s}*.")
               logger.info "SET: #{team} - maps set to #{team.maps}"
             end
+          when 'threads'
+            parsed_value = ThreadTypes.parse_s(v) if v
+            changed = parsed_value && team.threads != parsed_value
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change whether activities roll up in threads. Activities for team #{team.name} are *#{team.threads_s}*.")
+              logger.info "SET: #{team} - not admin, threads remain set to #{team.threads}"
+            else
+              team.update_attributes!(threads: parsed_value) if parsed_value
+              client.say(channel: data.channel, text: "Activities for team #{team.name} are#{changed ? ' now' : ''} *#{team.threads_s}*.")
+              logger.info "SET: #{team} - threads set to #{team.threads}"
+            end
           when 'leaderboard'
             changed = v && team.default_leaderboard != v
             if !user.team_admin? && changed
@@ -89,6 +100,7 @@ module SlackStrava
         else
           messages = [
             "Activities for team #{team.name} display *#{team.units_s}*.",
+            "Activities are *#{team.threads_s}*.",
             "Activities are retained for *#{team.retention_s}*.",
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps are *#{team.maps_s}*.",

@@ -206,15 +206,19 @@ describe User do
       end
 
       context 'sync_and_brag!' do
+        before do
+          allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'channel_id'])
+        end
+
         it 'syncs and brags' do
-          expect_any_instance_of(User).to receive(:inform!)
+          expect_any_instance_of(User).to receive(:inform_channel!)
           user.sync_and_brag!
         end
 
         it 'uses a lock' do
           user_instance_2 = User.find(user._id)
           bragged_activities = []
-          allow_any_instance_of(User).to receive(:inform!) do |_, args|
+          allow_any_instance_of(User).to receive(:inform_channel!) do |_, args|
             bragged_activities << args[:blocks][0][:text][:text]
             [{ ts: '1503425956.000247', channel: 'channel' }]
           end
@@ -293,7 +297,8 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          allow_any_instance_of(User).to receive(:inform!).and_return([{ ts: 'ts', channel: 'C1' }])
+          allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+          allow_any_instance_of(User).to receive(:inform_channel!).and_return({ ts: 'ts' })
           user.brag!
         end
 
@@ -390,6 +395,10 @@ describe User do
     context 'with private activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_with_private' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
 
+      before do
+        allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+      end
+
       context 'by default' do
         it 'includes private activities' do
           expect {
@@ -401,7 +410,7 @@ describe User do
         it 'does not brag private activities' do
           user.sync_new_strava_activities!
           allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
-          expect(user).to receive(:inform!).twice
+          expect(user).to receive(:inform_channel!).twice
           5.times { user.brag! }
         end
       end
@@ -414,7 +423,7 @@ describe User do
         it 'brags private activities' do
           user.sync_new_strava_activities!
           allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
-          expect(user).to receive(:inform!).exactly(4).times
+          expect(user).to receive(:inform_channel!).exactly(4).times
           5.times { user.brag! }
         end
       end
@@ -422,6 +431,10 @@ describe User do
 
     context 'with follower only activities', vcr: { cassette_name: 'strava/user_sync_new_strava_activities_privacy' } do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
+
+      before do
+        allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+      end
 
       context 'by default' do
         it 'includes followers only activities' do
@@ -435,7 +448,7 @@ describe User do
         it 'brags follower only activities' do
           user.sync_new_strava_activities!
           allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
-          expect(user).to receive(:inform!).twice
+          expect(user).to receive(:inform_channel!).twice
           3.times { user.brag! }
         end
       end
@@ -448,7 +461,7 @@ describe User do
         it 'does not brag follower only activities' do
           user.sync_new_strava_activities!
           allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
-          expect(user).to receive(:inform!).once
+          expect(user).to receive(:inform_channel!).once
           3.times { user.brag! }
         end
       end
@@ -461,7 +474,7 @@ describe User do
         it 'brags follower only activities' do
           user.sync_new_strava_activities!
           allow_any_instance_of(UserActivity).to receive(:user).and_return(user)
-          expect(user).to receive(:inform!).twice
+          expect(user).to receive(:inform_channel!).twice
           3.times { user.brag! }
         end
       end
@@ -752,6 +765,38 @@ describe User do
           end
         end
       end
+    end
+  end
+
+  describe '#connected_channels' do
+    let(:user) { Fabricate(:user) }
+
+    it 'returns connected channels' do
+      allow(user.team).to receive(:slack_channels).and_return(['id' => 'C1'])
+      allow(user).to receive_messages(
+        user_deleted?: false,
+        user_in_channel?: true
+      )
+      expect(user.connected_channels).to eq(['id' => 'C1'])
+    end
+
+    it 'returns no channels when user is not in channel' do
+      allow(user.team).to receive(:slack_channels).and_return(['id' => 'C1'])
+      allow(user).to receive_messages(
+        user_deleted?: false,
+        user_in_channel?: false
+      )
+      expect(user.connected_channels).to eq([])
+    end
+
+    it 'returns nil if user_id is nil' do
+      user.unset(:user_id)
+      expect(user.connected_channels).to be_nil
+    end
+
+    it 'returns nil if user is deleted' do
+      allow(user).to receive(:user_deleted?).and_return(true)
+      expect(user.connected_channels).to be_nil
     end
   end
 end

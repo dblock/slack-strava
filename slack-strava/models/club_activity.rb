@@ -28,6 +28,8 @@ class ClubActivity < Activity
     else
       logger.info "Bragging about #{club}, #{self}"
       message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)
+      thread_ts = parent_thread(club.channel_id)
+      message_with_channel[:thread_ts] = thread_ts if thread_ts
       logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
       channel_message = club.team.slack_client.chat_postMessage(message_with_channel)
       if channel_message

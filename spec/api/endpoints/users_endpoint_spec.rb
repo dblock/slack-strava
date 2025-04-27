@@ -28,7 +28,8 @@ describe Api::Endpoints::UsersEndpoint do
     context 'with prior activities' do
       before do
         allow_any_instance_of(Map).to receive(:update_png!)
-        allow_any_instance_of(User).to receive(:inform!).and_return([{ ts: 'ts', channel: 'C1' }])
+        allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+        allow_any_instance_of(User).to receive(:inform_channel!).and_return([{ ts: 'ts', channel: 'C1' }])
         2.times { Fabricate(:user_activity, user: user) }
         user.brag!
         user.disconnect_from_strava
@@ -41,8 +42,9 @@ describe Api::Endpoints::UsersEndpoint do
               text: "Your Strava account has been successfully connected.\nI won't post any private activities, DM me `set private on` to toggle that and `help` for other options."
             )
 
-            expect_any_instance_of(User).to receive(:inform!).with(
-              text: "New Strava account connected for #{user.slack_mention}."
+            expect_any_instance_of(User).to receive(:inform_channel!).with(
+              { text: "New Strava account connected for #{user.slack_mention}." },
+              { 'id' => 'C1' }
             )
 
             client.user(id: user.id)._put(code: 'code')

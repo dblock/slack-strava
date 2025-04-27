@@ -11,6 +11,9 @@ class Team
   field :maps, type: String, default: 'full'
   validates_inclusion_of :maps, in: MapTypes.values
 
+  field :threads, type: String, default: 'none'
+  validates_inclusion_of :threads, in: ThreadTypes.values
+
   field :default_leaderboard, type: String
 
   field :retention, type: Integer, default: 30 * 24 * 60 * 60
@@ -65,6 +68,17 @@ class Team
       'displayed in full'
     when 'thumb'
       'displayed as thumbnails'
+    else
+      raise ArgumentError
+    end
+  end
+
+  def threads_s
+    case threads
+    when 'none'
+      'displayed individually'
+    when 'daily', 'weekly', 'monthly'
+      "rolled up in a #{threads} thread"
     else
       raise ArgumentError
     end

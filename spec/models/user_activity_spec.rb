@@ -152,6 +152,61 @@ describe UserActivity do
         expect(activity.brag!).to eq []
       }.not_to change(User, :count)
     end
+
+    %i[daily weekly monthly].each do |threads|
+      context "with #{threads} threads" do
+        before do
+          team.update_attributes!(threads: threads)
+        end
+
+        context 'with a parent from today' do
+          let!(:thread_parent) do
+            Fabricate(
+              :user_activity,
+              user: user,
+              bragged_at: Time.now.utc,
+              channel_messages: [
+                ChannelMessage.new(ts: 'ts', channel: 'channel_id')
+              ]
+            )
+          end
+
+          it 'threads the activity under a previous one' do
+            expect(user.team.slack_client).to receive(:chat_postMessage).with(
+              activity.to_slack.merge(
+                as_user: true,
+                channel: 'channel_id',
+                thread_ts: 'ts'
+              )
+            ).and_return('ts' => 1)
+            expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+          end
+        end
+
+        context 'with a parent outside of the range' do
+          let!(:thread_parent) do
+            Fabricate(
+              :user_activity,
+              start_date_local: Time.new(2015, 1, 1),
+              user: user,
+              channel_messages: [
+                ChannelMessage.new(ts: 'ts', channel: 'channel_id')
+              ]
+            )
+          end
+
+          it 'does not thread the activity under a previous one' do
+            expect(user.team.slack_client).to receive(:chat_postMessage).with(
+              activity.to_slack.merge(
+                as_user: true,
+                channel: 'channel_id'
+              )
+            ).and_return('ts' => 1)
+            expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+          end
+        end
+      end
+    end
   end
 
   describe '#display_title_s' do
