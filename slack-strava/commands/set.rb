@@ -105,9 +105,9 @@ module SlackStrava
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps are *#{team.maps_s}*.",
             "Default leaderboard is *#{team.default_leaderboard_s}*.",
-            "Your activities will #{user.sync_activities? ? '' : 'not '}sync.",
-            "Your private activities will #{user.private_activities? ? '' : 'not '}be posted.",
-            "Your followers only activities will #{user.followers_only_activities? ? '' : 'not '}be posted."
+            "Your activities will *#{user.sync_activities? ? '' : 'not '}sync*.",
+            "Your private activities will *#{user.private_activities? ? '' : 'not '}be posted*.",
+            "Your followers only activities will *#{user.followers_only_activities? ? '' : 'not '}be posted*."
           ]
           client.say(channel: data.channel, text: messages.join("\n"))
           logger.info "SET: #{team}, user=#{data.user} - set"

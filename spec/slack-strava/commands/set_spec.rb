@@ -32,9 +32,9 @@ describe SlackStrava::Commands::Set do
           'Activity fields are *set to default*.',
           'Maps are *displayed in full*.',
           'Default leaderboard is *distance*.',
-          'Your activities will sync.',
-          'Your private activities will not be posted.',
-          'Your followers only activities will be posted.'
+          'Your activities will *sync*.',
+          'Your private activities will *not be posted*.',
+          'Your followers only activities will *be posted*.'
         ].join("\n"))
       end
 
