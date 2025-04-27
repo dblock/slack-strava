@@ -171,6 +171,10 @@ describe UserActivity do
             )
           end
 
+          it 'returns the correct parent' do
+            expect(activity.parent_thread('channel_id')).to eq 'ts'
+          end
+
           it 'threads the activity under a previous one' do
             expect(user.team.slack_client).to receive(:chat_postMessage).with(
               activity.to_slack.merge(
@@ -180,6 +184,26 @@ describe UserActivity do
               )
             ).and_return('ts' => 1)
             expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+          end
+        end
+
+        context 'with a parent posted to multiple channels' do
+          let!(:thread_parent) do
+            Fabricate(
+              :user_activity,
+              user: user,
+              bragged_at: Time.now.utc,
+              channel_messages: [
+                ChannelMessage.new(ts: 'ts1', channel: 'channel_1'),
+                ChannelMessage.new(ts: 'ts2', channel: 'channel_2')
+              ]
+            )
+          end
+
+          it 'returns the correct parent' do
+            expect(activity.parent_thread('channel_1')).to eq 'ts1'
+            expect(activity.parent_thread('channel_2')).to eq 'ts2'
+            expect(activity.parent_thread('another_channel')).to be_nil
           end
         end
 

@@ -115,7 +115,9 @@ class Activity
 
     parent_activity = Activity.where(criteria).order_by([:"#{timestamp_field}", :desc]).limit(1).first
 
-    parent_activity&.channel_messages&.first&.ts
+    channel_message = parent_activity&.channel_messages&.detect { |m| m.channel == channel_id }
+
+    channel_message&.ts
   end
 
   # Have we recently skipped bragging of an identically looking private or followers only activity?
