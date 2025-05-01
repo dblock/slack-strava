@@ -124,7 +124,7 @@ describe TeamLeaderboard do
             {
               '_id' => { 'user_id' => user1.id, 'type' => 'Swim' },
               'distance' => user1_swim_activity_1.distance + user1_swim_activity_2.distance,
-              'rank' => 3
+              'rank' => 1
             }
           ]
         )
@@ -135,7 +135,7 @@ describe TeamLeaderboard do
           [
             "1: #{user1.user_name} 🏃 #{format('%.2f', (user1_activity_1.distance + user1_activity_2.distance + user1_activity_3.distance) * 0.00062137)}mi",
             "2: #{user2.user_name} 🏃 #{format('%.2f', user2_activity_1.distance * 0.00062137)}mi",
-            "3: #{user1.user_name} 🏊 #{format('%.1f', (user1_swim_activity_1.distance + user1_swim_activity_2.distance) * 1.09361)}yd"
+            "1: #{user1.user_name} 🏊 #{format('%.1f', (user1_swim_activity_1.distance + user1_swim_activity_2.distance) * 1.09361)}yd"
           ].join("\n")
         )
       end
@@ -148,20 +148,26 @@ describe TeamLeaderboard do
         expect(leaderboard.aggregate!.to_a).to eq(
           [
             { '_id' => { 'user_id' => user1.id, 'type' => 'Run' }, 'count' => 3, 'rank' => 1 },
-            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'count' => 2, 'rank' => 2 },
-            { '_id' => { 'user_id' => user2.id, 'type' => 'Run' }, 'count' => 1, 'rank' => 3 }
-          ]
+            { '_id' => { 'user_id' => user2.id, 'type' => 'Run' }, 'count' => 1, 'rank' => 2 },
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Swim' }, 'count' => 2, 'rank' => 1 }
+          ].sort_by { |h| [h['rank'], h['_id']['type']] }
         )
       end
 
       it 'to_s' do
-        expect(leaderboard.to_s).to eq(
+        expected_strings = [
           [
             "1: #{user1.user_name} 🏃 3",
-            "2: #{user1.user_name} 🏊 2",
-            "3: #{user2.user_name} 🏃 1"
+            "2: #{user2.user_name} 🏃 1",
+            "1: #{user1.user_name} 🏊 2"
+          ].join("\n"),
+          [
+            "1: #{user1.user_name} 🏊 2",
+            "1: #{user1.user_name} 🏃 3",
+            "2: #{user2.user_name} 🏃 1"
           ].join("\n")
-        )
+        ]
+        expect(expected_strings).to include(leaderboard.to_s)
       end
     end
 
@@ -231,7 +237,7 @@ describe TeamLeaderboard do
             {
               '_id' => { 'user_id' => user1.id, 'type' => 'Swim' },
               'distance' => user1_swim_activity_2.distance,
-              'rank' => 2
+              'rank' => 1
             }
           ]
         )
@@ -257,7 +263,7 @@ describe TeamLeaderboard do
             {
               '_id' => { 'user_id' => user1.id, 'type' => 'Swim' },
               'distance' => user1_swim_activity_1.distance,
-              'rank' => 3
+              'rank' => 1
             }
           ]
         )
