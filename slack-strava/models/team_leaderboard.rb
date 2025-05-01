@@ -92,6 +92,7 @@ class TeamLeaderboard
           },
           {
             '$setWindowFields': {
+              partitionBy: '$_id.type',
               sortBy: { metric_field => -1 },
               output: {
                 rank: { '$denseRank': {} }
