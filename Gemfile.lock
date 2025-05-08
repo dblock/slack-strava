@@ -222,7 +222,7 @@ GEM
     puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.0.14)
+    rack (3.0.16)
     rack-cors (2.0.2)
       rack (>= 2.0.0)
     rack-rewrite (1.5.1)
@@ -393,7 +393,7 @@ DEPENDENCIES
   ostruct
   polylines
   puma
-  rack (~> 3.0.14)
+  rack (~> 3.0.16)
   rack-robotz
   rack-server-pages
   rack-test
