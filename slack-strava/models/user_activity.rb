@@ -43,9 +43,14 @@ class UserActivity < Activity
     else
       logger.info "Bragging about #{user}, #{self}."
       message = to_slack
-      rc = user.connected_channels.map { |channel|
-        user.inform_channel!(message, channel, parent_thread(channel['id']))
-      }.flatten.compact
+      connected_channels = user.connected_channels
+      rc = if connected_channels
+             connected_channels.map { |channel|
+               user.inform_channel!(message, channel, parent_thread(channel['id']))
+             }.flatten.compact
+           else
+             []
+           end
       update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
       rc
     end

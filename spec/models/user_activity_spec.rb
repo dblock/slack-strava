@@ -103,132 +103,146 @@ describe UserActivity do
     let(:user) { Fabricate(:user, team: team) }
     let!(:activity) { Fabricate(:user_activity, user: user) }
 
-    before do
-      allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
-      allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
-      allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
-      allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1503435956.000247')
-    end
+    context 'a user in a channel' do
+      before do
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+        allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
+        allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
+        allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1503435956.000247')
+      end
 
-    it 'sends a message to the subscribed channel' do
-      expect(user.team.slack_client).to receive(:chat_postMessage).with(
-        activity.to_slack.merge(
-          as_user: true,
-          channel: 'channel_id'
-        )
-      ).and_return('ts' => 1)
-      expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
-    end
+      it 'sends a message to the subscribed channel' do
+        expect(user.team.slack_client).to receive(:chat_postMessage).with(
+          activity.to_slack.merge(
+            as_user: true,
+            channel: 'channel_id'
+          )
+        ).and_return('ts' => 1)
+        expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+      end
 
-    it 'warns if the bot leaves the channel' do
-      expect {
-        expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)
-        expect(user.team.slack_client).to receive(:chat_postMessage) {
-          raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
-        }
-        expect(activity.brag!).to eq []
-      }.not_to change(User, :count)
-    end
-
-    it 'warns if the account goes inactive' do
-      expect {
+      it 'warns if the bot leaves the channel' do
         expect {
-          expect_any_instance_of(Logger).to receive(:warn).with(/account_inactive/)
+          expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)
           expect(user.team.slack_client).to receive(:chat_postMessage) {
-            raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
+            raise Slack::Web::Api::Errors::SlackError, 'not_in_channel'
           }
           expect(activity.brag!).to eq []
         }.not_to change(User, :count)
-      }.not_to change(UserActivity, :count)
+      end
+
+      it 'warns if the account goes inactive' do
+        expect {
+          expect {
+            expect_any_instance_of(Logger).to receive(:warn).with(/account_inactive/)
+            expect(user.team.slack_client).to receive(:chat_postMessage) {
+              raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
+            }
+            expect(activity.brag!).to eq []
+          }.not_to change(User, :count)
+        }.not_to change(UserActivity, :count)
+      end
+
+      it 'informs user on restricted_action' do
+        expect {
+          expect(user).to receive(:dm!).with(text: "I wasn't allowed to post into <#channel_id> because of a Slack workspace preference, please contact your Slack admin.")
+          expect_any_instance_of(Logger).to receive(:warn).with(/restricted_action/)
+          expect(user.team.slack_client).to receive(:chat_postMessage) {
+            raise Slack::Web::Api::Errors::SlackError, 'restricted_action'
+          }
+          expect(activity.brag!).to eq []
+        }.not_to change(User, :count)
+      end
+
+      %i[daily weekly monthly].each do |threads|
+        context "with #{threads} threads" do
+          before do
+            team.update_attributes!(threads: threads)
+          end
+
+          context 'with a parent from today' do
+            let!(:thread_parent) do
+              Fabricate(
+                :user_activity,
+                user: user,
+                bragged_at: Time.now.utc,
+                channel_messages: [
+                  ChannelMessage.new(ts: 'ts', channel: 'channel_id')
+                ]
+              )
+            end
+
+            it 'returns the correct parent' do
+              expect(activity.parent_thread('channel_id')).to eq 'ts'
+            end
+
+            it 'threads the activity under a previous one' do
+              expect(user.team.slack_client).to receive(:chat_postMessage).with(
+                activity.to_slack.merge(
+                  as_user: true,
+                  channel: 'channel_id',
+                  thread_ts: 'ts'
+                )
+              ).and_return('ts' => 1)
+              expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+            end
+          end
+
+          context 'with a parent posted to multiple channels' do
+            let!(:thread_parent) do
+              Fabricate(
+                :user_activity,
+                user: user,
+                bragged_at: Time.now.utc,
+                channel_messages: [
+                  ChannelMessage.new(ts: 'ts1', channel: 'channel_1'),
+                  ChannelMessage.new(ts: 'ts2', channel: 'channel_2')
+                ]
+              )
+            end
+
+            it 'returns the correct parent' do
+              expect(activity.parent_thread('channel_1')).to eq 'ts1'
+              expect(activity.parent_thread('channel_2')).to eq 'ts2'
+              expect(activity.parent_thread('another_channel')).to be_nil
+            end
+          end
+
+          context 'with a parent outside of the range' do
+            let!(:thread_parent) do
+              Fabricate(
+                :user_activity,
+                start_date_local: Time.new(2015, 1, 1),
+                user: user,
+                channel_messages: [
+                  ChannelMessage.new(ts: 'ts', channel: 'channel_id')
+                ]
+              )
+            end
+
+            it 'does not thread the activity under a previous one' do
+              expect(user.team.slack_client).to receive(:chat_postMessage).with(
+                activity.to_slack.merge(
+                  as_user: true,
+                  channel: 'channel_id'
+                )
+              ).and_return('ts' => 1)
+              expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+            end
+          end
+        end
+      end
     end
 
-    it 'informs user on restricted_action' do
-      expect {
-        expect(user).to receive(:dm!).with(text: "I wasn't allowed to post into <#channel_id> because of a Slack workspace preference, please contact your Slack admin.")
-        expect_any_instance_of(Logger).to receive(:warn).with(/restricted_action/)
-        expect(user.team.slack_client).to receive(:chat_postMessage) {
-          raise Slack::Web::Api::Errors::SlackError, 'restricted_action'
-        }
-        expect(activity.brag!).to eq []
-      }.not_to change(User, :count)
-    end
+    context 'a deleted user' do
+      before do
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+        allow_any_instance_of(User).to receive(:user_deleted?).and_return(true)
+      end
 
-    %i[daily weekly monthly].each do |threads|
-      context "with #{threads} threads" do
-        before do
-          team.update_attributes!(threads: threads)
-        end
-
-        context 'with a parent from today' do
-          let!(:thread_parent) do
-            Fabricate(
-              :user_activity,
-              user: user,
-              bragged_at: Time.now.utc,
-              channel_messages: [
-                ChannelMessage.new(ts: 'ts', channel: 'channel_id')
-              ]
-            )
-          end
-
-          it 'returns the correct parent' do
-            expect(activity.parent_thread('channel_id')).to eq 'ts'
-          end
-
-          it 'threads the activity under a previous one' do
-            expect(user.team.slack_client).to receive(:chat_postMessage).with(
-              activity.to_slack.merge(
-                as_user: true,
-                channel: 'channel_id',
-                thread_ts: 'ts'
-              )
-            ).and_return('ts' => 1)
-            expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
-          end
-        end
-
-        context 'with a parent posted to multiple channels' do
-          let!(:thread_parent) do
-            Fabricate(
-              :user_activity,
-              user: user,
-              bragged_at: Time.now.utc,
-              channel_messages: [
-                ChannelMessage.new(ts: 'ts1', channel: 'channel_1'),
-                ChannelMessage.new(ts: 'ts2', channel: 'channel_2')
-              ]
-            )
-          end
-
-          it 'returns the correct parent' do
-            expect(activity.parent_thread('channel_1')).to eq 'ts1'
-            expect(activity.parent_thread('channel_2')).to eq 'ts2'
-            expect(activity.parent_thread('another_channel')).to be_nil
-          end
-        end
-
-        context 'with a parent outside of the range' do
-          let!(:thread_parent) do
-            Fabricate(
-              :user_activity,
-              start_date_local: Time.new(2015, 1, 1),
-              user: user,
-              channel_messages: [
-                ChannelMessage.new(ts: 'ts', channel: 'channel_id')
-              ]
-            )
-          end
-
-          it 'does not thread the activity under a previous one' do
-            expect(user.team.slack_client).to receive(:chat_postMessage).with(
-              activity.to_slack.merge(
-                as_user: true,
-                channel: 'channel_id'
-              )
-            ).and_return('ts' => 1)
-            expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
-          end
-        end
+      it 'does not send messages' do
+        expect(user.team.slack_client).not_to receive(:chat_postMessage)
+        expect(activity.brag!).to eq([])
       end
     end
   end
