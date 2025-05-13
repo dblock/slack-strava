@@ -104,10 +104,21 @@ class TeamLeaderboard
   end
 
   def find(user_id, activity_type)
-    position = aggregate!.find_index do |row|
-      row[:_id][:user_id] == user_id && row[:_id][:type] == activity_type
+    # Get the full leaderboard ranked by the metric
+    full_leaderboard = aggregate!
+
+    # Filter by the specific activity type
+    filtered_leaderboard = full_leaderboard.select do |row|
+      row[:_id][:type] == activity_type
     end
-    position && position >= 0 ? position + 1 : nil
+
+    # Find the position (0-based index) of the user in the filtered list
+    position_in_type = filtered_leaderboard.find_index do |row|
+      row[:_id][:user_id] == user_id
+    end
+
+    # Return the 1-based rank, or nil if not found
+    position_in_type ? position_in_type + 1 : nil
   end
 
   def to_s
