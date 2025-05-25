@@ -130,6 +130,20 @@ describe TeamLeaderboard do
         )
       end
 
+      context 'find!' do
+        it 'returns the rank of the user' do
+          expect(leaderboard.find(user1.id, 'Run')).to eq 1
+        end
+
+        it 'returns the rank of the user within a specific activity type' do
+          expect(leaderboard.find(user1.id, 'Swim')).to eq 1
+        end
+
+        it 'returns nil for an activity type without any activities' do
+          expect(leaderboard.find(user1.id, 'Bike')).to be_nil
+        end
+      end
+
       it 'to_s' do
         expect(leaderboard.to_s).to eq(
           [
@@ -236,6 +250,30 @@ describe TeamLeaderboard do
           ]
         )
       end
+
+      it 'aggregate! with activity Run type' do
+        expect(leaderboard.aggregate!('Run').to_a).to eq(
+          [
+            {
+              '_id' => { 'user_id' => user1.id, 'type' => 'Run' },
+              'distance' => user1_activity_2.distance + user1_activity_3.distance,
+              'rank' => 1
+            }
+          ]
+        )
+      end
+
+      it 'aggregate! with activity Swim type' do
+        expect(leaderboard.aggregate!('Swim').to_a).to eq(
+          [
+            {
+              '_id' => { 'user_id' => user1.id, 'type' => 'Swim' },
+              'distance' => user1_swim_activity_2.distance,
+              'rank' => 1
+            }
+          ]
+        )
+      end
     end
 
     context 'distance leaderboard up to two days ago' do
@@ -258,6 +296,18 @@ describe TeamLeaderboard do
               '_id' => { 'user_id' => user1.id, 'type' => 'Swim' },
               'distance' => user1_swim_activity_1.distance,
               'rank' => 3
+            }
+          ]
+        )
+      end
+
+      it 'aggregate! with activity Swim type' do
+        expect(leaderboard.aggregate!('Swim').to_a).to eq(
+          [
+            {
+              '_id' => { 'user_id' => user1.id, 'type' => 'Swim' },
+              'distance' => user1_swim_activity_1.distance,
+              'rank' => 1
             }
           ]
         )

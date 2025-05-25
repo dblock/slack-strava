@@ -749,20 +749,37 @@ describe User do
       end
 
       context 'with an activity of a different type' do
-        let!(:activity) { Fabricate(:user_activity, user: user) }
+        let!(:activity) { Fabricate(:user_activity, user: user, distance: 1000) }
+        let!(:swim_activity) { Fabricate(:swim_activity, user: user, distance: 500) }
 
-        context 'ranked first' do
-          before do
-            Fabricate(:swim_activity, user: user)
-          end
+        it 'returns gold for Run as it is the only Run' do
+          expect(user.medal_s('Run')).to eq '🥇'
+        end
 
-          it 'returns a gold medal' do
-            expect(user.medal_s('Swim')).to eq '🥈'
-          end
+        it 'returns gold for Swim as it is the only Swim' do
+          expect(user.medal_s('Swim')).to eq '🥇'
+        end
+      end
 
-          it 'returns a silver medal' do
-            expect(user.medal_s('Run')).to eq '🥇'
-          end
+      context 'when rank differs between overall and activity type' do
+        let!(:user1_run) { Fabricate(:user_activity, user: Fabricate(:user, team: user.team), distance: 3000, type: 'Run') }
+        let!(:user2_swim) { Fabricate(:user_activity, user: Fabricate(:user, team: user.team), distance: 2000, type: 'Swim') }
+        let!(:user3_run) { Fabricate(:user_activity, user: user, distance: 1000, type: 'Run') }
+
+        it 'returns silver for the second Run activity, ignoring Swim' do
+          # overall rank: user1_run (1st), user2_swim (2nd), user3_run (3rd)
+          # run rank: user1_run (1st), user3_run (2nd)
+          expect(user1_run.user.medal_s('Run')).to eq '🥇'
+          expect(user2_swim.user.medal_s('Swim')).to eq '🥇'
+          expect(user3_run.user.medal_s('Run')).to eq '🥈'
+        end
+
+        it 'returns nil for Swim as the user has no Swim activity' do
+          expect(user.medal_s('Swim')).to be_nil
+        end
+
+        it 'returns nil for Ride as there are no Ride activities' do
+          expect(user.medal_s('Ride')).to be_nil
         end
       end
     end

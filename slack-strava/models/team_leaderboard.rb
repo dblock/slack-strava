@@ -56,14 +56,16 @@ class TeamLeaderboard
     @start_date = options[:start_date]
     @end_date = options[:end_date]
     @channel_id = options[:channel_id]
+    @aggregate = {}
   end
 
   def metric_field
     @metric_field ||= metric.downcase.gsub(' ', '_')
   end
 
-  def aggreate_options
+  def aggreate_options(activity_type = nil)
     aggreate_options = { team_id: team.id, _type: 'UserActivity' }
+    aggreate_options.merge!('type' => activity_type) if activity_type
     aggreate_options.merge!('channel_messages.channel' => channel_id) if channel_id
     if start_date && end_date
       aggreate_options.merge!('start_date' => { '$gte' => start_date, '$lte' => end_date })
@@ -75,15 +77,15 @@ class TeamLeaderboard
     aggreate_options
   end
 
-  def aggregate!
-    @aggregate ||= begin
+  def aggregate!(activity_type = nil)
+    @aggregate[activity_type || '*'] ||= begin
       raise SlackStrava::Error, "Missing value. Expected one of #{MEASURABLE_VALUES.or}." unless metric && !metric.blank?
       raise SlackStrava::Error, "Invalid value: #{metric}. Expected one of #{MEASURABLE_VALUES.or}." unless MEASURABLE_VALUES.map(&:downcase).include?(metric.downcase)
       raise SlackStrava::Error, 'Invalid date range. End date cannot be before start date.' if @start_date && @end_date && @start_date > @end_date
 
       UserActivity.collection.aggregate(
         [
-          { '$match': aggreate_options },
+          { '$match': aggreate_options(activity_type) },
           {
             '$group' => {
               _id: { user_id: '$user_id', type: '$type' },
@@ -104,10 +106,11 @@ class TeamLeaderboard
   end
 
   def find(user_id, activity_type)
-    position = aggregate!.find_index do |row|
-      row[:_id][:user_id] == user_id && row[:_id][:type] == activity_type
+    position = aggregate!(activity_type).find_index do |row|
+      row[:_id][:user_id] == user_id
     end
-    position && position >= 0 ? position + 1 : nil
+
+    position ? position + 1 : nil
   end
 
   def to_s
