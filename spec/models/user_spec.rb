@@ -767,9 +767,11 @@ describe User do
         let!(:user3_run) { Fabricate(:user_activity, user: user, distance: 1000, type: 'Run') }
 
         it 'returns silver for the second Run activity, ignoring Swim' do
-          # Overall rank: user1_run (1st), user2_swim (2nd), user3_run (3rd)
-          # Run rank: user1_run (1st), user3_run (2nd)
-          expect(user.medal_s('Run')).to eq '🥈'
+          # overall rank: user1_run (1st), user2_swim (2nd), user3_run (3rd)
+          # run rank: user1_run (1st), user3_run (2nd)
+          expect(user1_run.user.medal_s('Run')).to eq '🥇'
+          expect(user2_swim.user.medal_s('Swim')).to eq '🥇'
+          expect(user3_run.user.medal_s('Run')).to eq '🥈'
         end
 
         it 'returns nil for Swim as the user has no Swim activity' do

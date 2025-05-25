@@ -323,11 +323,7 @@ class User
   end
 
   def medal_s(activity_type)
-    # Find the user's rank within the specified activity type on the Distance leaderboard
-    rank_in_type = team.leaderboard(metric: 'Distance').find(_id, activity_type)
-
-    # Determine the medal based on the rank
-    case rank_in_type
+    case team.leaderboard(metric: 'Distance').find(_id, activity_type)
     when 1
       '🥇'
     when 2
