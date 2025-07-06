@@ -400,7 +400,7 @@ class Team
     return if retention.nil?
 
     errors.add(:team, 'Retention must be at least 24 hours.') if retention < 24 * 60 * 60
-    errors.add(:team, 'Retention cannot exceed 6 months.') if retention > 6 * 30 * 24 * 60 * 60
+    errors.add(:team, 'Retention cannot exceed 1 year.') if retention > 12 * 30 * 24 * 60 * 60
   end
 
   def prune_before_updated_at

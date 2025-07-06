@@ -300,10 +300,10 @@ describe Team do
         expect(team.errors[:team]).to include('Retention must be at least 24 hours.')
       end
 
-      it 'rejects retention more than 6 months' do
-        team.retention = (6 * 30 * 24 * 60 * 60) + 1
+      it 'rejects retention more than 1 year' do
+        team.retention = (12 * 30 * 24 * 60 * 60) + 1
         expect(team).not_to be_valid
-        expect(team.errors[:team]).to include('Retention cannot exceed 6 months.')
+        expect(team.errors[:team]).to include('Retention cannot exceed 1 year.')
       end
 
       it 'allows nil retention' do
