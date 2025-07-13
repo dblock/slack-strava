@@ -60,10 +60,10 @@ module SlackStrava
     end
 
     def migrate_activity_team_id!
-      UserActivity.where(:team_id.exists => false).each do |user_activity|
+      UserActivity.no_timeout.where(:team_id.exists => false).each do |user_activity|
         user_activity.set(team_id: user_activity.user.team_id)
       end
-      ClubActivity.where(:team_id.exists => false).each do |club_activity|
+      ClubActivity.no_timeout.where(:team_id.exists => false).each do |club_activity|
         club_activity.set(team_id: club_activity.club.team_id)
       end
     end
@@ -80,7 +80,7 @@ module SlackStrava
 
     def check_trials!
       log_info_without_repeat "Checking trials for #{Team.active.trials.count} team(s)."
-      Team.active.trials.each do |team|
+      Team.no_timeout.active.trials.each do |team|
         logger.info "Team #{team} has #{team.remaining_trial_days} trial days left."
         unless team.remaining_trial_days > 0 && team.remaining_trial_days <= 3
           next
@@ -100,7 +100,7 @@ module SlackStrava
     def prune_activities!
       total = 0
       log_info_without_repeat "Pruning activities for #{Team.count} team(s)."
-      Team.each do |team|
+      Team.no_timeout.each do |team|
         total += team.prune_activities!
       rescue StandardError => e
         logger.warn "Error pruning team #{team}, #{e.message}."
@@ -110,7 +110,7 @@ module SlackStrava
     end
 
     def prune_pngs!
-      activities = UserActivity.where(
+      activities = UserActivity.no_timeout.where(
         'map.png_retrieved_at' => {
           '$lt' => Time.now - 2.weeks
         },
@@ -124,7 +124,7 @@ module SlackStrava
 
     def expire_subscriptions!
       log_info_without_repeat "Checking subscriptions for #{Team.active.count} team(s)."
-      Team.active.each do |team|
+      Team.no_timeout.active.each do |team|
         next unless team.subscription_expired?
 
         team.subscription_expired!
@@ -144,7 +144,7 @@ module SlackStrava
         log_info_without_repeat "Checking user activities for #{team}, #{team.users.connected_to_strava.count} user(s)."
 
         begin
-          team.users.connected_to_strava.each do |user|
+          team.users.no_timeout.connected_to_strava.each do |user|
             user.sync_and_brag!
             task.sleep tt
             user.rebrag!
@@ -167,7 +167,7 @@ module SlackStrava
         log_info_without_repeat "Checking club activities for #{team}, #{team.clubs.connected_to_strava.count} club(s)."
 
         begin
-          team.clubs.connected_to_strava.each do |club|
+          team.clubs.no_timeout.connected_to_strava.each do |club|
             club.sync_and_brag!
             task.sleep tt
           end
@@ -181,7 +181,7 @@ module SlackStrava
 
     def deactivate_asleep_teams!
       log_info_without_repeat "Checking inactivity for #{Team.active.count} team(s)."
-      Team.active.each do |team|
+      Team.no_timeout.active.each do |team|
         next unless team.asleep?
 
         begin
@@ -197,7 +197,7 @@ module SlackStrava
 
     def check_subscribed_teams!
       logger.info "Checking Stripe subscriptions for #{Team.striped.count} team(s)."
-      Team.active.striped.each do |team|
+      Team.no_timeout.active.striped.each do |team|
         customer = Stripe::Customer.retrieve(team.stripe_customer_id)
         if customer.subscriptions.none? && team.subscribed?
           logger.info "No active subscriptions for #{team} (#{team.stripe_customer_id}), downgrading."

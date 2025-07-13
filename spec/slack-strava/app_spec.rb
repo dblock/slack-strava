@@ -105,7 +105,7 @@ describe SlackStrava::App do
     let!(:second_team) { Fabricate(:team) }
 
     before do
-      allow(Team).to receive(:each)
+      allow(Team).to receive_message_chain(:no_timeout, :each)
         .and_yield(first_team)
         .and_yield(second_team)
     end
