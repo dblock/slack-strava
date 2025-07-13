@@ -1229,6 +1229,10 @@ describe UserActivity do
           expect(activity.type).to eq 'Ride'
         end
 
+        it 'has calories' do
+          expect(activity.calories).to eq(870.2)
+        end
+
         it 'has a photo' do
           expect(activity.photos.count).to eq(1)
           expect(activity.photos.first.to_slack).to eq(

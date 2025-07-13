@@ -54,6 +54,7 @@ class Activity
     {
       strava_id: response.id,
       name: response.name,
+      calories: response.calories,
       distance: response.distance,
       moving_time: response.moving_time,
       elapsed_time: response.elapsed_time,

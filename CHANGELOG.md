@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2025/07/13: Fixed missing calories - [@dblock](https://github.com/dblock).
 * 2025/05/25: Assign medals based on rank within an activity type - [@JonEHolland](https://github.com/JonEHolland), [@dblock](https://github.com/dblock).
 * 2025/04/19: Fixed activity titles with emojis on mobile - [@dblock](https://github.com/dblock).
 * 2025/03/29: Added `set retention` - [@dblock](https://github.com/dblock).
