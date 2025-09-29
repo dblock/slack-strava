@@ -167,7 +167,9 @@ describe SlackStrava::App do
             }
           )
         )
-        expect(subject.logger).to receive(:error).with('Strava webhook installation failed ({"message"=>"Bad Request", "errors"=>[]}).')
+        expect(subject.logger).to receive(:error).with(
+          "Strava webhook installation failed (#{{ message: 'Bad Request', errors: [] }.as_json})."
+        )
         subject.send(:ensure_strava_webhook!)
       end
     end

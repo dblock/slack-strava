@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-ruby '3.3.5'
+ruby '3.4.6'
 
 gem 'base64'
 gem 'bigdecimal'
@@ -27,7 +27,6 @@ gem 'rack-server-pages'
 gem 'ruby-enum'
 gem 'slack-ruby-bot-server-mailchimp'
 gem 'slack-ruby-bot-server-rtm'
-gem 'slack-ruby-client', '~> 2.4.0'
 gem 'strava-ruby-client'
 gem 'stripe', '~> 1.58.0'
 gem 'wannabe_bool'

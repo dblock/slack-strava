@@ -244,7 +244,7 @@ class Team
 
   def trial_message
     [
-      remaining_trial_days.zero? ? 'Your trial subscription has expired.' : "Your trial subscription expires in #{remaining_trial_days} day#{remaining_trial_days == 1 ? '' : 's'}.",
+      remaining_trial_days.zero? ? 'Your trial subscription has expired.' : "Your trial subscription expires in #{remaining_trial_days} day#{'s' unless remaining_trial_days == 1}.",
       subscribe_text
     ].join(' ')
   end
@@ -289,7 +289,7 @@ class Team
       current_period_end = Time.at(subscription.current_period_end).strftime('%B %d, %Y')
       if subscription.status == 'active'
         [
-          "Subscribed to #{subscription.plan.name} (#{amount}), will#{subscription.cancel_at_period_end ? ' not' : ''} auto-renew on #{current_period_end}.",
+          "Subscribed to #{subscription.plan.name} (#{amount}), will#{' not' if subscription.cancel_at_period_end} auto-renew on #{current_period_end}.",
           if with_unsubscribe
             (
                       if subscription.cancel_at_period_end

@@ -57,7 +57,7 @@ class ActivityFields
     errors.uniq!
 
     if errors.any?
-      raise SlackStrava::Error, "Invalid field#{errors.count == 1 ? '' : 's'}: #{errors.and}, possible values are #{ActivityFields.values.and}."
+      raise SlackStrava::Error, "Invalid field#{'s' unless errors.count == 1}: #{errors.and}, possible values are #{ActivityFields.values.and}."
     end
 
     if fields.count > 1

@@ -37,7 +37,7 @@ module SlackStrava
               logger.info "SET: #{team} - not admin, units remain set to #{team.units}"
             else
               team.update_attributes!(units: v) unless v.nil?
-              client.say(channel: data.channel, text: "Activities for team #{team.name}#{changed ? ' now' : ''} display *#{team.units_s}*.")
+              client.say(channel: data.channel, text: "Activities for team #{team.name}#{' now' if changed} display *#{team.units_s}*.")
               logger.info "SET: #{team} - units set to #{team.units}"
             end
           when 'fields'
@@ -48,7 +48,7 @@ module SlackStrava
               logger.info "SET: #{team} - not admin, activity fields remain set to #{team.activity_fields.and}"
             else
               team.update_attributes!(activity_fields: parsed_fields) if changed && parsed_fields&.any?
-              client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{changed ? ' now' : ''} *#{team.activity_fields_s}*.")
+              client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{' now' if changed} *#{team.activity_fields_s}*.")
               logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
             end
           when 'maps'
@@ -59,7 +59,7 @@ module SlackStrava
               logger.info "SET: #{team} - not admin, maps remain set to #{team.maps}"
             else
               team.update_attributes!(maps: parsed_value) if parsed_value
-              client.say(channel: data.channel, text: "Maps for team #{team.name} are#{changed ? ' now' : ''} *#{team.maps_s}*.")
+              client.say(channel: data.channel, text: "Maps for team #{team.name} are#{' now' if changed} *#{team.maps_s}*.")
               logger.info "SET: #{team} - maps set to #{team.maps}"
             end
           when 'threads'
@@ -70,7 +70,7 @@ module SlackStrava
               logger.info "SET: #{team} - not admin, threads remain set to #{team.threads}"
             else
               team.update_attributes!(threads: parsed_value) if parsed_value
-              client.say(channel: data.channel, text: "Activities for team #{team.name} are#{changed ? ' now' : ''} *#{team.threads_s}*.")
+              client.say(channel: data.channel, text: "Activities for team #{team.name} are#{' now' if changed} *#{team.threads_s}*.")
               logger.info "SET: #{team} - threads set to #{team.threads}"
             end
           when 'leaderboard'
@@ -80,7 +80,7 @@ module SlackStrava
               logger.info "SET: #{team} - not admin, default leaderboard remain set to #{team.default_leaderboard}"
             else
               team.update_attributes!(default_leaderboard: v) if Leaderboard.parse_expression(v) && changed
-              client.say(channel: data.channel, text: "Default leaderboard for team #{team.name} is#{changed ? ' now' : ''} *#{team.default_leaderboard_s}*.")
+              client.say(channel: data.channel, text: "Default leaderboard for team #{team.name} is#{' now' if changed} *#{team.default_leaderboard_s}*.")
               logger.info "SET: #{team} - default leaderboard set to #{team.default_leaderboard}"
             end
           when 'retention'
@@ -91,7 +91,7 @@ module SlackStrava
               logger.info "SET: #{team} - not admin, default activity retention remains set to #{team.retention}"
             else
               team.update_attributes!(retention: v) if changed
-              client.say(channel: data.channel, text: "Activities in team #{team.name} are#{changed ? ' now' : ''} retained for *#{team.retention_s}*.")
+              client.say(channel: data.channel, text: "Activities in team #{team.name} are#{' now' if changed} retained for *#{team.retention_s}*.")
               logger.info "SET: #{team} - activity retention set to #{team.retention} (#{team.retention_s})"
             end
           else
@@ -105,9 +105,9 @@ module SlackStrava
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps are *#{team.maps_s}*.",
             "Default leaderboard is *#{team.default_leaderboard_s}*.",
-            "Your activities will *#{user.sync_activities? ? '' : 'not '}sync*.",
-            "Your private activities will *#{user.private_activities? ? '' : 'not '}be posted*.",
-            "Your followers only activities will *#{user.followers_only_activities? ? '' : 'not '}be posted*."
+            "Your activities will *#{'not ' unless user.sync_activities?}sync*.",
+            "Your private activities will *#{'not ' unless user.private_activities?}be posted*.",
+            "Your followers only activities will *#{'not ' unless user.followers_only_activities?}be posted*."
           ]
           client.say(channel: data.channel, text: messages.join("\n"))
           logger.info "SET: #{team}, user=#{data.user} - set"

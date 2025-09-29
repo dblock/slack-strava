@@ -14,7 +14,7 @@ module Api
             error!("This API doesn't support sorting", 400)
           end
           unless supported_sort_orders.include?(sort_order)
-            error!("Invalid sort order: #{sort_order}, must be#{supported_sort_orders.count == 1 ? '' : ' one of'} '#{supported_sort_orders.join('\', \'')}'", 400)
+            error!("Invalid sort order: #{sort_order}, must be#{' one of' unless supported_sort_orders.count == 1} '#{supported_sort_orders.join('\', \'')}'", 400)
           end
         end
         sort_order.split(',').map do |sort_entry|
