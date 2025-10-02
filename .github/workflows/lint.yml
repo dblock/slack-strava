@@ -3,15 +3,12 @@ name: lint
 on: [push, pull_request]
 
 jobs:
-  lint:
-    name: RuboCop
+  RuboCop:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4.6"
           bundler-cache: true
-      - name: Run RuboCop
-        run: bundle exec rubocop
+      - run: bundle exec rubocop

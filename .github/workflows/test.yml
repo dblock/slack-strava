@@ -3,30 +3,24 @@ name: test
 on: [push, pull_request]
 
 jobs:
-  test:
+  RSpec:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Firefox
-        uses: browser-actions/setup-firefox@v1.5.2
+      - uses: actions/checkout@v3
+      - uses: browser-actions/setup-firefox@latest
         with:
-          firefox-version: "134.0.1"
-      - name: Download geckodriver
-        uses: browser-actions/setup-geckodriver@latest
+          firefox-version: '143.0.3'
+      - uses: browser-actions/setup-geckodriver@latest
         with:
-          geckodriver-version: "0.32.0"
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+          geckodriver-version: "0.36.0"
+      - uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: "8.0"
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4.6"
           bundler-cache: true
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
+      - uses: GabrielBB/xvfb-action@v1
         with:
-          mongodb-version: "7"
-          mongodb-db: slack_strava_test
-      - name: Run tests
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: bundle exec rake spec
+          run: |
+            bundle exec rake spec

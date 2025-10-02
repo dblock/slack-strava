@@ -1,1 +1,1 @@
-ActiveSupport.to_time_preserves_timezone = true
+ActiveSupport.to_time_preserves_timezone = :zone
