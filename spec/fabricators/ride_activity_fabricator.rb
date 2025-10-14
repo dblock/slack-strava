@@ -8,6 +8,8 @@ Fabricator(:ride_activity, class_name: :user_activity) do
   moving_time 4207
   elapsed_time 4410
   average_speed 6.679
+  device 'Garmin Edge 1030'
+  gear 'Tarmac'
   before_create do
     self.team ||= user.team
   end

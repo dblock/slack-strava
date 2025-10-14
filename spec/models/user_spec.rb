@@ -326,8 +326,9 @@ describe User do
             allow(user).to receive(:latest_bragged_activity).and_return(last_activity)
           end
 
-          it 'retrieves last activity details and rebrags it with updated description' do
+          it 'retrieves last activity details and rebrags it with updated description and device' do
             updated_last_activity = last_activity.to_slack
+            updated_last_activity[:blocks][2][:text][:text] += "\n*Device*: Strava iPhone App"
             updated_last_activity[:blocks].insert(2, { type: 'section', text: { text: 'detailed description', type: 'plain_text', emoji: true } })
             expect_any_instance_of(User).to receive(:update!).with(
               updated_last_activity,

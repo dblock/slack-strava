@@ -324,6 +324,10 @@ module ActivityMethods
         fields << { title: 'Calories', value: calories_s, short: true } if calories&.positive?
       when 'Weather'
         fields << { title: 'Weather', value: weather_s, short: true } if respond_to?(:weather) && weather.present?
+      when 'Device'
+        fields << { title: 'Device', value: device, short: true } if device && !device.blank?
+      when 'Gear'
+        fields << { title: 'Gear', value: gear, short: true } if gear && !gear.blank?
       end
     end
     fields.any? ? fields : nil

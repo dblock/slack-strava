@@ -11,7 +11,7 @@ class ActivitySummary
     total_elevation_gain
   ].freeze
 
-  attr_reader(*FIELDS, :stats, :average_heartrate, :average_speed, :max_speed, :max_heartrate)
+  attr_reader(*FIELDS, :stats, :average_heartrate, :average_speed, :max_speed, :max_heartrate, :device, :gear)
   attr_accessor :type, :team, :count, :athlete_count
 
   def_delegators :@stats, *FIELDS

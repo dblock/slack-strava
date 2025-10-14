@@ -9,6 +9,7 @@ Fabricator(:swim_activity, class_name: :user_activity) do
   moving_time 2220
   elapsed_time 2220
   average_speed 0.844
+  device 'Garmin Forerunner'
   before_create do
     self.team ||= user.team
   end

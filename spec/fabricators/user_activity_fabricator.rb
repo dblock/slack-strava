@@ -18,6 +18,8 @@ Fabricator(:user_activity) do
   calories 870.2
   map { Fabricate.build(:map) }
   weather { Fabricate.build(:weather) }
+  device 'Garmin Forerunner'
+  gear 'Adidas Solarglide'
   before_create do
     self.team ||= user.team
   end
