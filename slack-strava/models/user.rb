@@ -125,11 +125,11 @@ class User
     when 'restricted_action'
       logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
       dm!(text: "I wasn't allowed to post into <##{channel['id']}> because of a Slack workspace preference, please contact your Slack admin.")
-      NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, self: to_s })
+      NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, user: to_s })
       nil
     when 'not_in_channel', 'account_inactive'
       logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
-      NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, self: to_s })
+      NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, user: to_s })
       nil
     else
       raise e

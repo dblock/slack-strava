@@ -58,7 +58,7 @@ class UserActivity < Activity
     case e.message
     when 'not_in_channel', 'account_inactive' then
       logger.warn "Bragging to #{user} failed, #{e.message}."
-      NewRelic::Agent.notice_error(e, custom_params: { team: user.team.to_s, self: user.to_s })
+      NewRelic::Agent.notice_error(e, custom_params: { team: user.team.to_s, user: user.to_s, activity: to_s })
       nil
     else
       raise e

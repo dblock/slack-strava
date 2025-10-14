@@ -45,7 +45,7 @@ class Activity
   end
 
   def to_s
-    "name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, speed=#{speed_s}"
+    "id=#{strava_id}, name=#{name}, distance=#{distance_s}, moving time=#{moving_time_in_hours_s}, pace=#{pace_s}, speed=#{speed_s}"
   end
 
   def strava_url
