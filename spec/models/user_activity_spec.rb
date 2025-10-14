@@ -492,6 +492,31 @@ describe UserActivity do
       end
     end
 
+    context 'with an excessively long description' do
+      before do
+        team.activity_fields = ['None']
+        activity.description = Faker::Lorem.paragraph_by_chars(number: 3100, supplemental: false)
+      end
+
+      it 'to_slack' do
+        expect(activity.to_slack).to eq(
+          attachments: [],
+          blocks: [
+            { type: 'section', text: { type: 'mrkdwn', text: "*<https://www.strava.com/activities/#{activity.strava_id}|#{activity.name}>*" } },
+            {
+              type: 'context',
+              elements: [
+                { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name },
+                { type: 'mrkdwn', text: "<#{user.athlete.strava_url}|#{user.athlete.name}> <@#{activity.user.user_name}> 🥇 on Tuesday, February 20, 2018 at 10:02 AM" }
+              ]
+            },
+            { type: 'section', text: { type: 'plain_text', text: "#{activity.description[0...2998]} …", emoji: true } },
+            { type: 'image', image_url: "https://slava.playplay.io/api/maps/#{activity.map.id}.png", alt_text: '' }
+          ]
+        )
+      end
+    end
+
     context 'ranked second' do
       before do
         team.activity_fields = %w[Title Url User Medal Description Date Athlete]

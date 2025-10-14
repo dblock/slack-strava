@@ -1,5 +1,7 @@
 ### Changelog
 
+* 2025/10/14: Fixed posting activities with descriptions exceeding Slack block limits - [@dblock](https://github.com/dblock).
+* 2025/10/14: Added Device and Gear - [@dblock](https://github.com/dblock).
 * 2025/09/29: Upgraded to Ruby 3.4.6 - [@dblock](https://github.com/dblock).
 * 2025/07/13: Fixed missing calories - [@dblock](https://github.com/dblock).
 * 2025/05/25: Assign medals based on rank within an activity type - [@JonEHolland](https://github.com/JonEHolland), [@dblock](https://github.com/dblock).

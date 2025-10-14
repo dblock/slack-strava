@@ -190,12 +190,21 @@ class UserActivity < Activity
     }
   end
 
+  # https://docs.slack.dev/reference/block-kit/composition-objects/text-object
+  MAX_SLACK_TEXT_OBJECT_TEXT_LENGTH = 3000
+
+  def truncated_description
+    return description if description.length < MAX_SLACK_TEXT_OBJECT_TEXT_LENGTH
+
+    "#{description[0...(MAX_SLACK_TEXT_OBJECT_TEXT_LENGTH - 2)]} …"
+  end
+
   def to_slack_blocks
     blocks = []
 
     blocks << { type: 'section', text: { type: 'mrkdwn', text: display_title_s } }
     blocks << context_block if display_field?(ActivityFields::MEDAL) || display_field?(ActivityFields::ATHLETE) || display_field?(ActivityFields::USER) || display_field?(ActivityFields::DATE)
-    blocks << { type: 'section', text: { type: 'plain_text', text: description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION)
+    blocks << { type: 'section', text: { type: 'plain_text', text: truncated_description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION)
 
     fields_text = slack_fields_s
     if map&.polyline? && team.maps == 'full'
