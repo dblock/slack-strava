@@ -10,43 +10,43 @@ describe TeamLeaderboard do
   context 'initialize' do
     it 'errors on no metric' do
       expect {
-        TeamLeaderboard.new(team, metric: nil).aggregate!
+        described_class.new(team, metric: nil).aggregate!
       }.to raise_error SlackStrava::Error, "Missing value. Expected one of #{TeamLeaderboard::MEASURABLE_VALUES.or}."
     end
 
     it 'errors on empty metric' do
       expect {
-        TeamLeaderboard.new(team, metric: '').aggregate!
+        described_class.new(team, metric: '').aggregate!
       }.to raise_error SlackStrava::Error, "Missing value. Expected one of #{TeamLeaderboard::MEASURABLE_VALUES.or}."
     end
 
     it 'errors on invalid' do
       expect {
-        TeamLeaderboard.new(team, metric: 'invalid').aggregate!
+        described_class.new(team, metric: 'invalid').aggregate!
       }.to raise_error SlackStrava::Error, "Invalid value: invalid. Expected one of #{TeamLeaderboard::MEASURABLE_VALUES.or}."
     end
 
     it 'errors on multiple metrics' do
       expect {
-        TeamLeaderboard.new(team, metric: 'Distance, Speed').aggregate!
+        described_class.new(team, metric: 'Distance, Speed').aggregate!
       }.to raise_error SlackStrava::Error, "Invalid value: Distance, Speed. Expected one of #{TeamLeaderboard::MEASURABLE_VALUES.or}."
     end
 
     it 'errors on one invalid metric' do
       expect {
-        TeamLeaderboard.new(team, metric: 'Distance, invalid').aggregate!
+        described_class.new(team, metric: 'Distance, invalid').aggregate!
       }.to raise_error SlackStrava::Error, "Invalid value: Distance, invalid. Expected one of #{TeamLeaderboard::MEASURABLE_VALUES.or}."
     end
 
     it 'is case insensitive' do
-      expect { TeamLeaderboard.new(team, metric: 'distance').aggregate! }.not_to raise_error
-      expect { TeamLeaderboard.new(team, metric: 'pR CouNT').aggregate! }.not_to raise_error
+      expect { described_class.new(team, metric: 'distance').aggregate! }.not_to raise_error
+      expect { described_class.new(team, metric: 'pR CouNT').aggregate! }.not_to raise_error
     end
   end
 
   (TeamLeaderboard::MEASURABLE_VALUES - ['Count']).each do |metric|
     context metric do
-      let(:leaderboard) { TeamLeaderboard.new(team, metric: metric) }
+      let(:leaderboard) { described_class.new(team, metric: metric) }
 
       it 'returns no activities by default' do
         expect(leaderboard.to_s).to eq "There are no activities with #{metric.downcase} in this channel."
@@ -57,7 +57,7 @@ describe TeamLeaderboard do
   context 'with a date' do
     context 'range' do
       let(:dt) { 1.month.ago }
-      let(:leaderboard) { TeamLeaderboard.new(team, metric: 'count', start_date: dt, end_date: dt + 1.day) }
+      let(:leaderboard) { described_class.new(team, metric: 'count', start_date: dt, end_date: dt + 1.day) }
 
       it 'returns no activities by default' do
         expect(leaderboard.to_s).to eq "There are no activities between #{dt.to_fs(:long)} and #{(dt + 1.day).to_fs(:long)} in this channel."
@@ -66,7 +66,7 @@ describe TeamLeaderboard do
 
     context 'start' do
       let(:dt) { 1.month.ago }
-      let(:leaderboard) { TeamLeaderboard.new(team, metric: 'count', start_date: dt) }
+      let(:leaderboard) { described_class.new(team, metric: 'count', start_date: dt) }
 
       it 'returns no activities by default' do
         expect(leaderboard.to_s).to eq "There are no activities after #{dt.to_fs(:long)} in this channel."
@@ -75,7 +75,7 @@ describe TeamLeaderboard do
 
     context 'end' do
       let(:dt) { 1.month.ago }
-      let(:leaderboard) { TeamLeaderboard.new(team, metric: 'count', end_date: dt) }
+      let(:leaderboard) { described_class.new(team, metric: 'count', end_date: dt) }
 
       it 'returns no activities by default' do
         expect(leaderboard.to_s).to eq "There are no activities before #{dt.to_fs(:long)} in this channel."
@@ -97,7 +97,7 @@ describe TeamLeaderboard do
 
     TeamLeaderboard::MEASURABLE_VALUES.each do |metric|
       context metric do
-        let(:leaderboard) { TeamLeaderboard.new(team, metric: metric) }
+        let(:leaderboard) { described_class.new(team, metric: metric) }
 
         it 'returns no activities by default' do
           expect(leaderboard.to_s).not_to be_blank

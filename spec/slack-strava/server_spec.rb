@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe SlackStrava::Server do
   let(:team) { Fabricate(:team) }
-  let(:server) { SlackStrava::Server.new(team: team) }
+  let(:server) { described_class.new(team: team) }
   let(:client) { server.send(:client) }
 
   describe '#channel_joined' do

@@ -140,7 +140,7 @@ describe UserActivity do
             }
             expect(activity.brag!).to eq []
           }.not_to change(User, :count)
-        }.not_to change(UserActivity, :count)
+        }.not_to change(described_class, :count)
       end
 
       it 'informs user on restricted_action' do
@@ -1176,12 +1176,12 @@ describe UserActivity do
 
       it 'creates an activity' do
         expect {
-          UserActivity.create_from_strava!(user, detailed_activity)
-        }.to change(UserActivity, :count).by(1)
+          described_class.create_from_strava!(user, detailed_activity)
+        }.to change(described_class, :count).by(1)
       end
 
       context 'created activity' do
-        let(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+        let(:activity) { described_class.create_from_strava!(user, detailed_activity) }
         let(:formatted_time) { 'Wednesday, March 28, 2018 at 07:51 PM' }
 
         it 'has the correct time zone data' do
@@ -1205,46 +1205,46 @@ describe UserActivity do
 
         it 'creates another activity' do
           expect {
-            UserActivity.create_from_strava!(user, detailed_activity)
-          }.to change(UserActivity, :count).by(1)
+            described_class.create_from_strava!(user, detailed_activity)
+          }.to change(described_class, :count).by(1)
           expect(user.reload.activities.count).to eq 2
         end
       end
 
       context 'with an existing activity' do
-        let!(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+        let!(:activity) { described_class.create_from_strava!(user, detailed_activity) }
 
         it 'does not create another activity' do
           expect {
-            UserActivity.create_from_strava!(user, detailed_activity)
-          }.not_to change(UserActivity, :count)
+            described_class.create_from_strava!(user, detailed_activity)
+          }.not_to change(described_class, :count)
         end
 
         it 'does not cause a save without changes' do
-          expect_any_instance_of(UserActivity).not_to receive(:save!)
-          UserActivity.create_from_strava!(user, detailed_activity)
+          expect_any_instance_of(described_class).not_to receive(:save!)
+          described_class.create_from_strava!(user, detailed_activity)
         end
 
         it 'updates an existing activity' do
           activity.update_attributes!(name: 'Original')
-          UserActivity.create_from_strava!(user, detailed_activity)
+          described_class.create_from_strava!(user, detailed_activity)
           expect(activity.reload.name).to eq 'First Time Breaking 14'
         end
 
         context 'concurrently' do
           before do
-            expect(UserActivity).to receive(:where).with(
+            expect(described_class).to receive(:where).with(
               strava_id: detailed_activity.id, team_id: user.team.id, user_id: user.id
             ).and_return([])
-            allow(UserActivity).to receive(:where).and_call_original
+            allow(described_class).to receive(:where).and_call_original
           end
 
           it 'does not create a duplicate activity' do
             expect {
               expect {
-                UserActivity.create_from_strava!(user, detailed_activity)
+                described_class.create_from_strava!(user, detailed_activity)
               }.to raise_error(Mongo::Error::OperationFailure)
-            }.not_to change(UserActivity, :count)
+            }.not_to change(described_class, :count)
           end
         end
       end
@@ -1262,7 +1262,7 @@ describe UserActivity do
       end
 
       context 'a new activity' do
-        let(:activity) { UserActivity.create_from_strava!(user, detailed_activity) }
+        let(:activity) { described_class.create_from_strava!(user, detailed_activity) }
 
         it 'has the correct type' do
           expect(activity.type).to eq 'Ride'
@@ -1343,8 +1343,8 @@ describe UserActivity do
 
         before do
           expect {
-            UserActivity.create_from_strava!(user, detailed_activity)
-          }.not_to change(UserActivity, :count)
+            described_class.create_from_strava!(user, detailed_activity)
+          }.not_to change(described_class, :count)
 
           activity.reload
         end

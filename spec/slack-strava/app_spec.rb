@@ -2,13 +2,13 @@ require 'spec_helper'
 
 describe SlackStrava::App do
   subject do
-    SlackStrava::App.instance
+    described_class.instance
   end
 
   describe '#instance' do
     it 'is an instance of the strava app' do
       expect(subject).to be_a(SlackRubyBotServer::App)
-      expect(subject).to be_an_instance_of(SlackStrava::App)
+      expect(subject).to be_an_instance_of(described_class)
     end
   end
 

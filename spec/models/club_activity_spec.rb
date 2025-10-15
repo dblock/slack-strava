@@ -103,7 +103,7 @@ describe ClubActivity do
           }
           expect(activity.brag!).to be_nil
         }.not_to change(Club, :count)
-      }.not_to change(ClubActivity, :count)
+      }.not_to change(described_class, :count)
       expect(club.reload.sync_activities).to be false
     end
 

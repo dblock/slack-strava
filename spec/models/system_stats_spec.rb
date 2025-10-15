@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe SystemStats do
-  let(:stats) { SystemStats.aggregate! }
+  let(:stats) { described_class.aggregate! }
 
   before do
     allow_any_instance_of(Map).to receive(:update_png!)
@@ -9,22 +9,22 @@ describe SystemStats do
 
   context 'aggregate!' do
     it 'creates a record' do
-      expect { 2.times { SystemStats.aggregate! } }.to change(SystemStats, :count).by(2)
+      expect { 2.times { described_class.aggregate! } }.to change(described_class, :count).by(2)
     end
   end
 
   context 'latest_or_aggregate!' do
     it 'creates one record' do
-      expect { 2.times { SystemStats.latest_or_aggregate! } }.to change(SystemStats, :count).by(1)
+      expect { 2.times { described_class.latest_or_aggregate! } }.to change(described_class, :count).by(1)
     end
 
     it 'creates another record 24 hours later' do
-      SystemStats.aggregate!
+      described_class.aggregate!
       Timecop.travel(Time.now + 1.day) do
-        expect { SystemStats.latest_or_aggregate! }.to change(SystemStats, :count).by(1)
+        expect { described_class.latest_or_aggregate! }.to change(described_class, :count).by(1)
       end
       Timecop.travel(Time.now + 1.day + 1.hour) do
-        expect { SystemStats.latest_or_aggregate! }.not_to change(SystemStats, :count)
+        expect { described_class.latest_or_aggregate! }.not_to change(described_class, :count)
       end
     end
   end

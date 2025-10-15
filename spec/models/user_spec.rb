@@ -9,20 +9,20 @@ describe User do
     let!(:user) { Fabricate(:user) }
 
     it 'finds by slack id' do
-      expect(User.find_by_slack_mention!(user.team, "<@#{user.user_id}>")).to eq user
+      expect(described_class.find_by_slack_mention!(user.team, "<@#{user.user_id}>")).to eq user
     end
 
     it 'finds by username' do
-      expect(User.find_by_slack_mention!(user.team, user.user_name)).to eq user
+      expect(described_class.find_by_slack_mention!(user.team, user.user_name)).to eq user
     end
 
     it 'finds by username is case-insensitive' do
-      expect(User.find_by_slack_mention!(user.team, user.user_name.capitalize)).to eq user
+      expect(described_class.find_by_slack_mention!(user.team, user.user_name.capitalize)).to eq user
     end
 
     it 'requires a known user' do
       expect {
-        User.find_by_slack_mention!(user.team, '<@nobody>')
+        described_class.find_by_slack_mention!(user.team, '<@nobody>')
       }.to raise_error SlackStrava::Error, "I don't know who <@nobody> is!"
     end
   end
@@ -44,21 +44,21 @@ describe User do
       end
 
       it 'finds by different slack id returned from slack info' do
-        expect(User.find_create_or_update_by_slack_id!(client, 'unknown')).to eq user
+        expect(described_class.find_create_or_update_by_slack_id!(client, 'unknown')).to eq user
       end
     end
 
     context 'without a user' do
       it 'creates a user' do
         expect {
-          user = User.find_create_or_update_by_slack_id!(client, 'whatever')
+          user = described_class.find_create_or_update_by_slack_id!(client, 'whatever')
           expect(user).not_to be_nil
           expect(user.user_id).to eq 'U007'
           expect(user.user_name).to eq 'username'
           expect(user.is_admin).to be true
           expect(user.is_bot).to be false
           expect(user.is_owner).to be true
-        }.to change(User, :count).by(1)
+        }.to change(described_class, :count).by(1)
       end
     end
 
@@ -67,8 +67,8 @@ describe User do
 
       it 'updates the fields of the existing user' do
         expect {
-          User.find_create_or_update_by_slack_id!(client, 'whatever')
-        }.not_to change(User, :count)
+          described_class.find_create_or_update_by_slack_id!(client, 'whatever')
+        }.not_to change(described_class, :count)
         user.reload
         expect(user.user_id).to eq 'U007'
         expect(user.is_admin).to be true
@@ -82,14 +82,14 @@ describe User do
 
       it 'creates another user' do
         expect {
-          User.find_create_or_update_by_slack_id!(client, 'whatever')
-        }.to change(User, :count).by(1)
+          described_class.find_create_or_update_by_slack_id!(client, 'whatever')
+        }.to change(described_class, :count).by(1)
       end
 
       it 'updates the username of the existing user' do
         expect {
-          User.find_create_or_update_by_slack_id!(client, user.user_id)
-        }.not_to change(User, :count)
+          described_class.find_create_or_update_by_slack_id!(client, user.user_id)
+        }.not_to change(described_class, :count)
         expect(user.reload.user_name).to eq 'username'
       end
     end
@@ -99,8 +99,8 @@ describe User do
 
       it 'updates the fields of the existing user' do
         expect {
-          User.find_create_or_update_by_slack_id!(client, user.user_id)
-        }.not_to change(User, :count)
+          described_class.find_create_or_update_by_slack_id!(client, user.user_id)
+        }.not_to change(described_class, :count)
         user.reload
         expect(user.user_name).to eq 'username'
         expect(user.is_admin).to be true
@@ -207,18 +207,18 @@ describe User do
 
       context 'sync_and_brag!' do
         before do
-          allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'channel_id'])
+          allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'channel_id'])
         end
 
         it 'syncs and brags' do
-          expect_any_instance_of(User).to receive(:inform_channel!)
+          expect_any_instance_of(described_class).to receive(:inform_channel!)
           user.sync_and_brag!
         end
 
         it 'uses a lock' do
-          user_instance_2 = User.find(user._id)
+          user_instance_2 = described_class.find(user._id)
           bragged_activities = []
-          allow_any_instance_of(User).to receive(:inform_channel!) do |_, args|
+          allow_any_instance_of(described_class).to receive(:inform_channel!) do |_, args|
             bragged_activities << args[:blocks][0][:text][:text]
             [{ ts: '1503425956.000247', channel: 'channel' }]
           end
@@ -297,8 +297,8 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
-          allow_any_instance_of(User).to receive(:inform_channel!).and_return({ ts: 'ts' })
+          allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'C1'])
+          allow_any_instance_of(described_class).to receive(:inform_channel!).and_return({ ts: 'ts' })
           user.brag!
         end
 
@@ -330,7 +330,7 @@ describe User do
             updated_last_activity = last_activity.to_slack
             updated_last_activity[:blocks][2][:text][:text] += "\n*Device*: Strava iPhone App"
             updated_last_activity[:blocks].insert(2, { type: 'section', text: { text: 'detailed description', type: 'plain_text', emoji: true } })
-            expect_any_instance_of(User).to receive(:update!).with(
+            expect_any_instance_of(described_class).to receive(:update!).with(
               updated_last_activity,
               last_activity.channel_messages
             )
@@ -338,7 +338,7 @@ describe User do
           end
 
           it 'does not rebrag if the activity has not changed' do
-            expect_any_instance_of(User).to receive(:update!).once
+            expect_any_instance_of(described_class).to receive(:update!).once
             2.times { user.rebrag! }
           end
         end
@@ -397,7 +397,7 @@ describe User do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
 
       before do
-        allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+        allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'C1'])
       end
 
       context 'by default' do
@@ -434,7 +434,7 @@ describe User do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
 
       before do
-        allow_any_instance_of(User).to receive(:connected_channels).and_return(['id' => 'C1'])
+        allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'C1'])
       end
 
       context 'by default' do
@@ -612,8 +612,8 @@ describe User do
     let(:activity_id) { '1473024961' }
 
     it 'syncs an activity and brags' do
-      expect_any_instance_of(User).to receive(:sync_strava_activity!).with(activity_id)
-      expect_any_instance_of(User).to receive(:brag!)
+      expect_any_instance_of(described_class).to receive(:sync_strava_activity!).with(activity_id)
+      expect_any_instance_of(described_class).to receive(:brag!)
       user.sync_activity_and_brag!(activity_id)
     end
 

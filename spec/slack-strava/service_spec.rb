@@ -11,7 +11,7 @@ describe SlackRubyBotServer::Service do
     end
 
     it 'defaults to playplay.io in production' do
-      expect(SlackRubyBotServer::Service.url).to eq 'https://slava.playplay.io'
+      expect(described_class.url).to eq 'https://slava.playplay.io'
     end
 
     context 'in development' do
@@ -20,7 +20,7 @@ describe SlackRubyBotServer::Service do
       end
 
       it 'defaults to localhost' do
-        expect(SlackRubyBotServer::Service.url).to eq 'http://localhost:5000'
+        expect(described_class.url).to eq 'http://localhost:5000'
       end
     end
 
@@ -34,7 +34,7 @@ describe SlackRubyBotServer::Service do
       end
 
       it 'defaults to ENV' do
-        expect(SlackRubyBotServer::Service.url).to eq 'updated'
+        expect(described_class.url).to eq 'updated'
       end
     end
   end
