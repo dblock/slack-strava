@@ -225,7 +225,7 @@ class Team
         result[:attachments].concat(attachments)
       end
     else
-      result[:text] = 'No clubs connected. ' + result[:text]
+      result[:text] = "No clubs connected. #{result[:text]}"
     end
     result
   end

@@ -55,7 +55,7 @@ class Map
   end
 
   def png_size
-    png.data.size if png&.data
+    png&.data&.size
   end
 
   def to_s

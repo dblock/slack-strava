@@ -282,16 +282,6 @@ Style/NestedTernaryOperator:
   Exclude:
     - 'slack-strava/commands/set.rb'
 
-# Offense count: 2
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: EnforcedStyle, AllowedMethods, AllowedPatterns.
-# SupportedStyles: predicate, comparison
-Style/NumericPredicate:
-  Exclude:
-    - 'spec/**/*'
-    - 'slack-strava/app.rb'
-    - 'slack-strava/models/team_leaderboard.rb'
-
 # Offense count: 1
 Style/OpenStructUse:
   Exclude:
@@ -304,35 +294,11 @@ Style/OptionalBooleanParameter:
   Exclude:
     - 'slack-strava/models/team.rb'
 
-# Offense count: 2
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: ConvertCodeThatCanStartToReturnNil, AllowedMethods, MaxChainLength.
-# AllowedMethods: present?, blank?, presence, try, try!
-Style/SafeNavigation:
-  Exclude:
-    - 'slack-strava/api/endpoints/requests/event.rb'
-    - 'slack-strava/models/map.rb'
-
 # Offense count: 1
 # Configuration parameters: Max.
 Style/SafeNavigationChainLength:
   Exclude:
     - 'slack-strava/models/activity_methods.rb'
-
-# Offense count: 1
-# This cop supports unsafe autocorrection (--autocorrect-all).
-Style/SlicingWithRange:
-  Exclude:
-    - 'slack-strava/api/helpers/sort_helpers.rb'
-
-# Offense count: 3
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: Mode.
-Style/StringConcatenation:
-  Exclude:
-    - 'slack-strava.rb'
-    - 'slack-strava/api/helpers/error_helpers.rb'
-    - 'slack-strava/models/team.rb'
 
 # Offense count: 258
 # This cop supports safe autocorrection (--autocorrect).

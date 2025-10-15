@@ -115,7 +115,7 @@ class TeamLeaderboard
 
   def to_s
     top = aggregate!.map { |row|
-      next unless row[metric_field] > 0
+      next unless row[metric_field].positive?
 
       Row.new(
         team: team,

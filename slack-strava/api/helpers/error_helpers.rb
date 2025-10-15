@@ -18,7 +18,7 @@ module Api
           error!(
             {
               type: 'param_error',
-              message: e.document.errors.full_messages.uniq.join(', ') + '.',
+              message: "#{e.document.errors.full_messages.uniq.join(', ')}.",
               detail: e.document.errors.messages.transform_values(&:uniq)
             }, 400
           )

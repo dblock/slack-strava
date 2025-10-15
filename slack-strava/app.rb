@@ -82,7 +82,7 @@ module SlackStrava
       log_info_without_repeat "Checking trials for #{Team.active.trials.count} team(s)."
       Team.no_timeout.active.trials.each do |team|
         logger.info "Team #{team} has #{team.remaining_trial_days} trial days left."
-        unless team.remaining_trial_days > 0 && team.remaining_trial_days <= 3
+        unless team.remaining_trial_days.positive? && team.remaining_trial_days <= 3
           next
         end
 

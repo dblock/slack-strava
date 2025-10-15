@@ -26,7 +26,7 @@ module Api
         end
 
         def user
-          return unless team && event && event.user
+          return unless team && event&.user
 
           @user ||= team.users.where(user_id: event.user).first
         end
