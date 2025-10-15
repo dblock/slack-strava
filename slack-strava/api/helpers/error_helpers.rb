@@ -43,7 +43,7 @@ module Api
               message: 'Invalid parameters.',
               detail: e.errors.transform_keys do |k|
                 # JSON does not permit having a key of type Array
-                k.count == 1 ? k.first : k.join(', ')
+                k.one? ? k.first : k.join(', ')
               end
             }, 400
           )
