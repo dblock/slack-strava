@@ -12,13 +12,6 @@ Capybara/SpecificActions:
     - 'spec/integration/subscribe_spec.rb'
     - 'spec/integration/update_cc_spec.rb'
 
-# Offense count: 2
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: AllowSafeAssignment.
-Lint/AssignmentInCondition:
-  Exclude:
-    - 'slack-strava/commands/leaderboard.rb'
-
 # Offense count: 3
 # Configuration parameters: IgnoreLiteralBranches, IgnoreConstantBranches, IgnoreDuplicateElseBranch.
 Lint/DuplicateBranch:
