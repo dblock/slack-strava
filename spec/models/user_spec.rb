@@ -295,10 +295,19 @@ describe User do
 
         it 'does not reset activities_at back if the most recent bragged activity is in the past' do
           expect(user.activities_at).not_to be_nil
-          past = Time.parse('2012-01-01T12:34Z')
-          Fabricate(:user_activity, user: user, start_date: past)
+          past_date = Time.parse('2012-01-01T12:34Z')
+          Fabricate(:user_activity, user: user, start_date: past_date)
           user.brag!
-          expect(user.activities_at).not_to eq past
+          expect(user.activities_at).not_to eq past_date
+        end
+
+        it 'does not reset activities_at to a date in the future' do
+          expect {
+            past_date = Time.parse('1999-01-01T12:34Z')
+            Timecop.travel(past_date) do
+              user.brag!
+            end
+          }.not_to change(user, :activities_at)
         end
 
         it 'sets activities_at to the most recent bragged activity' do
