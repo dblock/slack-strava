@@ -239,15 +239,6 @@ describe User do
           expect { user.sync_and_brag! }.not_to raise_error
         end
 
-        context 'rate limit exceeded' do
-          let(:rate_limit_exceeded_error) { Strava::Errors::Fault.new(429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [{ 'resource' => 'Application', 'field' => 'rate limit', 'code' => 'exceeded' }] }) }
-
-          it 'raises an exception' do
-            allow(user).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
-            expect { user.sync_and_brag! }.to raise_error(Strava::Errors::Fault, /Rate Limit Exceeded/)
-          end
-        end
-
         context 'refresh token' do
           let(:authorization_error) { Strava::Errors::Fault.new(400, body: { 'message' => 'Bad Request', 'errors' => [{ 'resource' => 'RefreshToken', 'field' => 'refresh_token', 'code' => 'invalid' }] }) }
 

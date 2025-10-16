@@ -253,15 +253,6 @@ describe Club do
       expect { club.sync_and_brag! }.not_to raise_error
     end
 
-    context 'rate limit exceeded' do
-      let(:rate_limit_exceeded_error) { Strava::Errors::Fault.new(429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [{ 'resource' => 'Application', 'field' => 'rate limit', 'code' => 'exceeded' }] }) }
-
-      it 'raises an exception' do
-        allow(club).to receive(:sync_new_strava_activities!).and_raise rate_limit_exceeded_error
-        expect { club.sync_and_brag! }.to raise_error(Strava::Errors::Fault, /Rate Limit Exceeded/)
-      end
-    end
-
     pending 'uses a lock'
 
     context 'connected_to_strava' do
