@@ -100,7 +100,7 @@ module Api
           raise 'User not connected to Strava.' unless user.connected_to_strava?
 
           strava_id = arg
-          strava_club = Club.attrs_from_strava(user.strava_client.club(strava_id))
+          strava_club = Club.detailed_attrs_from_strava(user.strava_client.club(strava_id))
           club = user.team.clubs.where(channel_id: channel_id).first
           club ||= Club.new(team: user.team, channel_id: channel_id)
           club.assign_attributes(

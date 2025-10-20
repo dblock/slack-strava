@@ -83,13 +83,64 @@ class UserActivity < Activity
     nil
   end
 
-  def attrs_from_strava(response)
-    Activity.attrs_from_strava(response).merge(
+  def detailed_attrs_from_strava(response)
+    {
+      strava_id: response.id,
+      name: response.name,
+      calories: response.calories,
+      distance: response.distance,
+      moving_time: response.moving_time,
+      elapsed_time: response.elapsed_time,
+      average_speed: response.average_speed,
+      max_speed: response.max_speed,
+      average_heartrate: response.average_heartrate,
+      max_heartrate: response.max_heartrate,
+      pr_count: response.pr_count,
+      type: response.sport_type,
+      total_elevation_gain: response.total_elevation_gain,
+      private: response.private,
+      visibility: response.visibility,
+      description: response.description,
+      device: response.device_name,
+      gear: response.gear&.name,
       start_date: response.start_date,
       start_date_local: response.start_date_local,
       start_date_local_utc_offset: response.start_date_local.utc_offset,
-      photos: response.photos&.primary ? [Photo.attrs_from_strava(response.photos&.primary)] : []
-    )
+      photos: response.photos&.primary ? [Photo.summary_attrs_from_strava(response.photos&.primary)] : []
+    }
+  end
+
+  def summary_attrs_from_strava(response)
+    {
+      strava_id: response.id,
+      name: response.name,
+      distance: response.distance,
+      moving_time: response.moving_time,
+      elapsed_time: response.elapsed_time,
+      average_speed: response.average_speed,
+      max_speed: response.max_speed,
+      average_heartrate: response.average_heartrate,
+      max_heartrate: response.max_heartrate,
+      pr_count: response.pr_count,
+      type: response.sport_type,
+      total_elevation_gain: response.total_elevation_gain,
+      private: response.private,
+      visibility: response.visibility,
+      start_date: response.start_date,
+      start_date_local: response.start_date_local,
+      start_date_local_utc_offset: response.start_date_local.utc_offset
+    }
+  end
+
+  def attrs_from_strava(response)
+    case response
+    when Strava::Models::SummaryActivity
+      summary_attrs_from_strava(response)
+    when Strava::Models::DetailedActivity
+      detailed_attrs_from_strava(response)
+    else
+      raise "Unexpected #{response.class}."
+    end
   end
 
   def update_from_strava(response)

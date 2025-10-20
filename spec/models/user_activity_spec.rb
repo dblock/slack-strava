@@ -1165,7 +1165,7 @@ describe UserActivity do
 
     context 'a detailed activity' do
       let(:detailed_activity) do
-        Strava::Models::Activity.new(
+        Strava::Models::DetailedActivity.new(
           JSON.parse(
             File.read(
               File.join(__dir__, '../fabricators/activity.json')
@@ -1252,7 +1252,7 @@ describe UserActivity do
 
     context 'a ride' do
       let(:detailed_activity) do
-        Strava::Models::Activity.new(
+        Strava::Models::DetailedActivity.new(
           JSON.parse(
             File.read(
               File.join(__dir__, '../fabricators/ride_activity.json')

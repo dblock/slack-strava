@@ -31,10 +31,20 @@ class Athlete
     "https://www.strava.com/athletes/#{username || athlete_id}"
   end
 
-  def self.attrs_from_strava(response)
+  def self.detailed_attrs_from_strava(response)
     {
       athlete_id: response.id,
       username: response.username,
+      firstname: response.firstname,
+      lastname: response.lastname,
+      profile: response.profile,
+      profile_medium: response.profile_medium
+    }
+  end
+
+  def self.summary_attrs_from_strava(response)
+    {
+      athlete_id: response.id,
       firstname: response.firstname,
       lastname: response.lastname,
       profile: response.profile,
@@ -61,7 +71,7 @@ class Athlete
 
   def sync!
     info = user.strava_client.athlete
-    update_attributes!(Athlete.attrs_from_strava(info))
+    update_attributes!(Athlete.detailed_attrs_from_strava(info))
     self
   end
 end

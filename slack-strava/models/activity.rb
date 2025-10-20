@@ -52,29 +52,6 @@ class Activity
     "https://www.strava.com/activities/#{strava_id}"
   end
 
-  def self.attrs_from_strava(response)
-    {
-      strava_id: response.id,
-      name: response.name,
-      calories: response.calories,
-      distance: response.distance,
-      moving_time: response.moving_time,
-      elapsed_time: response.elapsed_time,
-      average_speed: response.average_speed,
-      max_speed: response.max_speed,
-      average_heartrate: response.average_heartrate,
-      max_heartrate: response.max_heartrate,
-      pr_count: response.pr_count,
-      type: response.sport_type,
-      total_elevation_gain: response.total_elevation_gain,
-      private: response.private,
-      visibility: response.visibility,
-      description: response.description,
-      device: response.device_name,
-      gear: response.gear&.name
-    }
-  end
-
   alias eql? ==
 
   def ==(other)

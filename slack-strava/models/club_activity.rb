@@ -62,12 +62,33 @@ class ClubActivity < Activity
     end
   end
 
+  # backwards compatible hash to strava-ruby-client 2.x
+  def self.response_hash(response)
+    Digest::MD5.hexdigest([
+      '#<Strava::Models::Activity',
+      "athlete=#<Strava::Models::Athlete firstname=\"#{response.athlete.firstname}\" lastname=\"#{response.athlete.lastname}\" resource_state=#{response.athlete.resource_state}>",
+      "distance=#{response.distance}",
+      "elapsed_time=#{response.elapsed_time}",
+      "moving_time=#{response.moving_time}",
+      "name=\"#{response.name}\"",
+      "resource_state=#{response.resource_state}",
+      "total_elevation_gain=#{response.total_elevation_gain}",
+      "workout_type=#{response.workout_type}>"
+    ].join(' '))
+  end
+
   def self.attrs_from_strava(response)
-    Activity.attrs_from_strava(response).merge(
-      strava_id: Digest::MD5.hexdigest(response.to_s),
+    {
+      strava_id: response_hash(response),
+      name: response.name,
+      distance: response.distance,
+      moving_time: response.moving_time,
+      elapsed_time: response.elapsed_time,
+      type: response.sport_type,
+      total_elevation_gain: response.total_elevation_gain,
       athlete_name: [response.athlete.firstname, response.athlete.lastname].compact.join(' '),
       average_speed: response.moving_time.positive? ? response.distance / response.moving_time : 0
-    )
+    }
   end
 
   def display_context_s

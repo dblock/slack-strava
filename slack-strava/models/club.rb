@@ -52,12 +52,25 @@ class Club
     end
   end
 
-  def self.attrs_from_strava(response)
+  def self.detailed_attrs_from_strava(response)
     {
       strava_id: response.id,
       name: response.name,
       description: response.description,
       logo: response.profile_medium,
+      sport_type: response.sport_type,
+      city: response.city && !response.city.empty? ? response.city : nil,
+      state: response.state && !response.state.empty? ? response.state : nil,
+      country: response.country && !response.country.empty? ? response.country : nil,
+      url: response.url,
+      member_count: response.member_count
+    }
+  end
+
+  def self.summary_attrs_from_strava(response)
+    {
+      strava_id: response.id,
+      name: response.name,
       sport_type: response.sport_type,
       city: response.city && !response.city.empty? ? response.city : nil,
       state: response.state && !response.state.empty? ? response.state : nil,

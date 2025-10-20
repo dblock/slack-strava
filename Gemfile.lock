@@ -340,7 +340,7 @@ GEM
       gli
       hashie
       logger
-    strava-ruby-client (2.3.0)
+    strava-ruby-client (3.0.0.pre)
       activesupport
       faraday (>= 2.0)
       faraday-multipart (>= 1.0)

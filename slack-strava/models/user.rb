@@ -170,7 +170,7 @@ class User
     end
     raise 'Missing expires_at in OAuth response.' unless response.expires_at
 
-    create_athlete(Athlete.attrs_from_strava(response.athlete))
+    create_athlete(Athlete.summary_attrs_from_strava(response.athlete))
     update_attributes!(
       token_type: response.token_type,
       access_token: response.access_token,
@@ -304,7 +304,7 @@ class User
         strava_id = row.id.to_s
         next if clubs.detect { |club| club.strava_id == strava_id }
 
-        clubs << Club.new(Club.attrs_from_strava(row).merge(team: team))
+        clubs << Club.new(Club.summary_attrs_from_strava(row).merge(team: team))
       end
     end
     clubs.sort_by(&:strava_id).each do |club|
