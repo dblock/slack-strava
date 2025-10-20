@@ -134,18 +134,11 @@ class Club
   end
 
   def sync_last_strava_activity!
-    sync_strava_activities!(page: 1, per_page: 1)
+    sync_strava_activities!(page: 1, per_page: 1, limit: 1)
   end
 
   def sync_new_strava_activities!
-    current_page = 1
-    while current_page < 5
-      activities = sync_strava_activities!(page: current_page, per_page: 10)
-      break unless activities&.any?
-
-      current_page += 1
-    end
-
+    sync_strava_activities!(per_page: 10, limit: 50)
     update_attributes!(first_sync_at: Time.now.utc) unless first_sync_at
   end
 
