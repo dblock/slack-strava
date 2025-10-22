@@ -1,0 +1,96 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://slack.com/api/chat.postMessage
+    body:
+      encoding: UTF-8
+      string: as_user=true&attachments=%5B%5D&blocks=%5B%7B%22type%22%3A%22section%22%2C%22text%22%3A%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22%2A%3Chttps%3A%2F%2Fwww.strava.com%2Factivities%2F123456778928061%7Cdeja_stamm%3E%2A%22%7D%7D%2C%7B%22type%22%3A%22context%22%2C%22elements%22%3A%5B%7B%22type%22%3A%22image%22%2C%22image_url%22%3A%22https%3A%2F%2Frobohash.org%2Ftemporeetlaborum.png%3Fsize%3D300x300%26set%3Dset1%22%2C%22alt_text%22%3A%22Barb+Tromp%22%7D%2C%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22%3Chttps%3A%2F%2Fwww.strava.com%2Fathletes%2Fromelia_johns%7CBarb+Tromp%3E+%3C%40damaris_huels%3E+%F0%9F%A5%87+on+Tuesday%2C+February+20%2C+2018+at+10%3A02+AM%22%7D%5D%7D%2C%7B%22type%22%3A%22section%22%2C%22text%22%3A%7B%22type%22%3A%22plain_text%22%2C%22text%22%3A%22Great+run%21%22%2C%22emoji%22%3Atrue%7D%7D%2C%7B%22type%22%3A%22section%22%2C%22text%22%3A%7B%22type%22%3A%22mrkdwn%22%2C%22text%22%3A%22%2AType%2A%3A+Run+%F0%9F%8F%83%5Cn%2ADistance%2A%3A+14.01mi%5Cn%2AMoving+Time%2A%3A+2h6m26s%5Cn%2AElapsed+Time%2A%3A+2h8m6s%5Cn%2APace%2A%3A+9m02s%2Fmi%5Cn%2ASpeed%2A%3A+6.6mph%5Cn%2AElevation%2A%3A+475.4ft%5Cn%2AWeather%2A%3A+70%C2%B0F+Rain%5Cn%2ADevice%2A%3A+Garmin+Forerunner%22%7D%7D%2C%7B%22type%22%3A%22image%22%2C%22image_url%22%3A%22https%3A%2F%2Fslava.playplay.io%2Fapi%2Fmaps%2F68f8d3976fc37f2ca3a0d3df.png%22%2C%22alt_text%22%3A%22%22%7D%5D&channel=CA6KH0WF6
+    headers:
+      User-Agent:
+      - Slack Ruby Client/2.7.0
+      Accept:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer token
+      Content-Type:
+      - application/x-www-form-urlencoded
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Wed, 22 Oct 2025 12:52:40 GMT
+      Server:
+      - Apache
+      Vary:
+      - Accept-Encoding
+      X-Slack-Req-Id:
+      - 10c74a81d10c683847804e14ad9cba9f
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - '0'
+      Pragma:
+      - no-cache
+      Cache-Control:
+      - private, no-cache, no-store, must-revalidate
+      Expires:
+      - Sat, 26 Jul 1997 05:00:00 GMT
+      Content-Type:
+      - application/json; charset=utf-8
+      X-Slack-Failure:
+      - invalid_blocks
+      X-Accepted-Oauth-Scopes:
+      - chat:write:user,client
+      X-Oauth-Scopes:
+      - identify,bot:basic
+      Access-Control-Expose-Headers:
+      - x-slack-req-id, retry-after
+      Access-Control-Allow-Headers:
+      - slack-route, x-slack-version-ts, x-b3-traceid, x-b3-spanid, x-b3-parentspanid,
+        x-b3-sampled, x-b3-flags
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      Referrer-Policy:
+      - no-referrer
+      X-Slack-Unique-Id:
+      - aPjTmA-1Vu3Wl5jHhU5wegAAEDk
+      X-Slack-Backend:
+      - r
+      Access-Control-Allow-Origin:
+      - "*"
+      Via:
+      - 1.1 slack-prod.tinyspeck.com, envoy-www-iad-fvbexkzk,envoy-edge-iad-dphvnjco
+      Content-Length:
+      - '221'
+      X-Envoy-Attempt-Count:
+      - '1'
+      X-Envoy-Upstream-Service-Time:
+      - '366'
+      X-Backend:
+      - main_normal main_canary_with_overflow main_control_with_overflow
+      X-Server:
+      - slack-www-hhvm-main-iad-hitb
+      X-Slack-Shared-Secret-Outcome:
+      - no-match
+      X-Edge-Backend:
+      - envoy-www
+      Timing-Allow-Origin:
+      - "*"
+      Alt-Svc:
+      - h3=":443"; ma=10800, h3-29=":443"; ma=10800, quic=":443"; ma=10800
+      X-Geoname-Id:
+      - notfound
+      X-Slack-Edge-Shared-Secret-Outcome:
+      - no-match
+    body:
+      encoding: UTF-8
+      string: '{"ok":false,"error":"invalid_blocks","errors":["downloading image failed
+        [json-pointer:\/blocks\/4\/image_url]"],"response_metadata":{"messages":["[ERROR]
+        downloading image failed [json-pointer:\/blocks\/4\/image_url]"]}}'
+  recorded_at: Wed, 22 Oct 2025 12:52:40 GMT
+recorded_with: VCR 6.3.1

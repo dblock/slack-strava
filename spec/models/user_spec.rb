@@ -495,22 +495,25 @@ describe User do
   context 'brag!' do
     let!(:user) { Fabricate(:user) }
 
-    it 'brags the last unbragged activity' do
-      activity = Fabricate(:user_activity, user: user)
-      expect_any_instance_of(UserActivity).to receive(:brag!).and_return(
-        [
-          ts: '1503425956.000247',
-          channel: {
-            id: 'C1',
-            name: 'channel'
-          }
-        ]
-      )
-      results = user.brag!
-      expect(results.size).to eq(1)
-      expect(results.first[:ts]).to eq '1503425956.000247'
-      expect(results.first[:channel]).to eq(id: 'C1', name: 'channel')
-      expect(results.first[:activity]).to eq activity
+    context 'when unbragged' do
+      let!(:activity) { Fabricate(:user_activity, user: user) }
+
+      it 'brags the last activity' do
+        expect_any_instance_of(UserActivity).to receive(:brag!).and_return(
+          [
+            ts: '1503425956.000247',
+            channel: {
+              id: 'C1',
+              name: 'channel'
+            }
+          ]
+        )
+        results = user.brag!
+        expect(results.size).to eq(1)
+        expect(results.first[:ts]).to eq '1503425956.000247'
+        expect(results.first[:channel]).to eq(id: 'C1', name: 'channel')
+        expect(results.first[:activity]).to eq activity
+      end
     end
   end
 
@@ -609,15 +612,48 @@ describe User do
 
   context 'sync_activity_and_brag!' do
     let!(:user) { Fabricate(:user) }
-    let(:activity_id) { '1473024961' }
 
-    it 'syncs an activity and brags' do
-      expect_any_instance_of(described_class).to receive(:sync_strava_activity!).with(activity_id)
-      expect_any_instance_of(described_class).to receive(:brag!)
-      user.sync_activity_and_brag!(activity_id)
+    context 'when unbragged' do
+      let!(:activity) { Fabricate(:user_activity, user: user) }
+
+      it 'syncs an activity and brags' do
+        expect_any_instance_of(described_class).to receive(:sync_strava_activity!).with(activity.strava_id)
+        expect_any_instance_of(described_class).to receive(:brag!)
+        user.sync_activity_and_brag!(activity.strava_id)
+      end
+
+      it 'handles invalid_blocks', vcr: { cassette_name: 'slack/chat_post_message_invalid_blocks' } do
+        allow(user).to receive(:sync_strava_activity!)
+
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'CA6KH0WF6'])
+        allow_any_instance_of(described_class).to receive(:user_deleted?).and_return(false)
+        allow_any_instance_of(described_class).to receive(:user_in_channel?).and_return(true)
+
+        expect(NewRelic::Agent).to receive(:notice_error).with(
+          instance_of(Slack::Web::Api::Errors::InvalidBlocks),
+          custom_params: {
+            response: {
+              body: {
+                error: 'invalid_blocks',
+                errors: ['downloading image failed [json-pointer:/blocks/4/image_url]'],
+                ok: false,
+                response_metadata: {
+                  messages: ['[ERROR] downloading image failed [json-pointer:/blocks/4/image_url]']
+                }
+              }
+            },
+            self: user.to_s,
+            team: user.team.to_s
+          }
+        ).and_call_original
+        user.sync_activity_and_brag!(activity.strava_id)
+      end
     end
 
-    pending 'takes a lock'
+    it 'takes a lock' do
+      expect_any_instance_of(described_class).to receive(:with_lock)
+      user.sync_activity_and_brag!('activity_id')
+    end
   end
 
   describe '#rebrag_activity!' do
