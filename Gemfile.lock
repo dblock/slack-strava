@@ -31,7 +31,7 @@ GEM
       async-io
       websocket-driver (~> 0.7.0)
     base64 (0.3.0)
-    benchmark (0.4.1)
+    benchmark (0.5.0)
     bigdecimal (3.3.1)
     bson (5.1.1)
     capybara (3.40.0)
@@ -340,7 +340,7 @@ GEM
       gli
       hashie
       logger
-    strava-ruby-client (3.0.0.pre.1)
+    strava-ruby-client (3.0.0)
       activesupport
       faraday (>= 2.0)
       faraday-multipart (>= 1.0)
