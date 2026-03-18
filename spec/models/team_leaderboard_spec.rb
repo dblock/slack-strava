@@ -330,4 +330,101 @@ describe TeamLeaderboard do
       end
     end
   end
+
+  context 'with virtual activities' do
+    let(:user1) { Fabricate(:user, team: team) }
+    let(:user2) { Fabricate(:user, team: team) }
+    let!(:user1_ride) { Fabricate(:ride_activity, user: user1, team: team, start_date: 3.days.ago) }
+    let!(:user1_virtual_ride) { Fabricate(:virtual_ride_activity, user: user1, team: team, start_date: 1.day.ago) }
+    let!(:user2_virtual_ride) { Fabricate(:virtual_ride_activity, user: user2, team: team, start_date: 2.days.ago) }
+
+    context 'distance leaderboard' do
+      let(:leaderboard) { team.leaderboard(metric: 'Distance') }
+
+      it 'groups virtual and non-virtual rides together' do
+        expect(leaderboard.aggregate!.to_a).to eq(
+          [
+            {
+              '_id' => { 'user_id' => user1.id, 'type' => 'Ride' },
+              'distance' => user1_ride.distance + user1_virtual_ride.distance,
+              'rank' => 1
+            },
+            {
+              '_id' => { 'user_id' => user2.id, 'type' => 'Ride' },
+              'distance' => user2_virtual_ride.distance,
+              'rank' => 2
+            }
+          ]
+        )
+      end
+
+      it 'shows Ride emoji for virtual rides grouped with rides' do
+        expect(leaderboard.to_s).to include('🚴')
+        expect(leaderboard.to_s).not_to include('Virtual')
+      end
+    end
+
+    context 'find!' do
+      let(:leaderboard) { team.leaderboard(metric: 'Distance') }
+
+      it 'finds rank for Ride including virtual rides' do
+        expect(leaderboard.find(user1.id, 'Ride')).to eq 1
+      end
+
+      it 'finds rank for VirtualRide grouped with rides' do
+        expect(leaderboard.find(user1.id, 'VirtualRide')).to eq 1
+      end
+
+      it 'returns the same rank for VirtualRide and Ride' do
+        expect(leaderboard.find(user1.id, 'Ride')).to eq leaderboard.find(user1.id, 'VirtualRide')
+      end
+    end
+
+    context 'count leaderboard' do
+      let(:leaderboard) { team.leaderboard(metric: 'Count') }
+
+      it 'counts virtual and non-virtual rides together' do
+        expect(leaderboard.aggregate!.to_a).to eq(
+          [
+            { '_id' => { 'user_id' => user1.id, 'type' => 'Ride' }, 'count' => 2, 'rank' => 1 },
+            { '_id' => { 'user_id' => user2.id, 'type' => 'Ride' }, 'count' => 1, 'rank' => 2 }
+          ]
+        )
+      end
+    end
+  end
+
+  describe '.normalize_type' do
+    it 'normalizes VirtualRide to Ride' do
+      expect(described_class.normalize_type('VirtualRide')).to eq 'Ride'
+    end
+
+    it 'normalizes VirtualRun to Run' do
+      expect(described_class.normalize_type('VirtualRun')).to eq 'Run'
+    end
+
+    it 'leaves non-virtual types unchanged' do
+      expect(described_class.normalize_type('Ride')).to eq 'Ride'
+      expect(described_class.normalize_type('Run')).to eq 'Run'
+      expect(described_class.normalize_type('Swim')).to eq 'Swim'
+    end
+  end
+
+  describe '.type_variants' do
+    it 'returns Ride and VirtualRide for Ride' do
+      expect(described_class.type_variants('Ride')).to contain_exactly('Ride', 'VirtualRide')
+    end
+
+    it 'returns Ride and VirtualRide for VirtualRide' do
+      expect(described_class.type_variants('VirtualRide')).to contain_exactly('Ride', 'VirtualRide')
+    end
+
+    it 'returns Run and VirtualRun for Run' do
+      expect(described_class.type_variants('Run')).to contain_exactly('Run', 'VirtualRun')
+    end
+
+    it 'returns only Swim for Swim' do
+      expect(described_class.type_variants('Swim')).to eq ['Swim']
+    end
+  end
 end
