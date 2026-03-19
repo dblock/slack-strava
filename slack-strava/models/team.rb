@@ -19,7 +19,7 @@ class Team
   field :retention, type: Integer, default: 30 * 24 * 60 * 60
   before_validation :validate_retention
 
-  field :timezone, type: String, default: 'Eastern Time (US & Canada)'
+  field :timezone, type: String, default: 'auto'
   validates_presence_of :timezone
 
   field :max_activities_per_user_per_day, type: Integer
@@ -404,15 +404,35 @@ class Team
   end
 
   def tzone
-    ActiveSupport::TimeZone.new(timezone)
+    if timezone == 'auto'
+      detect_timezone || ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')
+    else
+      ActiveSupport::TimeZone.new(timezone)
+    end
   end
 
   def timezone_s
-    tzone.to_s
+    if timezone == 'auto'
+      "auto (#{tzone.name})"
+    else
+      tzone.to_s
+    end
   end
 
   def now
     Time.now.utc.in_time_zone(tzone)
+  end
+
+  def detect_timezone
+    timezones = UserActivity.where(team_id: id, :timezone.ne => nil)
+                            .desc(:start_date)
+                            .limit(50)
+                            .pluck(:timezone)
+    return nil if timezones.empty?
+
+    most_common = timezones.tally.max_by { |_, count| count }.first
+    iana_name = most_common.split(' ', 2).last
+    ActiveSupport::TimeZone.all.find { |tz| tz.tzinfo.identifier == iana_name }
   end
 
   def max_activities_per_user_per_day_s

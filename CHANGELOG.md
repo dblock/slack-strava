@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/03/19: Added `set timezone auto` to auto-detect timezone from user activities - [@dblock](https://github.com/dblock).
 * 2026/03/19: Group virtual and non-virtual activities (e.g. VirtualRide and Ride) in leaderboards - [@dblock](https://github.com/dblock).
 * 2026/03/19: Added `set userlimit` and `set channellimit` to limit max activities posted per user/channel per day - [@dblock](https://github.com/dblock).
 * 2026/03/19: Added `set timezone` - [@dblock](https://github.com/dblock).

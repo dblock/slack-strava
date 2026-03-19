@@ -24,7 +24,7 @@ module SlackStrava
         Settings
         ------------
         set retention [n] days|months|years    - set how long to retain user activities (default is 30 days)
-        set timezone [tz]                      - set timezone, default is Eastern Time (US & Canada)
+        set timezone [auto|tz]                 - set timezone, auto-detect from activities (default is auto)
         set threads none|daily|weekly|monthly  - set activity threading
         set userlimit [n]|none                 - max activities posted per user per day (default is unlimited)
         set channellimit [n]|none              - max activities posted per channel per day (default is unlimited)

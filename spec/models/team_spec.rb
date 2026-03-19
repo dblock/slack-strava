@@ -275,6 +275,30 @@ describe Team do
     end
   end
 
+  describe '#detect_timezone' do
+    let(:team) { Fabricate(:team) }
+
+    it 'returns nil with no activities' do
+      expect(team.detect_timezone).to be_nil
+    end
+
+    it 'detects timezone from activity timezone field' do
+      Fabricate(:user_activity, team: team, timezone: '(GMT-05:00) America/New_York')
+      expect(team.detect_timezone.name).to eq 'Eastern Time (US & Canada)'
+    end
+
+    it 'detects Pacific timezone' do
+      Fabricate(:user_activity, team: team, timezone: '(GMT-08:00) America/Los_Angeles')
+      expect(team.detect_timezone.name).to eq 'Pacific Time (US & Canada)'
+    end
+
+    it 'uses the most common timezone across multiple activities' do
+      3.times { Fabricate(:user_activity, team: team, timezone: '(GMT-08:00) America/Los_Angeles') }
+      Fabricate(:user_activity, team: team, timezone: '(GMT-05:00) America/New_York')
+      expect(team.detect_timezone.name).to eq 'Pacific Time (US & Canada)'
+    end
+  end
+
   describe '#retention' do
     context 'default value' do
       let(:team) { Fabricate(:team) }
