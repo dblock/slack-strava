@@ -9,7 +9,8 @@ class UserActivity < Activity
   embeds_many :photos
 
   index(user_id: 1, start_date: 1)
-  index(user_id: 1, bragged_at: 1)
+  index(user_id: 1, strava_id: 1)
+  index(user_id: 1, bragged_at: 1, start_date: 1)
   index('map._id' => 1)
 
   before_validation :validate_team
