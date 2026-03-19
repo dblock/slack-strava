@@ -84,16 +84,20 @@ module SlackStrava
               logger.info "SET: #{team} - default leaderboard set to #{team.default_leaderboard}"
             end
           when 'timezone'
-            if v
+            if v == 'auto'
+              new_timezone = 'auto'
+            elsif v
               tz = ActiveSupport::TimeZone.new(v)
               raise SlackStrava::Error, "TimeZone _#{v}_ is invalid, see https://github.com/rails/rails/blob/v#{ActiveSupport.gem_version}/activesupport/lib/active_support/values/time_zone.rb#L30 for a list. Timezone for team #{team.name} is currently *#{team.timezone_s}*." unless tz
+
+              new_timezone = tz.name
             end
-            changed = tz && team.timezone != tz.name
+            changed = new_timezone && team.timezone != new_timezone
             if !user.team_admin? && changed
               client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the timezone. Timezone for team #{team.name} is *#{team.timezone_s}*.")
               logger.info "SET: #{team} - not admin, timezone remains set to #{team.timezone}"
             else
-              team.update_attributes!(timezone: tz.name) if changed
+              team.update_attributes!(timezone: new_timezone) if changed
               client.say(channel: data.channel, text: "Timezone for team #{team.name} is#{' now' if changed} *#{team.timezone_s}*.")
               logger.info "SET: #{team} - timezone set to #{team.timezone}"
             end

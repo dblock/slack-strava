@@ -452,7 +452,7 @@ describe SlackStrava::Commands::Set do
           context 'timezone' do
             it 'shows current timezone' do
               expect(message: "#{SlackRubyBot.config.user} set timezone").to respond_with_slack_message(
-                "Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+                "Timezone for team #{team.name} is *auto (Eastern Time (US & Canada))*."
               )
             end
 
@@ -472,9 +472,25 @@ describe SlackStrava::Commands::Set do
 
             it 'errors on an invalid timezone' do
               expect(message: "#{SlackRubyBot.config.user} set timezone foobar").to respond_with_slack_message(
-                "TimeZone _foobar_ is invalid, see https://github.com/rails/rails/blob/v#{ActiveSupport.gem_version}/activesupport/lib/active_support/values/time_zone.rb#L30 for a list. Timezone for team #{team.name} is currently *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+                "TimeZone _foobar_ is invalid, see https://github.com/rails/rails/blob/v#{ActiveSupport.gem_version}/activesupport/lib/active_support/values/time_zone.rb#L30 for a list. Timezone for team #{team.name} is currently *auto (Eastern Time (US & Canada))*."
               )
-              expect(team.reload.timezone).to eq 'Eastern Time (US & Canada)'
+              expect(team.reload.timezone).to eq 'auto'
+            end
+
+            it 'sets timezone to auto' do
+              team.update_attributes!(timezone: 'Hawaii')
+              Fabricate(:user_activity, team: team, user: user, timezone: '(GMT-08:00) America/Los_Angeles')
+              expect(message: "#{SlackRubyBot.config.user} set timezone auto").to respond_with_slack_message(
+                "Timezone for team #{team.name} is now *auto (Pacific Time (US & Canada))*."
+              )
+              expect(team.reload.timezone).to eq 'auto'
+            end
+
+            it 'shows auto timezone with no activities' do
+              expect(message: "#{SlackRubyBot.config.user} set timezone auto").to respond_with_slack_message(
+                "Timezone for team #{team.name} is *auto (Eastern Time (US & Canada))*."
+              )
+              expect(team.reload.timezone).to eq 'auto'
             end
           end
 
@@ -559,15 +575,24 @@ describe SlackStrava::Commands::Set do
           context 'timezone' do
             it 'shows current timezone' do
               expect(message: "#{SlackRubyBot.config.user} set timezone").to respond_with_slack_message(
-                "Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+                "Timezone for team #{team.name} is *auto (Eastern Time (US & Canada))*."
               )
             end
 
             it 'cannot set timezone' do
               expect(message: "#{SlackRubyBot.config.user} set timezone Hawaii").to respond_with_slack_message(
-                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the timezone. Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the timezone. Timezone for team #{team.name} is *auto (Eastern Time (US & Canada))*."
               )
-              expect(team.reload.timezone).to eq 'Eastern Time (US & Canada)'
+              expect(team.reload.timezone).to eq 'auto'
+            end
+
+            it 'cannot auto-detect timezone' do
+              team.update_attributes!(timezone: 'Hawaii')
+              Fabricate(:user_activity, team: team, user: user, timezone: '(GMT-08:00) America/Los_Angeles')
+              expect(message: "#{SlackRubyBot.config.user} set timezone auto").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the timezone. Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Hawaii')}*."
+              )
+              expect(team.reload.timezone).to eq 'Hawaii'
             end
           end
 
