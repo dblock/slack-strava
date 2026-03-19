@@ -1,5 +1,8 @@
 ### Changelog
 
+* 2026/03/19: Group virtual and non-virtual activities (e.g. VirtualRide and Ride) in leaderboards - [@dblock](https://github.com/dblock).
+* 2026/03/19: Added `set userlimit` and `set channellimit` to limit max activities posted per user/channel per day - [@dblock](https://github.com/dblock).
+* 2026/03/19: Added `set timezone` - [@dblock](https://github.com/dblock).
 * 2025/10/14: Fixed posting activities with descriptions exceeding Slack block limits - [@dblock](https://github.com/dblock).
 * 2025/10/14: Added Device and Gear - [@dblock](https://github.com/dblock).
 * 2025/09/29: Upgraded to Ruby 3.4.6 - [@dblock](https://github.com/dblock).

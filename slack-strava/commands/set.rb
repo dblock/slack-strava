@@ -83,6 +83,20 @@ module SlackStrava
               client.say(channel: data.channel, text: "Default leaderboard for team #{team.name} is#{' now' if changed} *#{team.default_leaderboard_s}*.")
               logger.info "SET: #{team} - default leaderboard set to #{team.default_leaderboard}"
             end
+          when 'timezone'
+            if v
+              tz = ActiveSupport::TimeZone.new(v)
+              raise SlackStrava::Error, "TimeZone _#{v}_ is invalid, see https://github.com/rails/rails/blob/v#{ActiveSupport.gem_version}/activesupport/lib/active_support/values/time_zone.rb#L30 for a list. Timezone for team #{team.name} is currently *#{team.timezone_s}*." unless tz
+            end
+            changed = tz && team.timezone != tz.name
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the timezone. Timezone for team #{team.name} is *#{team.timezone_s}*.")
+              logger.info "SET: #{team} - not admin, timezone remains set to #{team.timezone}"
+            else
+              team.update_attributes!(timezone: tz.name) if changed
+              client.say(channel: data.channel, text: "Timezone for team #{team.name} is#{' now' if changed} *#{team.timezone_s}*.")
+              logger.info "SET: #{team} - timezone set to #{team.timezone}"
+            end
           when 'retention'
             v = ChronicDuration.parse(v) if v
             changed = v && team.retention != v
@@ -94,6 +108,38 @@ module SlackStrava
               client.say(channel: data.channel, text: "Activities in team #{team.name} are#{' now' if changed} retained for *#{team.retention_s}*.")
               logger.info "SET: #{team} - activity retention set to #{team.retention} (#{team.retention_s})"
             end
+          when 'userlimit'
+            raw_v = v
+            if v
+              raise SlackStrava::Error, "Invalid value: #{v}. Please use a positive number or 'none'." unless v =~ /\A(none|\d+)\z/i
+
+              v = v =~ /\Anone\z/i ? nil : v.to_i
+            end
+            changed = raw_v && team.max_activities_per_user_per_day != v
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per user per day. Max activities per user per day for team #{team.name} are *#{team.max_activities_per_user_per_day_s}*.")
+              logger.info "SET: #{team} - not admin, max activities per user per day remains set to #{team.max_activities_per_user_per_day}"
+            else
+              team.update_attributes!(max_activities_per_user_per_day: v) if changed
+              client.say(channel: data.channel, text: "Max activities per user per day for team #{team.name} are#{' now' if changed} *#{team.max_activities_per_user_per_day_s}*.")
+              logger.info "SET: #{team} - max activities per user per day set to #{team.max_activities_per_user_per_day}"
+            end
+          when 'channellimit'
+            raw_v = v
+            if v
+              raise SlackStrava::Error, "Invalid value: #{v}. Please use a positive number or 'none'." unless v =~ /\A(none|\d+)\z/i
+
+              v = v =~ /\Anone\z/i ? nil : v.to_i
+            end
+            changed = raw_v && team.max_activities_per_channel_per_day != v
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per channel per day. Max activities per channel per day for team #{team.name} are *#{team.max_activities_per_channel_per_day_s}*.")
+              logger.info "SET: #{team} - not admin, max activities per channel per day remains set to #{team.max_activities_per_channel_per_day}"
+            else
+              team.update_attributes!(max_activities_per_channel_per_day: v) if changed
+              client.say(channel: data.channel, text: "Max activities per channel per day for team #{team.name} are#{' now' if changed} *#{team.max_activities_per_channel_per_day_s}*.")
+              logger.info "SET: #{team} - max activities per channel per day set to #{team.max_activities_per_channel_per_day}"
+            end
           else
             raise "Invalid setting #{k}, type `help` for instructions."
           end
@@ -102,6 +148,9 @@ module SlackStrava
             "Activities for team #{team.name} display *#{team.units_s}*.",
             "Activities are *#{team.threads_s}*.",
             "Activities are retained for *#{team.retention_s}*.",
+            "Timezone is *#{team.timezone_s}*.",
+            "Max activities per user per day are *#{team.max_activities_per_user_per_day_s}*.",
+            "Max activities per channel per day are *#{team.max_activities_per_channel_per_day_s}*.",
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps are *#{team.maps_s}*.",
             "Default leaderboard is *#{team.default_leaderboard_s}*.",

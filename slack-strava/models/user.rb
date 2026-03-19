@@ -233,6 +233,14 @@ class User
     activity = activities.unbragged.asc(:start_date).first
     return unless activity
 
+    if team.max_activities_per_user_per_day
+      bragged_today = activities.where(:bragged_at.gte => team.now.beginning_of_day).count
+      if bragged_today >= team.max_activities_per_user_per_day
+        logger.info "#{self} reached the daily activity limit of #{team.max_activities_per_user_per_day}."
+        return
+      end
+    end
+
     update_attributes!(activities_at: activity.start_date) if activities_at.nil? || (activities_at < activity.start_date && activity.start_date <= Time.now.utc)
     results = activity.brag!
     return unless results&.any?

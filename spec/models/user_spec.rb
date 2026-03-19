@@ -517,6 +517,37 @@ describe User do
     end
   end
 
+  context 'brag_new_activities! with max_activities_per_user_per_day' do
+    let(:team) { Fabricate(:team, max_activities_per_user_per_day: 2) }
+    let!(:user) { Fabricate(:user, team: team) }
+    let!(:first_bragged_activity) { Fabricate(:user_activity, user: user, bragged_at: Time.now.utc, start_date: 1.hour.ago) }
+    let!(:second_bragged_activity) { Fabricate(:user_activity, user: user, bragged_at: Time.now.utc, start_date: 2.hours.ago) }
+    let!(:pending_activity) { Fabricate(:user_activity, user: user, start_date: 3.hours.ago) }
+
+    it 'does not brag when the daily limit is reached' do
+      expect_any_instance_of(UserActivity).not_to receive(:brag!)
+      expect(user.brag_new_activities!).to be_nil
+    end
+
+    context 'when only one activity has been bragged today' do
+      before { second_bragged_activity.update_attributes!(bragged_at: nil) }
+
+      it 'brags when under the daily limit' do
+        expect_any_instance_of(UserActivity).to receive(:brag!).and_return([{ ts: '1', channel: 'C1' }])
+        user.brag_new_activities!
+      end
+    end
+
+    context 'when no limit is set' do
+      let(:team) { Fabricate(:team, max_activities_per_user_per_day: nil) }
+
+      it 'brags regardless of bragged count today' do
+        expect_any_instance_of(UserActivity).to receive(:brag!).and_return([{ ts: '1', channel: 'C1' }])
+        user.brag_new_activities!
+      end
+    end
+  end
+
   describe '#inform!' do
     let(:user) { Fabricate(:user, user_id: 'U0HLFUZLJ') }
 
