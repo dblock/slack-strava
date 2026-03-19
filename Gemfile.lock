@@ -147,7 +147,7 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    json (2.18.1)
+    json (2.19.2)
     kaminari-core (1.2.2)
     kaminari-grape (1.0.1)
       grape
