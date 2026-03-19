@@ -29,7 +29,8 @@ class Activity
   index({ team_id: 1, strava_id: 1, user_id: 1, club_id: 1 }, unique: true)
 
   embeds_many :channel_messages, inverse_of: nil
-  index('channel_messages.channel' => 1)
+  index({ team_id: 1, 'channel_messages.channel' => 1 })
+  index({ team_id: 1, bragged_at: 1, 'channel_messages.channel' => 1 })
 
   scope :unbragged, -> { where(bragged_at: nil) }
   scope :bragged, -> { where(:bragged_at.ne => nil) }

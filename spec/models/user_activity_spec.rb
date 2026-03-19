@@ -245,6 +245,58 @@ describe UserActivity do
         expect(activity.brag!).to eq([])
       end
     end
+
+    context 'with max_activities_per_channel_per_day' do
+      before do
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+        allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
+        allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
+      end
+
+      context 'when the channel limit has been reached' do
+        before do
+          team.update_attributes!(max_activities_per_channel_per_day: 1)
+          Fabricate(
+            :user_activity,
+            user: user,
+            bragged_at: Time.now.utc,
+            channel_messages: [ChannelMessage.new(ts: 'ts', channel: 'channel_id')]
+          )
+        end
+
+        it 'does not post to the channel' do
+          expect(user.team.slack_client).not_to receive(:chat_postMessage)
+          expect(activity.brag!).to eq([])
+        end
+
+        it 'still sets bragged_at' do
+          activity.brag!
+          expect(activity.reload.bragged_at).not_to be_nil
+        end
+      end
+
+      context 'when the channel limit has not been reached' do
+        before { team.update_attributes!(max_activities_per_channel_per_day: 5) }
+
+        it 'posts to the channel' do
+          expect(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 1)
+          expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+        end
+      end
+
+      context 'when no limit is set' do
+        it 'posts to the channel regardless of activity count' do
+          Fabricate(
+            :user_activity,
+            user: user,
+            bragged_at: Time.now.utc,
+            channel_messages: [ChannelMessage.new(ts: 'ts', channel: 'channel_id')]
+          )
+          expect(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 1)
+          expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+        end
+      end
+    end
   end
 
   describe '#display_title_s' do

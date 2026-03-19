@@ -29,6 +29,9 @@ describe SlackStrava::Commands::Set do
           "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
           'Activities are *displayed individually*.',
           'Activities are retained for *1 month*.',
+          "Timezone is *#{team.timezone_s}*.",
+          'Max activities per user per day are *unlimited*.',
+          'Max activities per channel per day are *unlimited*.',
           'Activity fields are *set to default*.',
           'Maps are *displayed in full*.',
           'Default leaderboard is *distance*.',
@@ -445,10 +448,128 @@ describe SlackStrava::Commands::Set do
               expect(team.reload.retention).to eq 30 * 24 * 60 * 60
             end
           end
+
+          context 'timezone' do
+            it 'shows current timezone' do
+              expect(message: "#{SlackRubyBot.config.user} set timezone").to respond_with_slack_message(
+                "Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+              )
+            end
+
+            it 'sets timezone' do
+              expect(message: "#{SlackRubyBot.config.user} set timezone Hawaii").to respond_with_slack_message(
+                "Timezone for team #{team.name} is now *#{ActiveSupport::TimeZone.new('Hawaii')}*."
+              )
+              expect(team.reload.timezone).to eq 'Hawaii'
+            end
+
+            it 'shows a changed timezone' do
+              team.update_attributes!(timezone: 'Hawaii')
+              expect(message: "#{SlackRubyBot.config.user} set timezone").to respond_with_slack_message(
+                "Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Hawaii')}*."
+              )
+            end
+
+            it 'errors on an invalid timezone' do
+              expect(message: "#{SlackRubyBot.config.user} set timezone foobar").to respond_with_slack_message(
+                "TimeZone _foobar_ is invalid, see https://github.com/rails/rails/blob/v#{ActiveSupport.gem_version}/activesupport/lib/active_support/values/time_zone.rb#L30 for a list. Timezone for team #{team.name} is currently *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+              )
+              expect(team.reload.timezone).to eq 'Eastern Time (US & Canada)'
+            end
+          end
+
+          context 'userlimit' do
+            it 'shows current value as unlimited' do
+              expect(message: "#{SlackRubyBot.config.user} set userlimit").to respond_with_slack_message(
+                "Max activities per user per day for team #{team.name} are *unlimited*."
+              )
+            end
+
+            it 'shows a configured value' do
+              team.update_attributes!(max_activities_per_user_per_day: 5)
+              expect(message: "#{SlackRubyBot.config.user} set userlimit").to respond_with_slack_message(
+                "Max activities per user per day for team #{team.name} are *5 per day*."
+              )
+            end
+
+            it 'sets a limit' do
+              expect(message: "#{SlackRubyBot.config.user} set userlimit 3").to respond_with_slack_message(
+                "Max activities per user per day for team #{team.name} are now *3 per day*."
+              )
+              expect(team.reload.max_activities_per_user_per_day).to eq 3
+            end
+
+            it 'clears the limit with none' do
+              team.update_attributes!(max_activities_per_user_per_day: 3)
+              expect(message: "#{SlackRubyBot.config.user} set userlimit none").to respond_with_slack_message(
+                "Max activities per user per day for team #{team.name} are now *unlimited*."
+              )
+              expect(team.reload.max_activities_per_user_per_day).to be_nil
+            end
+
+            it 'displays an error for an invalid value' do
+              expect(message: "#{SlackRubyBot.config.user} set userlimit foobar").to respond_with_slack_message(
+                "Invalid value: foobar. Please use a positive number or 'none'."
+              )
+              expect(team.reload.max_activities_per_user_per_day).to be_nil
+            end
+          end
+
+          context 'channellimit' do
+            it 'shows current value as unlimited' do
+              expect(message: "#{SlackRubyBot.config.user} set channellimit").to respond_with_slack_message(
+                "Max activities per channel per day for team #{team.name} are *unlimited*."
+              )
+            end
+
+            it 'shows a configured value' do
+              team.update_attributes!(max_activities_per_channel_per_day: 10)
+              expect(message: "#{SlackRubyBot.config.user} set channellimit").to respond_with_slack_message(
+                "Max activities per channel per day for team #{team.name} are *10 per day*."
+              )
+            end
+
+            it 'sets a limit' do
+              expect(message: "#{SlackRubyBot.config.user} set channellimit 10").to respond_with_slack_message(
+                "Max activities per channel per day for team #{team.name} are now *10 per day*."
+              )
+              expect(team.reload.max_activities_per_channel_per_day).to eq 10
+            end
+
+            it 'clears the limit with none' do
+              team.update_attributes!(max_activities_per_channel_per_day: 10)
+              expect(message: "#{SlackRubyBot.config.user} set channellimit none").to respond_with_slack_message(
+                "Max activities per channel per day for team #{team.name} are now *unlimited*."
+              )
+              expect(team.reload.max_activities_per_channel_per_day).to be_nil
+            end
+
+            it 'displays an error for an invalid value' do
+              expect(message: "#{SlackRubyBot.config.user} set channellimit foobar").to respond_with_slack_message(
+                "Invalid value: foobar. Please use a positive number or 'none'."
+              )
+              expect(team.reload.max_activities_per_channel_per_day).to be_nil
+            end
+          end
         end
 
         context 'not as a team admin' do
           let(:user) { Fabricate(:user, team: team) }
+
+          context 'timezone' do
+            it 'shows current timezone' do
+              expect(message: "#{SlackRubyBot.config.user} set timezone").to respond_with_slack_message(
+                "Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+              )
+            end
+
+            it 'cannot set timezone' do
+              expect(message: "#{SlackRubyBot.config.user} set timezone Hawaii").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the timezone. Timezone for team #{team.name} is *#{ActiveSupport::TimeZone.new('Eastern Time (US & Canada)')}*."
+              )
+              expect(team.reload.timezone).to eq 'Eastern Time (US & Canada)'
+            end
+          end
 
           context 'units' do
             it 'shows current value of units' do
@@ -526,6 +647,36 @@ describe SlackStrava::Commands::Set do
                 "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change activity retention. Activities in team #{team.name} are retained for *1 month*."
               )
               expect(client.owner.retention).to eq(30 * 24 * 60 * 60)
+            end
+          end
+
+          context 'userlimit' do
+            it 'shows current value' do
+              expect(message: "#{SlackRubyBot.config.user} set userlimit").to respond_with_slack_message(
+                "Max activities per user per day for team #{team.name} are *unlimited*."
+              )
+            end
+
+            it 'cannot set userlimit' do
+              expect(message: "#{SlackRubyBot.config.user} set userlimit 5").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per user per day. Max activities per user per day for team #{team.name} are *unlimited*."
+              )
+              expect(team.reload.max_activities_per_user_per_day).to be_nil
+            end
+          end
+
+          context 'channellimit' do
+            it 'shows current value' do
+              expect(message: "#{SlackRubyBot.config.user} set channellimit").to respond_with_slack_message(
+                "Max activities per channel per day for team #{team.name} are *unlimited*."
+              )
+            end
+
+            it 'cannot set channellimit' do
+              expect(message: "#{SlackRubyBot.config.user} set channellimit 10").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per channel per day. Max activities per channel per day for team #{team.name} are *unlimited*."
+              )
+              expect(team.reload.max_activities_per_channel_per_day).to be_nil
             end
           end
         end
