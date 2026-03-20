@@ -25,12 +25,12 @@ module SlackStrava
         ------------
         set retention [n] days|months|years    - set how long to retain user activities (default is 30 days)
         set timezone [auto|tz]                 - set timezone, auto-detect from activities (default is auto)
-        set threads none|daily|weekly|monthly  - set activity threading
-        set userlimit [n]|none                 - max activities posted per user per day (default is unlimited)
+        set threads none|daily|weekly|monthly  - set activity threading (in channel overrides team default)
+        set userlimit [n]|none                 - max per user per day (in channel overrides team default)
         set channellimit [n]|none              - max activities posted per channel per day (default is unlimited)
-        set units imperial|metric|both         - use imperial vs. metric units, or display both
-        set fields all|none|...                - display all, none or certain activity fields
-        set maps off|full|thumb                - change the way maps are displayed
+        set units imperial|metric|both         - use imperial vs. metric units (in channel overrides team default)
+        set fields all|none|...                - activity fields displayed (in channel overrides team default)
+        set maps off|full|thumb                - map display style (in channel overrides team default)
         set leaderboard elapsed time|...       - change the default leaderboard
         set activities all|run,ride,...        - set activity types posted in this channel (in channel, admin only)
         set sync true|false                    - sync activities globally (in DM) or per channel (in channel)

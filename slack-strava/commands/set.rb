@@ -49,47 +49,103 @@ module SlackStrava
             when 'imperial'
               v = 'mi'
             end
-            changed = v && team.units != v
-            if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *#{team.units_s}*.")
-              logger.info "SET: #{team} - not admin, units remain set to #{team.units}"
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              changed = v && team.channel_units_for(data.channel) != v
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities in <##{data.channel}> display *#{team.channel_units_s(data.channel)}*.")
+                logger.info "SET: #{team} - not admin, units for #{data.channel} remain #{team.channel_units_for(data.channel)}"
+              else
+                team.set_channel!(data.channel, channel_name, units: v) if changed
+                client.say(channel: data.channel, text: "Activities in <##{data.channel}>#{' now' if changed} display *#{team.channel_units_s(data.channel)}*.")
+                logger.info "SET: #{team} - units for #{data.channel} set to #{team.channel_units_for(data.channel)}"
+              end
             else
-              team.update_attributes!(units: v) unless v.nil?
-              client.say(channel: data.channel, text: "Activities for team #{team.name}#{' now' if changed} display *#{team.units_s}*.")
-              logger.info "SET: #{team} - units set to #{team.units}"
+              changed = v && team.units != v
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change units. Activities for team #{team.name} display *#{team.units_s}*.")
+                logger.info "SET: #{team} - not admin, units remain set to #{team.units}"
+              else
+                team.update_attributes!(units: v) unless v.nil?
+                client.say(channel: data.channel, text: "Activities for team #{team.name}#{' now' if changed} display *#{team.units_s}*.")
+                logger.info "SET: #{team} - units set to #{team.units}"
+              end
             end
           when 'fields'
             parsed_fields = ActivityFields.parse_s(v) if v
-            changed = parsed_fields && team.activity_fields != parsed_fields
-            if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change fields. Activity fields for team #{team.name} are *#{team.activity_fields_s}*.")
-              logger.info "SET: #{team} - not admin, activity fields remain set to #{team.activity_fields.and}"
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              changed = parsed_fields && team.channel_activity_fields_for(data.channel) != parsed_fields
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change fields. Activity fields for <##{data.channel}> are *#{team.channel_activity_fields_s(data.channel)}*.")
+                logger.info "SET: #{team} - not admin, activity fields for #{data.channel} remain #{team.channel_activity_fields_for(data.channel).inspect}"
+              else
+                team.set_channel!(data.channel, channel_name, activity_fields: parsed_fields) if changed && parsed_fields&.any?
+                client.say(channel: data.channel, text: "Activity fields for <##{data.channel}> are#{' now' if changed} *#{team.channel_activity_fields_s(data.channel)}*.")
+                logger.info "SET: #{team} - activity fields for #{data.channel} set to #{team.channel_activity_fields_for(data.channel).inspect}"
+              end
             else
-              team.update_attributes!(activity_fields: parsed_fields) if changed && parsed_fields&.any?
-              client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{' now' if changed} *#{team.activity_fields_s}*.")
-              logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
+              changed = parsed_fields && team.activity_fields != parsed_fields
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change fields. Activity fields for team #{team.name} are *#{team.activity_fields_s}*.")
+                logger.info "SET: #{team} - not admin, activity fields remain set to #{team.activity_fields.and}"
+              else
+                team.update_attributes!(activity_fields: parsed_fields) if changed && parsed_fields&.any?
+                client.say(channel: data.channel, text: "Activity fields for team #{team.name} are#{' now' if changed} *#{team.activity_fields_s}*.")
+                logger.info "SET: #{team} - activity fields set to #{team.activity_fields.and}"
+              end
             end
           when 'maps'
             parsed_value = MapTypes.parse_s(v) if v
-            changed = parsed_value && team.maps != parsed_value
-            if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change maps. Maps for team #{team.name} are *#{team.maps_s}*.")
-              logger.info "SET: #{team} - not admin, maps remain set to #{team.maps}"
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              changed = parsed_value && team.channel_maps_for(data.channel) != parsed_value
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change maps. Maps for <##{data.channel}> are *#{team.channel_maps_s(data.channel)}*.")
+                logger.info "SET: #{team} - not admin, maps for #{data.channel} remain #{team.channel_maps_for(data.channel)}"
+              else
+                team.set_channel!(data.channel, channel_name, maps: parsed_value) if parsed_value && changed
+                client.say(channel: data.channel, text: "Maps for <##{data.channel}> are#{' now' if changed} *#{team.channel_maps_s(data.channel)}*.")
+                logger.info "SET: #{team} - maps for #{data.channel} set to #{team.channel_maps_for(data.channel)}"
+              end
             else
-              team.update_attributes!(maps: parsed_value) if parsed_value
-              client.say(channel: data.channel, text: "Maps for team #{team.name} are#{' now' if changed} *#{team.maps_s}*.")
-              logger.info "SET: #{team} - maps set to #{team.maps}"
+              changed = parsed_value && team.maps != parsed_value
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change maps. Maps for team #{team.name} are *#{team.maps_s}*.")
+                logger.info "SET: #{team} - not admin, maps remain set to #{team.maps}"
+              else
+                team.update_attributes!(maps: parsed_value) if parsed_value
+                client.say(channel: data.channel, text: "Maps for team #{team.name} are#{' now' if changed} *#{team.maps_s}*.")
+                logger.info "SET: #{team} - maps set to #{team.maps}"
+              end
             end
           when 'threads'
             parsed_value = ThreadTypes.parse_s(v) if v
-            changed = parsed_value && team.threads != parsed_value
-            if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change whether activities roll up in threads. Activities for team #{team.name} are *#{team.threads_s}*.")
-              logger.info "SET: #{team} - not admin, threads remain set to #{team.threads}"
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              changed = parsed_value && team.channel_threads_for(data.channel) != parsed_value
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change whether activities roll up in threads. Activities in <##{data.channel}> are *#{team.channel_threads_s(data.channel)}*.")
+                logger.info "SET: #{team} - not admin, threads for #{data.channel} remain #{team.channel_threads_for(data.channel)}"
+              else
+                team.set_channel!(data.channel, channel_name, threads: parsed_value) if parsed_value && changed
+                client.say(channel: data.channel, text: "Activities in <##{data.channel}> are#{' now' if changed} *#{team.channel_threads_s(data.channel)}*.")
+                logger.info "SET: #{team} - threads for #{data.channel} set to #{team.channel_threads_for(data.channel)}"
+              end
             else
-              team.update_attributes!(threads: parsed_value) if parsed_value
-              client.say(channel: data.channel, text: "Activities for team #{team.name} are#{' now' if changed} *#{team.threads_s}*.")
-              logger.info "SET: #{team} - threads set to #{team.threads}"
+              changed = parsed_value && team.threads != parsed_value
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change whether activities roll up in threads. Activities for team #{team.name} are *#{team.threads_s}*.")
+                logger.info "SET: #{team} - not admin, threads remain set to #{team.threads}"
+              else
+                team.update_attributes!(threads: parsed_value) if parsed_value
+                client.say(channel: data.channel, text: "Activities for team #{team.name} are#{' now' if changed} *#{team.threads_s}*.")
+                logger.info "SET: #{team} - threads set to #{team.threads}"
+              end
             end
           when 'leaderboard'
             changed = v && team.default_leaderboard != v
@@ -137,14 +193,28 @@ module SlackStrava
 
               v = v =~ /\Anone\z/i ? nil : v.to_i
             end
-            changed = raw_v && team.max_activities_per_user_per_day != v
-            if !user.team_admin? && changed
-              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per user per day. Max activities per user per day for team #{team.name} are *#{team.max_activities_per_user_per_day_s}*.")
-              logger.info "SET: #{team} - not admin, max activities per user per day remains set to #{team.max_activities_per_user_per_day}"
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              changed = raw_v && team.channel_max_activities_per_user_per_day_for(data.channel) != v
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per user per day. Max activities per user per day in <##{data.channel}> are *#{team.channel_max_activities_per_user_per_day_s(data.channel)}*.")
+                logger.info "SET: #{team} - not admin, max activities per user per day for #{data.channel} remains #{team.channel_max_activities_per_user_per_day_for(data.channel).inspect}"
+              else
+                team.set_channel!(data.channel, channel_name, max_activities_per_user_per_day: v) if changed
+                client.say(channel: data.channel, text: "Max activities per user per day in <##{data.channel}> are#{' now' if changed} *#{team.channel_max_activities_per_user_per_day_s(data.channel)}*.")
+                logger.info "SET: #{team} - max activities per user per day for #{data.channel} set to #{team.channel_max_activities_per_user_per_day_for(data.channel).inspect}"
+              end
             else
-              team.update_attributes!(max_activities_per_user_per_day: v) if changed
-              client.say(channel: data.channel, text: "Max activities per user per day for team #{team.name} are#{' now' if changed} *#{team.max_activities_per_user_per_day_s}*.")
-              logger.info "SET: #{team} - max activities per user per day set to #{team.max_activities_per_user_per_day}"
+              changed = raw_v && team.max_activities_per_user_per_day != v
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per user per day. Max activities per user per day for team #{team.name} are *#{team.max_activities_per_user_per_day_s}*.")
+                logger.info "SET: #{team} - not admin, max activities per user per day remains set to #{team.max_activities_per_user_per_day}"
+              else
+                team.update_attributes!(max_activities_per_user_per_day: v) if changed
+                client.say(channel: data.channel, text: "Max activities per user per day for team #{team.name} are#{' now' if changed} *#{team.max_activities_per_user_per_day_s}*.")
+                logger.info "SET: #{team} - max activities per user per day set to #{team.max_activities_per_user_per_day}"
+              end
             end
           when 'activities'
             unless data.channel.start_with?('C')
@@ -196,22 +266,23 @@ module SlackStrava
             raise "Invalid setting #{k}, type `help` for instructions."
           end
         else
+          in_channel = data.channel.start_with?('C')
           messages = [
-            "Activities for team #{team.name} display *#{team.units_s}*.",
-            "Activities are *#{team.threads_s}*.",
+            in_channel ? "Activities in <##{data.channel}> display *#{team.channel_units_s(data.channel)}*." : "Activities for team #{team.name} display *#{team.units_s}*.",
+            in_channel ? "Activities in <##{data.channel}> are *#{team.channel_threads_s(data.channel)}*." : "Activities are *#{team.threads_s}*.",
             "Activities are retained for *#{team.retention_s}*.",
             "Timezone is *#{team.timezone_s}*.",
-            "Max activities per user per day are *#{team.max_activities_per_user_per_day_s}*.",
+            in_channel ? "Max activities per user per day in <##{data.channel}> are *#{team.channel_max_activities_per_user_per_day_s(data.channel)}*." : "Max activities per user per day are *#{team.max_activities_per_user_per_day_s}*.",
             "Max activities per channel per day are *#{team.max_activities_per_channel_per_day_s}*.",
-            "Activity fields are *#{team.activity_fields_s}*.",
-            "Maps are *#{team.maps_s}*.",
+            in_channel ? "Activity fields for <##{data.channel}> are *#{team.channel_activity_fields_s(data.channel)}*." : "Activity fields are *#{team.activity_fields_s}*.",
+            in_channel ? "Maps for <##{data.channel}> are *#{team.channel_maps_s(data.channel)}*." : "Maps are *#{team.maps_s}*.",
             "Default leaderboard is *#{team.default_leaderboard_s}*.",
-            if data.channel.start_with?('C')
+            if in_channel
               "Your activities will *#{'not ' unless user.sync_activities_for_channel?(data.channel)}sync* in <##{data.channel}>."
             else
               "Your activities will *#{'not ' unless user.sync_activities?}sync*."
             end,
-            data.channel.start_with?('C') ? "Activity types for <##{data.channel}> are *#{team.channel_activity_types_s(data.channel)}*." : nil,
+            in_channel ? "Activity types for <##{data.channel}> are *#{team.channel_activity_types_s(data.channel)}*." : nil,
             "Your private activities will *#{'not ' unless user.private_activities?}be posted*.",
             "Your followers only activities will *#{'not ' unless user.followers_only_activities?}be posted*."
           ]

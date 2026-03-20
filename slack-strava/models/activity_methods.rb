@@ -11,6 +11,16 @@ module ActivityMethods
     Windsurf Workout Yoga
   ].freeze
 
+  attr_accessor :current_channel_id
+
+  def effective_units
+    team.channel_units_for(current_channel_id)
+  end
+
+  def effective_activity_fields
+    team.channel_activity_fields_for(current_channel_id)
+  end
+
   #   field :name, type: String
   #   field :distance, type: Float
   #   field :moving_time, type: Float
@@ -62,13 +72,13 @@ module ActivityMethods
 
   def distance_s
     if type == 'Swim'
-      case team.units
+      case effective_units
       when 'km' then distance_in_meters_s
       when 'mi' then distance_in_yards_s
       when 'both' then [distance_in_yards_s, distance_in_meters_s].join(UNIT_SEPARATOR)
       end
     else
-      case team.units
+      case effective_units
       when 'km' then distance_in_kilometers_s
       when 'mi' then distance_in_miles_s
       when 'both' then [distance_in_miles_s, distance_in_kilometers_s].join(UNIT_SEPARATOR)
@@ -145,7 +155,7 @@ module ActivityMethods
   end
 
   def total_elevation_gain_s
-    case team.units
+    case effective_units
     when 'km' then total_elevation_gain_in_meters_s
     when 'mi' then total_elevation_gain_in_feet_s
     when 'both' then [total_elevation_gain_in_feet_s, total_elevation_gain_in_meters_s].join(UNIT_SEPARATOR)
@@ -155,13 +165,13 @@ module ActivityMethods
   def pace_s
     case type
     when 'Swim'
-      case team.units
+      case effective_units
       when 'km' then pace_per_100_meters_s
       when 'mi' then pace_per_100_yards_s
       when 'both' then [pace_per_100_yards_s, pace_per_100_meters_s].join(UNIT_SEPARATOR)
       end
     else
-      case team.units
+      case effective_units
       when 'km' then pace_per_kilometer_s
       when 'mi' then pace_per_mile_s
       when 'both' then [pace_per_mile_s, pace_per_kilometer_s].join(UNIT_SEPARATOR)
@@ -170,7 +180,7 @@ module ActivityMethods
   end
 
   def speed_s
-    case team.units
+    case effective_units
     when 'km' then kilometer_per_hour_s
     when 'mi' then miles_per_hour_s
     when 'both' then [miles_per_hour_s, kilometer_per_hour_s].join(UNIT_SEPARATOR)
@@ -178,7 +188,7 @@ module ActivityMethods
   end
 
   def max_speed_s
-    case team.units
+    case effective_units
     when 'km' then max_kilometer_per_hour_s
     when 'mi' then max_miles_per_hour_s
     when 'both' then [max_miles_per_hour_s, max_kilometer_per_hour_s].join(UNIT_SEPARATOR)
@@ -269,7 +279,7 @@ module ActivityMethods
   end
 
   def display_field?(name)
-    activity_fields = team.activity_fields
+    activity_fields = effective_activity_fields
 
     case activity_fields
     when ['All']
@@ -284,7 +294,7 @@ module ActivityMethods
   end
 
   def slack_fields
-    activity_fields = team.activity_fields
+    activity_fields = effective_activity_fields
 
     case activity_fields
     when ['All']

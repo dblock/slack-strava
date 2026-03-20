@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/03/20: Added per-channel settings for maps, threads, fields, units, and userlimit - admin `set` in a channel overrides team defaults - [@dblock](https://github.com/dblock).
 * 2026/03/20: Added `set activities` to limit activity types posted in a channel - [@dblock](https://github.com/dblock).
 * 2026/03/20: Added per-channel sync setting, users can `set sync true|false` in a channel - [@dblock](https://github.com/dblock).
 * 2026/03/20: Upgraded to Ruby 4.0.1 - [@dblock](https://github.com/dblock).

@@ -43,14 +43,14 @@ describe SlackStrava::Commands::Set do
 
       it 'shows current settings in a channel' do
         expect(message: "#{SlackRubyBot.config.user} set", channel: 'C1').to respond_with_slack_message([
-          "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
-          'Activities are *displayed individually*.',
+          'Activities in <#C1> display *miles, feet, yards, and degrees Fahrenheit*.',
+          'Activities in <#C1> are *displayed individually*.',
           'Activities are retained for *1 month*.',
           "Timezone is *#{team.timezone_s}*.",
-          'Max activities per user per day are *unlimited*.',
+          'Max activities per user per day in <#C1> are *unlimited*.',
           'Max activities per channel per day are *unlimited*.',
-          'Activity fields are *set to default*.',
-          'Maps are *displayed in full*.',
+          'Activity fields for <#C1> are *set to default*.',
+          'Maps for <#C1> are *displayed in full*.',
           'Default leaderboard is *distance*.',
           'Your activities will *sync* in <#C1>.',
           'Activity types for <#C1> are *all*.',
@@ -583,6 +583,94 @@ describe SlackStrava::Commands::Set do
                 "Invalid value: foobar. Please use a positive number or 'none'."
               )
               expect(team.reload.max_activities_per_user_per_day).to be_nil
+            end
+          end
+
+          context 'per channel' do
+            before do
+              allow_any_instance_of(Slack::Web::Client).to receive(:conversations_info)
+                .with(channel: 'C1')
+                .and_return(Hashie::Mash.new(channel: { 'id' => 'C1', 'name' => 'general' }))
+            end
+
+            context 'units' do
+              it 'shows team default in channel' do
+                expect(message: "#{SlackRubyBot.config.user} set units", channel: 'C1').to respond_with_slack_message(
+                  'Activities in <#C1> display *miles, feet, yards, and degrees Fahrenheit*.'
+                )
+              end
+
+              it 'sets units for channel' do
+                expect(message: "#{SlackRubyBot.config.user} set units km", channel: 'C1').to respond_with_slack_message(
+                  'Activities in <#C1> now display *kilometers, meters, and degrees Celsius*.'
+                )
+                expect(team.reload.channel_units_for('C1')).to eq 'km'
+                expect(team.reload.units).to eq 'mi'
+              end
+            end
+
+            context 'maps' do
+              it 'shows team default in channel' do
+                expect(message: "#{SlackRubyBot.config.user} set maps", channel: 'C1').to respond_with_slack_message(
+                  'Maps for <#C1> are *displayed in full*.'
+                )
+              end
+
+              it 'sets maps for channel' do
+                expect(message: "#{SlackRubyBot.config.user} set maps thumb", channel: 'C1').to respond_with_slack_message(
+                  'Maps for <#C1> are now *displayed as thumbnails*.'
+                )
+                expect(team.reload.channel_maps_for('C1')).to eq 'thumb'
+                expect(team.reload.maps).to eq 'full'
+              end
+            end
+
+            context 'fields' do
+              it 'shows team default in channel' do
+                expect(message: "#{SlackRubyBot.config.user} set fields", channel: 'C1').to respond_with_slack_message(
+                  'Activity fields for <#C1> are *set to default*.'
+                )
+              end
+
+              it 'sets fields for channel' do
+                expect(message: "#{SlackRubyBot.config.user} set fields none", channel: 'C1').to respond_with_slack_message(
+                  'Activity fields for <#C1> are now *not displayed*.'
+                )
+                expect(team.reload.channel_activity_fields_for('C1')).to eq ['None']
+                expect(team.reload.activity_fields).to eq ['Default']
+              end
+            end
+
+            context 'threads' do
+              it 'shows team default in channel' do
+                expect(message: "#{SlackRubyBot.config.user} set threads", channel: 'C1').to respond_with_slack_message(
+                  'Activities in <#C1> are *displayed individually*.'
+                )
+              end
+
+              it 'sets threads for channel' do
+                expect(message: "#{SlackRubyBot.config.user} set threads weekly", channel: 'C1').to respond_with_slack_message(
+                  'Activities in <#C1> are now *rolled up in a weekly thread*.'
+                )
+                expect(team.reload.channel_threads_for('C1')).to eq 'weekly'
+                expect(team.reload.threads).to eq 'none'
+              end
+            end
+
+            context 'userlimit' do
+              it 'shows team default in channel' do
+                expect(message: "#{SlackRubyBot.config.user} set userlimit", channel: 'C1').to respond_with_slack_message(
+                  'Max activities per user per day in <#C1> are *unlimited*.'
+                )
+              end
+
+              it 'sets userlimit for channel' do
+                expect(message: "#{SlackRubyBot.config.user} set userlimit 3", channel: 'C1').to respond_with_slack_message(
+                  'Max activities per user per day in <#C1> are now *3 per day*.'
+                )
+                expect(team.reload.channel_max_activities_per_user_per_day_for('C1')).to eq 3
+                expect(team.reload.max_activities_per_user_per_day).to be_nil
+              end
             end
           end
 

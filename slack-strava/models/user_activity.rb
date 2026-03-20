@@ -45,7 +45,6 @@ class UserActivity < Activity
       []
     else
       logger.info "Bragging about #{user}, #{self}."
-      message = to_slack
       connected_channels = user.connected_channels
       rc = if connected_channels
              connected_channels.map { |channel|
@@ -59,6 +58,19 @@ class UserActivity < Activity
                  logger.info "Skipping #{user} in #{channel_id}, activity type #{type} not in #{allowed_types}."
                  next
                end
+               channel_user_limit = team.channel_max_activities_per_user_per_day_for(channel_id)
+               if channel_user_limit
+                 user_count_today = Activity.where(
+                   team_id: team.id,
+                   user_id: user.id,
+                   :bragged_at.gte => team.now.beginning_of_day,
+                   'channel_messages.channel' => channel_id
+                 ).count
+                 if user_count_today >= channel_user_limit
+                   logger.info "#{user} reached the per-channel daily activity limit of #{channel_user_limit} in #{channel_id}."
+                   next
+                 end
+               end
                if team.max_activities_per_channel_per_day
                  channel_count_today = Activity.where(
                    team_id: team.id,
@@ -70,6 +82,9 @@ class UserActivity < Activity
                    next
                  end
                end
+               self.current_channel_id = channel_id
+               message = to_slack
+               self.current_channel_id = nil
                user.inform_channel!(message, channel, parent_thread(channel['id']))
              }.flatten.compact
            else
@@ -284,10 +299,11 @@ class UserActivity < Activity
     blocks << { type: 'section', text: { type: 'plain_text', text: truncated_description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION)
 
     fields_text = slack_fields_s
-    if map&.polyline? && team.maps == 'full'
+    effective_maps = team.channel_maps_for(current_channel_id)
+    if map&.polyline? && effective_maps == 'full'
       blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text } } if fields_text
       blocks << { type: 'image', image_url: map.proxy_image_url, alt_text: '' }
-    elsif map&.polyline? && team.maps == 'thumb' && fields_text
+    elsif map&.polyline? && effective_maps == 'thumb' && fields_text
       blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text }, accessory: { type: 'image', image_url: map.proxy_image_url, alt_text: '' } }
     elsif fields_text
       blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text } }
