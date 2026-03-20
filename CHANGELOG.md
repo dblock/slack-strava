@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/03/20: Added `set activities` to limit activity types posted in a channel - [@dblock](https://github.com/dblock).
 * 2026/03/20: Added per-channel sync setting, users can `set sync true|false` in a channel - [@dblock](https://github.com/dblock).
 * 2026/03/20: Upgraded to Ruby 4.0.1 - [@dblock](https://github.com/dblock).
 * 2026/03/19: Added `set timezone auto` to auto-detect timezone from user activities - [@dblock](https://github.com/dblock).

@@ -24,7 +24,7 @@ describe SlackStrava::Commands::Set do
         )
       end
 
-      it 'shows current settings' do
+      it 'shows current settings in a DM' do
         expect(message: "#{SlackRubyBot.config.user} set").to respond_with_slack_message([
           "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
           'Activities are *displayed individually*.',
@@ -36,6 +36,24 @@ describe SlackStrava::Commands::Set do
           'Maps are *displayed in full*.',
           'Default leaderboard is *distance*.',
           'Your activities will *sync*.',
+          'Your private activities will *not be posted*.',
+          'Your followers only activities will *be posted*.'
+        ].join("\n"))
+      end
+
+      it 'shows current settings in a channel' do
+        expect(message: "#{SlackRubyBot.config.user} set", channel: 'C1').to respond_with_slack_message([
+          "Activities for team #{team.name} display *miles, feet, yards, and degrees Fahrenheit*.",
+          'Activities are *displayed individually*.',
+          'Activities are retained for *1 month*.',
+          "Timezone is *#{team.timezone_s}*.",
+          'Max activities per user per day are *unlimited*.',
+          'Max activities per channel per day are *unlimited*.',
+          'Activity fields are *set to default*.',
+          'Maps are *displayed in full*.',
+          'Default leaderboard is *distance*.',
+          'Your activities will *sync* in <#C1>.',
+          'Activity types for <#C1> are *all*.',
           'Your private activities will *not be posted*.',
           'Your followers only activities will *be posted*.'
         ].join("\n"))
@@ -568,6 +586,61 @@ describe SlackStrava::Commands::Set do
             end
           end
 
+          context 'activities' do
+            before do
+              allow_any_instance_of(Slack::Web::Client).to receive(:conversations_info)
+                .with(channel: 'C1')
+                .and_return(Hashie::Mash.new(channel: { 'id' => 'C1', 'name' => 'running' }))
+            end
+
+            it 'shows all activity types by default in channel' do
+              expect(message: "#{SlackRubyBot.config.user} set activities", channel: 'C1').to respond_with_slack_message(
+                'Activity types for <#C1> are *all*.'
+              )
+            end
+
+            it 'sets activity types in a channel' do
+              expect(message: "#{SlackRubyBot.config.user} set activities Run,Ride", channel: 'C1').to respond_with_slack_message(
+                'Activity types for <#C1> are now *Run, Ride*.'
+              )
+              expect(team.reload.channel_activity_types_for('C1')).to eq %w[Run Ride]
+            end
+
+            it 'sets activity types with space separator' do
+              expect(message: "#{SlackRubyBot.config.user} set activities Run Ride", channel: 'C1').to respond_with_slack_message(
+                'Activity types for <#C1> are now *Run, Ride*.'
+              )
+              expect(team.reload.channel_activity_types_for('C1')).to eq %w[Run Ride]
+            end
+
+            it 'sets activity types case-insensitively' do
+              expect(message: "#{SlackRubyBot.config.user} set activities run", channel: 'C1').to respond_with_slack_message(
+                'Activity types for <#C1> are now *Run*.'
+              )
+              expect(team.reload.channel_activity_types_for('C1')).to eq ['Run']
+            end
+
+            it 'resets to all with "all"' do
+              team.set_channel!('C1', 'running', activity_types: ['Run'])
+              expect(message: "#{SlackRubyBot.config.user} set activities all", channel: 'C1').to respond_with_slack_message(
+                'Activity types for <#C1> are now *all*.'
+              )
+              expect(team.reload.channel_activity_types_for('C1')).to eq []
+            end
+
+            it 'displays an error for an unknown activity type' do
+              expect(message: "#{SlackRubyBot.config.user} set activities Foo", channel: 'C1').to respond_with_slack_message(
+                "Invalid activity type: Foo. Use: #{ActivityMethods::ACTIVITY_TYPES.or}."
+              )
+            end
+
+            it 'cannot be set in a DM' do
+              expect(message: "#{SlackRubyBot.config.user} set activities Run").to respond_with_slack_message(
+                'You can only set activity types in a channel, not a DM.'
+              )
+            end
+          end
+
           context 'channellimit' do
             it 'shows current value as unlimited' do
               expect(message: "#{SlackRubyBot.config.user} set channellimit").to respond_with_slack_message(
@@ -724,6 +797,27 @@ describe SlackStrava::Commands::Set do
                 "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change the max activities per user per day. Max activities per user per day for team #{team.name} are *unlimited*."
               )
               expect(team.reload.max_activities_per_user_per_day).to be_nil
+            end
+          end
+
+          context 'activities' do
+            before do
+              allow_any_instance_of(Slack::Web::Client).to receive(:conversations_info)
+                .with(channel: 'C1')
+                .and_return(Hashie::Mash.new(channel: { 'id' => 'C1', 'name' => 'running' }))
+            end
+
+            it 'shows current activity types' do
+              expect(message: "#{SlackRubyBot.config.user} set activities", channel: 'C1').to respond_with_slack_message(
+                'Activity types for <#C1> are *all*.'
+              )
+            end
+
+            it 'cannot set activity types' do
+              expect(message: "#{SlackRubyBot.config.user} set activities Run", channel: 'C1').to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change activity types for a channel. Activity types for <#C1> are *all*."
+              )
+              expect(team.reload.channel_activity_types_for('C1')).to eq []
             end
           end
 
