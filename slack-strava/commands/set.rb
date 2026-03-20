@@ -10,10 +10,28 @@ module SlackStrava
           k, v = match['expression'].split(/\W+/, 2)
           case k
           when 'sync'
-            changed = v && user.sync_activities != v
-            user.update_attributes!(sync_activities: v) unless v.nil?
-            client.say(channel: data.channel, text: "Your activities will#{changed ? (user.sync_activities? ? ' now' : ' no longer') : (user.sync_activities? ? '' : ' not')} sync.")
-            logger.info "SET: #{team}, user=#{data.user} - sync set to #{user.sync_activities}"
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              if v
+                uc = user.set_user_channel!(data.channel, channel_name, sync_activities: v)
+                changed = true
+              else
+                uc = user.user_channels.find_by(channel_id: data.channel)
+              end
+              effective = user.sync_activities_for_channel?(data.channel)
+              if changed
+                client.say(channel: data.channel, text: "Your activities will#{effective ? ' now' : ' no longer'} sync in <##{data.channel}>.")
+              else
+                client.say(channel: data.channel, text: "Your activities will#{' not' unless effective} sync in <##{data.channel}>.")
+              end
+              logger.info "SET: #{team}, user=#{data.user} - sync in #{data.channel} set to #{uc&.sync_activities.inspect}"
+            else
+              changed = v && user.sync_activities != v
+              user.update_attributes!(sync_activities: v) unless v.nil?
+              client.say(channel: data.channel, text: "Your activities will#{changed ? (user.sync_activities? ? ' now' : ' no longer') : (user.sync_activities? ? '' : ' not')} sync.")
+              logger.info "SET: #{team}, user=#{data.user} - sync set to #{user.sync_activities}"
+            end
           when 'private'
             changed = v && user.private_activities != v
             user.update_attributes!(private_activities: v) unless v.nil?

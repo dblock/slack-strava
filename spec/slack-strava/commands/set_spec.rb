@@ -95,6 +95,43 @@ describe SlackStrava::Commands::Set do
             end
           end
         end
+
+        context 'per channel' do
+          before do
+            allow_any_instance_of(Slack::Web::Client).to receive(:conversations_info)
+              .with(channel: 'C1')
+              .and_return(Hashie::Mash.new(channel: { 'id' => 'C1', 'name' => 'general' }))
+          end
+
+          it 'shows default sync in channel' do
+            expect(message: "#{SlackRubyBot.config.user} set sync", channel: 'C1').to respond_with_slack_message(
+              'Your activities will sync in <#C1>.'
+            )
+          end
+
+          it 'disables sync in channel' do
+            expect(message: "#{SlackRubyBot.config.user} set sync false", channel: 'C1').to respond_with_slack_message(
+              'Your activities will no longer sync in <#C1>.'
+            )
+            expect(user.reload.sync_activities_for_channel?('C1')).to be false
+            expect(user.reload.sync_activities).to be true
+          end
+
+          it 'enables sync in channel' do
+            user.set_user_channel!('C1', 'general', sync_activities: false)
+            expect(message: "#{SlackRubyBot.config.user} set sync true", channel: 'C1').to respond_with_slack_message(
+              'Your activities will now sync in <#C1>.'
+            )
+            expect(user.reload.sync_activities_for_channel?('C1')).to be true
+          end
+
+          it 'falls back to global sync setting in channel' do
+            user.update_attributes!(sync_activities: false)
+            expect(message: "#{SlackRubyBot.config.user} set sync", channel: 'C1').to respond_with_slack_message(
+              'Your activities will not sync in <#C1>.'
+            )
+          end
+        end
       end
 
       context 'private' do
