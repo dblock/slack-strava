@@ -41,8 +41,10 @@ class User
   end
 
   def sync_activities_for_channel?(channel_id)
+    return false unless sync_activities?
+
     uc = user_channels.find_by(channel_id: channel_id)
-    return sync_activities? if uc.nil? || uc.sync_activities.nil?
+    return true if uc.nil? || uc.sync_activities.nil?
 
     uc.sync_activities?
   end
