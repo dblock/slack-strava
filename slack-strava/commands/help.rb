@@ -32,6 +32,7 @@ module SlackStrava
         set fields all|none|...                - display all, none or certain activity fields
         set maps off|full|thumb                - change the way maps are displayed
         set leaderboard elapsed time|...       - change the default leaderboard
+        set activities all|run,ride,...        - set activity types posted in this channel (in channel, admin only)
         set sync true|false                    - sync activities globally (in DM) or per channel (in channel)
         set private true|false                 - sync private (only you) activities (default is false)
         set followers true|false               - sync followers only activities (default is true)

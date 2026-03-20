@@ -54,6 +54,11 @@ class UserActivity < Activity
                  logger.info "Skipping #{user} in #{channel_id}, sync disabled for channel."
                  next
                end
+               allowed_types = team.channel_activity_types_for(channel_id)
+               unless allowed_types.empty? || allowed_types.any? { |t| t.casecmp(type.to_s).zero? }
+                 logger.info "Skipping #{user} in #{channel_id}, activity type #{type} not in #{allowed_types}."
+                 next
+               end
                if team.max_activities_per_channel_per_day
                  channel_count_today = Activity.where(
                    team_id: team.id,

@@ -42,6 +42,7 @@ class Team
   has_many :users, dependent: :destroy
   has_many :clubs, dependent: :destroy
   has_many :activities
+  has_many :channels, dependent: :destroy
 
   before_validation :update_subscribed_at
   before_validation :update_subscription_expired_at
@@ -441,6 +442,25 @@ class Team
 
   def max_activities_per_channel_per_day_s
     max_activities_per_channel_per_day ? "#{max_activities_per_channel_per_day} per day" : 'unlimited'
+  end
+
+  def set_channel!(channel_id, channel_name, attrs = {})
+    c = channels.find_or_initialize_by(channel_id: channel_id)
+    c.assign_attributes(attrs.merge(channel_name: channel_name))
+    c.save!
+    c
+  end
+
+  def channel_activity_types_for(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    return [] if c.nil? || c.activity_types.blank?
+
+    c.activity_types
+  end
+
+  def channel_activity_types_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.activity_types_s || 'all'
   end
 
   private

@@ -3,6 +3,14 @@ module ActivityMethods
 
   UNIT_SEPARATOR = ' '.freeze
 
+  ACTIVITY_TYPES = %w[
+    AlpineSki BackcountrySki Canoeing Crossfit EBikeRide Elliptical Hike
+    IceSkate InlineSkate Kayaking Kitesurf NordicSki Ride RockClimbing
+    RollerSki Rowing Run Snowboard Snowshoe StairStepper StandUpPaddling
+    Surfing Swim VirtualRide VirtualRun Walk WeightTraining Wheelchair
+    Windsurf Workout Yoga
+  ].freeze
+
   #   field :name, type: String
   #   field :distance, type: Float
   #   field :moving_time, type: Float

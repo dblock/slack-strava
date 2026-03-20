@@ -349,6 +349,44 @@ describe UserActivity do
         end
       end
     end
+
+    context 'with channel activity type settings' do
+      before do
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'channel_id' }])
+        allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
+        allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
+      end
+
+      context 'when channel has no activity type restriction' do
+        it 'posts to the channel' do
+          expect(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 1)
+          expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
+        end
+      end
+
+      context 'when channel restricts to matching activity type' do
+        before { user.team.set_channel!('channel_id', 'general', activity_types: ['Run']) }
+
+        it 'posts to the channel' do
+          expect(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 1)
+          expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
+        end
+      end
+
+      context 'when channel restricts to a different activity type' do
+        before { user.team.set_channel!('channel_id', 'general', activity_types: ['Ride']) }
+
+        it 'does not post to the channel' do
+          expect(user.team.slack_client).not_to receive(:chat_postMessage)
+          expect(activity.brag!).to eq([])
+        end
+
+        it 'still sets bragged_at' do
+          activity.brag!
+          expect(activity.reload.bragged_at).not_to be_nil
+        end
+      end
+    end
   end
 
   describe '#display_title_s' do

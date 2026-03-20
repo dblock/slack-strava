@@ -146,6 +146,36 @@ module SlackStrava
               client.say(channel: data.channel, text: "Max activities per user per day for team #{team.name} are#{' now' if changed} *#{team.max_activities_per_user_per_day_s}*.")
               logger.info "SET: #{team} - max activities per user per day set to #{team.max_activities_per_user_per_day}"
             end
+          when 'activities'
+            unless data.channel.start_with?('C')
+              client.say(channel: data.channel, text: 'You can only set activity types in a channel, not a DM.')
+              return
+            end
+            channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+            channel_name = channel_info['name']
+            if v.nil? || v =~ /\Aall\z/i
+              new_types = []
+              changed = v && !team.channel_activity_types_for(data.channel).empty?
+            else
+              input_types = v.split(/[\s,]+/).map(&:strip).reject(&:empty?)
+              new_types = input_types.map do |t|
+                matched = ActivityMethods::ACTIVITY_TYPES.find { |at| at.casecmp(t).zero? }
+                unless matched
+                  client.say(channel: data.channel, text: "Invalid activity type: #{t}. Use: #{ActivityMethods::ACTIVITY_TYPES.or}.")
+                  return
+                end
+                matched
+              end
+              changed = team.channel_activity_types_for(data.channel) != new_types
+            end
+            if !user.team_admin? && changed
+              client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change activity types for a channel. Activity types for <##{data.channel}> are *#{team.channel_activity_types_s(data.channel)}*.")
+              logger.info "SET: #{team} - not admin, activity types for #{data.channel} remain #{team.channel_activity_types_for(data.channel).inspect}"
+            else
+              team.set_channel!(data.channel, channel_name, activity_types: new_types) if changed
+              client.say(channel: data.channel, text: "Activity types for <##{data.channel}> are#{' now' if changed} *#{team.channel_activity_types_s(data.channel)}*.")
+              logger.info "SET: #{team} - activity types for #{data.channel} set to #{team.channel_activity_types_for(data.channel).inspect}"
+            end
           when 'channellimit'
             raw_v = v
             if v
@@ -176,11 +206,16 @@ module SlackStrava
             "Activity fields are *#{team.activity_fields_s}*.",
             "Maps are *#{team.maps_s}*.",
             "Default leaderboard is *#{team.default_leaderboard_s}*.",
-            "Your activities will *#{'not ' unless user.sync_activities?}sync*.",
+            if data.channel.start_with?('C')
+              "Your activities will *#{'not ' unless user.sync_activities_for_channel?(data.channel)}sync* in <##{data.channel}>."
+            else
+              "Your activities will *#{'not ' unless user.sync_activities?}sync*."
+            end,
+            data.channel.start_with?('C') ? "Activity types for <##{data.channel}> are *#{team.channel_activity_types_s(data.channel)}*." : nil,
             "Your private activities will *#{'not ' unless user.private_activities?}be posted*.",
             "Your followers only activities will *#{'not ' unless user.followers_only_activities?}be posted*."
           ]
-          client.say(channel: data.channel, text: messages.join("\n"))
+          client.say(channel: data.channel, text: messages.compact.join("\n"))
           logger.info "SET: #{team}, user=#{data.user} - set"
         end
       end
