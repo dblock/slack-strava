@@ -463,6 +463,66 @@ class Team
     c&.activity_types_s || 'all'
   end
 
+  def channel_maps_for(channel_id)
+    return maps unless channel_id
+
+    c = channels.find_by(channel_id: channel_id)
+    c&.maps || maps
+  end
+
+  def channel_maps_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.maps_s || maps_s
+  end
+
+  def channel_units_for(channel_id)
+    return units unless channel_id
+
+    c = channels.find_by(channel_id: channel_id)
+    c&.units || units
+  end
+
+  def channel_units_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.units_s || units_s
+  end
+
+  def channel_activity_fields_for(channel_id)
+    return activity_fields unless channel_id
+
+    c = channels.find_by(channel_id: channel_id)
+    c&.activity_fields || activity_fields
+  end
+
+  def channel_activity_fields_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.activity_fields_s || activity_fields_s
+  end
+
+  def channel_threads_for(channel_id)
+    return threads unless channel_id
+
+    c = channels.find_by(channel_id: channel_id)
+    c&.threads || threads
+  end
+
+  def channel_threads_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.threads_s || threads_s
+  end
+
+  def channel_max_activities_per_user_per_day_for(channel_id)
+    return max_activities_per_user_per_day unless channel_id
+
+    c = channels.find_by(channel_id: channel_id)
+    c&.max_activities_per_user_per_day || max_activities_per_user_per_day
+  end
+
+  def channel_max_activities_per_user_per_day_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.max_activities_per_user_per_day_s || max_activities_per_user_per_day_s
+  end
+
   private
 
   def validate_retention

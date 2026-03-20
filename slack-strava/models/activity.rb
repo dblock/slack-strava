@@ -80,7 +80,8 @@ class Activity
 
   # Look for the last activity thread.
   def parent_thread(channel_id, timestamp_field = :bragged_at, now = nil)
-    return if team.threads.nil? || team.threads == 'none'
+    effective_threads = team.channel_threads_for(channel_id)
+    return if effective_threads.nil? || effective_threads == 'none'
 
     now ||= Time.now.utc
 
@@ -89,7 +90,7 @@ class Activity
       'channel_messages.channel': channel_id
     }
 
-    case team.threads
+    case effective_threads
     when 'daily'
       criteria.merge!({ :"#{timestamp_field}".gte => now.beginning_of_day, :"#{timestamp_field}".lte => now.end_of_week })
     when 'weekly'
