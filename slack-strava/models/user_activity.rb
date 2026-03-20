@@ -50,6 +50,10 @@ class UserActivity < Activity
       rc = if connected_channels
              connected_channels.map { |channel|
                channel_id = channel['id']
+               unless user.sync_activities_for_channel?(channel_id)
+                 logger.info "Skipping #{user} in #{channel_id}, sync disabled for channel."
+                 next
+               end
                if team.max_activities_per_channel_per_day
                  channel_count_today = Activity.where(
                    team_id: team.id,

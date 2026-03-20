@@ -25,6 +25,7 @@ class User
   validates_presence_of :team
 
   has_many :activities, class_name: 'UserActivity', dependent: :destroy
+  has_many :user_channels, dependent: :destroy
 
   index({ user_id: 1, team_id: 1 }, unique: true)
   index(user_name: 1, team_id: 1)
@@ -37,6 +38,20 @@ class User
 
   def connected_to_strava?
     !access_token.nil?
+  end
+
+  def sync_activities_for_channel?(channel_id)
+    uc = user_channels.find_by(channel_id: channel_id)
+    return sync_activities? if uc.nil? || uc.sync_activities.nil?
+
+    uc.sync_activities?
+  end
+
+  def set_user_channel!(channel_id, channel_name, attrs = {})
+    uc = user_channels.find_or_initialize_by(channel_id: channel_id)
+    uc.assign_attributes(attrs.merge(team: team, channel_name: channel_name))
+    uc.save!
+    uc
   end
 
   def connect_to_strava_url
