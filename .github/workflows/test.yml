@@ -6,7 +6,7 @@ jobs:
   RSpec:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: browser-actions/setup-firefox@latest
         with:
           firefox-version: '143.0.3'
