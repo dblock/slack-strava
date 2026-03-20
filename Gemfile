@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-ruby '3.4.9'
+ruby '4.0.1'
 
 gem 'base64'
 gem 'bigdecimal'

@@ -207,7 +207,7 @@ describe User do
 
       context 'sync_and_brag!' do
         before do
-          allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'channel_id'])
+          allow_any_instance_of(described_class).to receive(:connected_channels).and_return([{ 'id' => 'channel_id' }])
         end
 
         it 'syncs and brags' do
@@ -288,7 +288,7 @@ describe User do
       context 'with bragged activities' do
         before do
           user.sync_new_strava_activities!
-          allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'C1'])
+          allow_any_instance_of(described_class).to receive(:connected_channels).and_return([{ 'id' => 'C1' }])
           allow_any_instance_of(described_class).to receive(:inform_channel!).and_return({ ts: 'ts' })
           user.brag!
         end
@@ -397,7 +397,7 @@ describe User do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
 
       before do
-        allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'C1'])
+        allow_any_instance_of(described_class).to receive(:connected_channels).and_return([{ 'id' => 'C1' }])
       end
 
       context 'by default' do
@@ -434,7 +434,7 @@ describe User do
       let!(:user) { Fabricate(:user, created_at: DateTime.new(2018, 3, 26), access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
 
       before do
-        allow_any_instance_of(described_class).to receive(:connected_channels).and_return(['id' => 'C1'])
+        allow_any_instance_of(described_class).to receive(:connected_channels).and_return([{ 'id' => 'C1' }])
       end
 
       context 'by default' do
@@ -501,10 +501,12 @@ describe User do
       it 'brags the last activity' do
         expect_any_instance_of(UserActivity).to receive(:brag!).and_return(
           [
-            ts: '1503425956.000247',
-            channel: {
-              id: 'C1',
-              name: 'channel'
+            {
+              ts: '1503425956.000247',
+              channel: {
+                id: 'C1',
+                name: 'channel'
+              }
             }
           ]
         )
@@ -656,7 +658,7 @@ describe User do
       it 'handles invalid_blocks', vcr: { cassette_name: 'slack/chat_post_message_invalid_blocks' } do
         allow(user).to receive(:sync_strava_activity!)
 
-        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'CA6KH0WF6'])
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'CA6KH0WF6' }])
         allow_any_instance_of(described_class).to receive(:user_deleted?).and_return(false)
         allow_any_instance_of(described_class).to receive(:user_in_channel?).and_return(true)
 
@@ -857,16 +859,16 @@ describe User do
     let(:user) { Fabricate(:user) }
 
     it 'returns connected channels' do
-      allow(user.team).to receive(:slack_channels).and_return(['id' => 'C1'])
+      allow(user.team).to receive(:slack_channels).and_return([{ 'id' => 'C1' }])
       allow(user).to receive_messages(
         user_deleted?: false,
         user_in_channel?: true
       )
-      expect(user.connected_channels).to eq(['id' => 'C1'])
+      expect(user.connected_channels).to eq([{ 'id' => 'C1' }])
     end
 
     it 'returns no channels when user is not in channel' do
-      allow(user.team).to receive(:slack_channels).and_return(['id' => 'C1'])
+      allow(user.team).to receive(:slack_channels).and_return([{ 'id' => 'C1' }])
       allow(user).to receive_messages(
         user_deleted?: false,
         user_in_channel?: false

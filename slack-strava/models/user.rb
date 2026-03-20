@@ -203,12 +203,16 @@ class User
     url = connect_to_strava_url
     {
       text: "#{message}.", attachments: [
-        fallback: "#{message} at #{url}.",
-        actions: [
-          type: 'button',
-          text: 'Click Here',
-          url: url
-        ]
+        {
+          fallback: "#{message} at #{url}.",
+          actions: [
+            {
+              type: 'button',
+              text: 'Click Here',
+              url: url
+            }
+          ]
+        }
       ]
     }
   end

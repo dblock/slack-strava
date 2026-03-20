@@ -207,16 +207,20 @@ describe Club do
     it 'brags the last unbragged activity' do
       expect_any_instance_of(ClubActivity).to receive(:brag!).and_return(
         [
-          ts: '1503435956.000247',
-          channel: 'C1'
+          {
+            ts: '1503435956.000247',
+            channel: 'C1'
+          }
         ]
       )
       results = club.brag!
       expect(results).to eq(
         [
-          ts: '1503435956.000247',
-          channel: 'C1',
-          activity: activity
+          {
+            ts: '1503435956.000247',
+            channel: 'C1',
+            activity: activity
+          }
         ]
       )
     end
