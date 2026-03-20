@@ -23,7 +23,7 @@ describe ClubActivity do
           as_user: true
         )
       ).and_return('ts' => 1)
-      expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+      expect(activity.brag!).to eq([{ ts: 1, channel: club.channel_id }])
     end
 
     %i[daily weekly monthly].each do |threads|
@@ -53,7 +53,7 @@ describe ClubActivity do
                 thread_ts: 'ts'
               )
             ).and_return('ts' => 1)
-            expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+            expect(activity.brag!).to eq([{ ts: 1, channel: club.channel_id }])
           end
         end
 
@@ -77,7 +77,7 @@ describe ClubActivity do
                 as_user: true
               )
             ).and_return('ts' => 1)
-            expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+            expect(activity.brag!).to eq([{ ts: 1, channel: club.channel_id }])
           end
         end
       end
@@ -175,7 +175,7 @@ describe ClubActivity do
               as_user: true
             )
           ).and_return('ts' => 1)
-          expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+          expect(activity.brag!).to eq([{ ts: 1, channel: club.channel_id }])
         end
       end
 
@@ -205,7 +205,7 @@ describe ClubActivity do
               as_user: true
             )
           ).and_return('ts' => 1)
-          expect(activity.brag!).to eq([ts: 1, channel: club.channel_id])
+          expect(activity.brag!).to eq([{ ts: 1, channel: club.channel_id }])
         end
       end
     end

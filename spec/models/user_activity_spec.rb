@@ -105,7 +105,7 @@ describe UserActivity do
 
     context 'a user in a channel' do
       before do
-        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'channel_id' }])
         allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
         allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
         allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1503435956.000247')
@@ -118,7 +118,7 @@ describe UserActivity do
             channel: 'channel_id'
           )
         ).and_return('ts' => 1)
-        expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+        expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
       end
 
       it 'warns if the bot leaves the channel' do
@@ -184,7 +184,7 @@ describe UserActivity do
                   thread_ts: 'ts'
                 )
               ).and_return('ts' => 1)
-              expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+              expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
             end
           end
 
@@ -227,7 +227,7 @@ describe UserActivity do
                   channel: 'channel_id'
                 )
               ).and_return('ts' => 1)
-              expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+              expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
             end
           end
         end
@@ -236,7 +236,7 @@ describe UserActivity do
 
     context 'a deleted user' do
       before do
-        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'channel_id' }])
         allow_any_instance_of(User).to receive(:user_deleted?).and_return(true)
       end
 
@@ -248,7 +248,7 @@ describe UserActivity do
 
     context 'with max_activities_per_channel_per_day' do
       before do
-        allow_any_instance_of(Team).to receive(:slack_channels).and_return(['id' => 'channel_id'])
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'channel_id' }])
         allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
         allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
       end
@@ -280,7 +280,7 @@ describe UserActivity do
 
         it 'posts to the channel' do
           expect(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 1)
-          expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+          expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
         end
       end
 
@@ -293,7 +293,7 @@ describe UserActivity do
             channel_messages: [ChannelMessage.new(ts: 'ts', channel: 'channel_id')]
           )
           expect(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 1)
-          expect(activity.brag!).to eq([ts: 1, channel: 'channel_id'])
+          expect(activity.brag!).to eq([{ ts: 1, channel: 'channel_id' }])
         end
       end
     end

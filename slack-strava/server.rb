@@ -18,12 +18,16 @@ module SlackStrava
         message = "Got a Strava account? I can post your activities to <##{data.channel}> automatically."
         user.dm!(
           text: message, attachments: [
-            fallback: "#{message} Connect it at #{url}.",
-            actions: [
-              type: 'button',
-              text: 'Click Here',
-              url: url
-            ]
+            {
+              fallback: "#{message} Connect it at #{url}.",
+              actions: [
+                {
+                  type: 'button',
+                  text: 'Click Here',
+                  url: url
+                }
+              ]
+            }
           ]
         )
       end
