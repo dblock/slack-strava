@@ -336,6 +336,18 @@ describe UserActivity do
           expect(activity.brag!).to eq([])
         end
       end
+
+      context 'when global sync is disabled but channel sync is enabled' do
+        before do
+          user.update_attributes!(sync_activities: false)
+          user.set_user_channel!('channel_id', 'general', sync_activities: true)
+        end
+
+        it 'does not post to the channel (global takes precedence)' do
+          expect(user.team.slack_client).not_to receive(:chat_postMessage)
+          expect(activity.brag!).to eq([])
+        end
+      end
     end
   end
 
