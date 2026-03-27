@@ -33,7 +33,7 @@ gem 'wannabe_bool'
 
 group :development, :test do
   gem 'foreman'
-  gem 'rake', '~> 12.3'
+  gem 'rake', '~> 13.0'
   gem 'rubocop'
   gem 'rubocop-capybara'
   gem 'rubocop-rake'
