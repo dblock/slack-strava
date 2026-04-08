@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-ruby '4.0.1'
+ruby '4.0.2'
 
 gem 'base64'
 gem 'bigdecimal'
@@ -55,7 +55,7 @@ group :test do
   gem 'rackup'
   gem 'rspec'
   gem 'selenium-webdriver'
-  gem 'stripe-ruby-mock', '~> 2.4.1', require: 'stripe_mock'
+  gem 'stripe-ruby-mock', '~> 2.5.0', require: 'stripe_mock'
   gem 'timecop'
   gem 'vcr'
   gem 'webmock'
