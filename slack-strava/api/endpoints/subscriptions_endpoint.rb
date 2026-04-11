@@ -15,7 +15,7 @@ module Api
           team = Team.where(team_id: params[:team_id]).first || error!('Team Not Found', 404)
           Api::Middleware.logger.info "Creating a subscription for team #{team}."
           error!('Already Subscribed', 400) if team.subscribed?
-          error!('Existing Subscription Already Active', 400) if team.stripe_customer_id && team.stripe_customer.subscriptions.any?
+          error!('Existing Subscription Already Active', 400) if team.stripe_customer_id && Stripe::Subscription.list(customer: team.stripe_customer_id).any?
 
           data = {
             source: params[:stripe_token],

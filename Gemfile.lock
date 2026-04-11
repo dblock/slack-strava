@@ -16,7 +16,7 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
-    addressable (2.8.9)
+    addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
     async (2.23.0)
@@ -131,7 +131,7 @@ GEM
     hashie (5.1.0)
       logger
     http-accept (1.7.0)
-    http-cookie (1.1.0)
+    http-cookie (1.1.4)
       domain_name (~> 0.5)
     httparty (0.24.2)
       csv
@@ -171,7 +171,7 @@ GEM
     mime-types (3.7.0)
       logger
       mime-types-data (~> 3.2025, >= 3.2025.0507)
-    mime-types-data (3.2026.0317)
+    mime-types-data (3.2026.0407)
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
     minitest (6.0.2)
@@ -196,7 +196,7 @@ GEM
       i18n
       mongoid (>= 3.0.0)
       mongoid-compatibility
-    multi_json (1.19.1)
+    multi_json (1.20.0)
     multi_xml (0.8.1)
       bigdecimal (>= 3.1, < 5)
     multipart-post (2.4.1)
@@ -236,7 +236,7 @@ GEM
       date
       stringio
     public_suffix (7.0.5)
-    puma (7.2.0)
+    puma (8.0.0)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.6)
@@ -359,12 +359,12 @@ GEM
       faraday-multipart (>= 1.0)
       hashie
     stringio (3.2.0)
-    stripe (1.58.0)
-      rest-client (>= 1.4, < 4.0)
-    stripe-ruby-mock (2.4.1)
+    stripe (13.5.1)
+    stripe-ruby-mock (5.0.0)
       dante (>= 0.2.0)
+      drb (>= 2.0.4, < 3)
       multi_json (~> 1.0)
-      stripe (>= 1.31.0, <= 1.58.0)
+      stripe (> 5, < 14)
     thor (1.5.0)
     timecop (0.9.10)
     traces (0.18.2)
@@ -439,15 +439,15 @@ DEPENDENCIES
   slack-ruby-bot-server-mailchimp
   slack-ruby-bot-server-rtm
   strava-ruby-client
-  stripe (~> 1.58.0)
-  stripe-ruby-mock (~> 2.4.1)
+  stripe (~> 13.0)
+  stripe-ruby-mock (~> 5.0)
   timecop
   vcr
   wannabe_bool
   webmock
 
 RUBY VERSION
-   ruby 4.0.1p0
+   ruby 4.0.2p0
 
 BUNDLED WITH
    2.4.2
