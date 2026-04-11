@@ -17,6 +17,10 @@ module ActivityMethods
     team.channel_units_for(current_channel_id)
   end
 
+  def effective_temperature
+    team.channel_temperature_for(current_channel_id)
+  end
+
   def effective_activity_fields
     team.channel_activity_fields_for(current_channel_id)
   end
