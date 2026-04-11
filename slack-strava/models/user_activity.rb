@@ -372,10 +372,10 @@ class UserActivity < Activity
 
     main = current_weather.weather&.first&.main
 
-    case team.units
-    when 'km' then
+    case effective_temperature
+    when 'c' then
       ["#{current_weather.temp_c.to_i}°C", main].compact.join(' ')
-    when 'mi' then
+    when 'f' then
       ["#{current_weather.temp_f.to_i}°F", main].compact.join(' ')
     when 'both' then
       [

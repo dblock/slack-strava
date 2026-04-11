@@ -72,6 +72,36 @@ module SlackStrava
                 logger.info "SET: #{team} - units set to #{team.units}"
               end
             end
+          when 'temperature'
+            case v
+            when 'celsius'
+              v = 'c'
+            when 'fahrenheit'
+              v = 'f'
+            end
+            if data.channel.start_with?('C')
+              channel_info = team.slack_client.conversations_info(channel: data.channel).channel
+              channel_name = channel_info['name']
+              changed = v && team.channel_temperature_for(data.channel) != v
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change temperature. Activities in <##{data.channel}> display *#{team.channel_temperature_s(data.channel)}*.")
+                logger.info "SET: #{team} - not admin, temperature for #{data.channel} remain #{team.channel_temperature_for(data.channel)}"
+              else
+                team.set_channel!(data.channel, channel_name, temperature: v) if changed
+                client.say(channel: data.channel, text: "Activities in <##{data.channel}>#{' now' if changed} display *#{team.channel_temperature_s(data.channel)}*.")
+                logger.info "SET: #{team} - temperature for #{data.channel} set to #{team.channel_temperature_for(data.channel)}"
+              end
+            else
+              changed = v && team.temperature != v
+              if !user.team_admin? && changed
+                client.say(channel: data.channel, text: "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change temperature. Activities for team #{team.name} display *#{team.temperature_s}*.")
+                logger.info "SET: #{team} - not admin, temperature remains set to #{team.temperature}"
+              else
+                team.update_attributes!(temperature: v) unless v.nil?
+                client.say(channel: data.channel, text: "Activities for team #{team.name}#{' now' if changed} display *#{team.temperature_s}*.")
+                logger.info "SET: #{team} - temperature set to #{team.temperature}"
+              end
+            end
           when 'fields'
             parsed_fields = ActivityFields.parse_s(v) if v
             if data.channel.start_with?('C')
@@ -269,6 +299,7 @@ module SlackStrava
           in_channel = data.channel.start_with?('C')
           messages = [
             in_channel ? "Activities in <##{data.channel}> display *#{team.channel_units_s(data.channel)}*." : "Activities for team #{team.name} display *#{team.units_s}*.",
+            in_channel ? "Activities in <##{data.channel}> display *#{team.channel_temperature_s(data.channel)}*." : "Activities for team #{team.name} display *#{team.temperature_s}*.",
             in_channel ? "Activities in <##{data.channel}> are *#{team.channel_threads_s(data.channel)}*." : "Activities are *#{team.threads_s}*.",
             "Activities are retained for *#{team.retention_s}*.",
             "Timezone is *#{team.timezone_s}*.",

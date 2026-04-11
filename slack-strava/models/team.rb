@@ -4,6 +4,9 @@ class Team
   field :units, type: String, default: 'mi'
   validates_inclusion_of :units, in: %w[mi km both]
 
+  field :temperature, type: String, default: 'f'
+  validates_inclusion_of :temperature, in: %w[f c both]
+
   field :activity_fields, type: Array, default: ['Default']
   validates :activity_fields, array: { presence: true, inclusion: { in: ActivityFields.values } }
 
@@ -60,14 +63,18 @@ class Team
   def units_s
     case units
     when 'mi'
-      'miles, feet, yards, and degrees Fahrenheit'
+      'miles, feet, and yards'
     when 'km'
-      'kilometers, meters, and degrees Celsius'
+      'kilometers and meters'
     when 'both'
       'both units'
     else
       raise ArgumentError
     end
+  end
+
+  def temperature_s
+    { 'f' => 'degrees Fahrenheit', 'c' => 'degrees Celsius', 'both' => 'degrees Fahrenheit and Celsius' }[temperature] || raise(ArgumentError)
   end
 
   def maps_s
@@ -485,6 +492,18 @@ class Team
   def channel_units_s(channel_id)
     c = channels.find_by(channel_id: channel_id)
     c&.units_s || units_s
+  end
+
+  def channel_temperature_for(channel_id)
+    return temperature unless channel_id
+
+    c = channels.find_by(channel_id: channel_id)
+    c&.temperature || temperature
+  end
+
+  def channel_temperature_s(channel_id)
+    c = channels.find_by(channel_id: channel_id)
+    c&.temperature_s || temperature_s
   end
 
   def channel_activity_fields_for(channel_id)

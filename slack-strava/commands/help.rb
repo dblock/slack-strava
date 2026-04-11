@@ -29,6 +29,7 @@ module SlackStrava
         set userlimit [n]|none                 - max per user per day (in channel overrides team default)
         set channellimit [n]|none              - max activities posted per channel per day (default is unlimited)
         set units imperial|metric|both         - use imperial vs. metric units (in channel overrides team default)
+        set temperature f|c|both               - temperature units, independent of distance units (in channel overrides team default)
         set fields all|none|...                - activity fields displayed (in channel overrides team default)
         set maps off|full|thumb                - map display style (in channel overrides team default)
         set leaderboard elapsed time|...       - change the default leaderboard
