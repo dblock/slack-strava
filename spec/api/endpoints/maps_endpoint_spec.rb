@@ -5,10 +5,11 @@ describe Api::Endpoints::MapsEndpoint do
 
   context 'maps' do
     context 'without an activity' do
-      it '404s' do
+      it 'returns a pixel' do
         get '/api/maps/5abd07019b0b58f119c1bbaa.png'
-        expect(last_response.status).to eq 404
-        expect(JSON.parse(last_response.body)).to eq('error' => 'Not Found')
+        expect(last_response.status).to eq 200
+        expect(last_response.headers['Content-Type']).to eq 'image/png'
+        expect(last_response.body).to eq Api::Endpoints::MapsEndpoint::PIXEL_PNG
       end
     end
 
@@ -37,7 +38,9 @@ describe Api::Endpoints::MapsEndpoint do
         it 'returns no map data' do
           allow_any_instance_of(Map).to receive(:update_png!)
           get "/api/maps/#{activity.map.id}.png"
-          expect(last_response.status).to eq 404
+          expect(last_response.status).to eq 200
+          expect(last_response.headers['Content-Type']).to eq 'image/png'
+          expect(last_response.body).to eq Api::Endpoints::MapsEndpoint::PIXEL_PNG
         end
 
         it 'refetches map if needed', vcr: { cassette_name: 'strava/map', allow_playback_repeats: true } do
@@ -137,9 +140,11 @@ describe Api::Endpoints::MapsEndpoint do
       let(:user) { Fabricate(:user, private_activities: false) }
       let(:activity) { Fabricate(:user_activity, private: true, user: user) }
 
-      it 'does not return map' do
+      it 'returns a pixel' do
         get "/api/maps/#{activity.map.id}.png"
-        expect(last_response.status).to eq 403
+        expect(last_response.status).to eq 200
+        expect(last_response.headers['Content-Type']).to eq 'image/png'
+        expect(last_response.body).to eq Api::Endpoints::MapsEndpoint::PIXEL_PNG
       end
     end
 
@@ -151,9 +156,11 @@ describe Api::Endpoints::MapsEndpoint do
         activity.map.update_attributes!(summary_polyline: nil)
       end
 
-      it 'does not return map' do
+      it 'returns a pixel' do
         get "/api/maps/#{activity.map.id}.png"
-        expect(last_response.status).to eq 404
+        expect(last_response.status).to eq 200
+        expect(last_response.headers['Content-Type']).to eq 'image/png'
+        expect(last_response.body).to eq Api::Endpoints::MapsEndpoint::PIXEL_PNG
       end
     end
   end
