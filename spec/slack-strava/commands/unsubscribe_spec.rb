@@ -28,7 +28,7 @@ describe SlackStrava::Commands::Unsubscribe, vcr: { cassette_name: 'slack/user_i
     context 'with a plan' do
       include_context 'stripe mock'
       before do
-        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, name: 'Plan')
+        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, product: stripe_product.id, nickname: 'Plan')
       end
 
       context 'a customer' do

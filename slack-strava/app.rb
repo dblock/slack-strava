@@ -198,14 +198,14 @@ module SlackStrava
     def check_subscribed_teams!
       logger.info "Checking Stripe subscriptions for #{Team.striped.count} team(s)."
       Team.no_timeout.active.striped.each do |team|
-        customer = Stripe::Customer.retrieve(team.stripe_customer_id)
-        if customer.subscriptions.none? && team.subscribed?
+        subscriptions = Stripe::Subscription.list(customer: team.stripe_customer_id)
+        if subscriptions.none? && team.subscribed?
           logger.info "No active subscriptions for #{team} (#{team.stripe_customer_id}), downgrading."
           team.inform_admin!(text: 'Your subscription was canceled and your team has been downgraded. Thank you for being a customer!')
           team.update_attributes!(subscribed: false)
         else
-          customer.subscriptions.each do |subscription|
-            subscription_name = "#{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)})"
+          subscriptions.each do |subscription|
+            subscription_name = "#{subscription.plan.nickname} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)})"
             logger.info "Checking #{team} subscription to #{subscription_name}, #{subscription.status}."
             case subscription.status
             when 'active'
@@ -217,7 +217,7 @@ module SlackStrava
               team.inform_everyone!(text: "Your subscription to #{subscription_name} is past due. #{team.update_cc_text}")
             when 'canceled', 'unpaid'
               logger.warn "Subscription for #{team} is #{subscription.status}, downgrading."
-              team.inform_everyone!(text: "Your subscription to #{subscription.plan.name} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)}) was canceled and your team has been downgraded. Thank you for being a customer!")
+              team.inform_everyone!(text: "Your subscription to #{subscription.plan.nickname} (#{ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)}) was canceled and your team has been downgraded. Thank you for being a customer!")
               team.update_attributes!(subscribed: false)
             end
           end
@@ -245,9 +245,9 @@ module SlackStrava
           elsif team.active_stripe_subscription
             logger.warn "Inactive team #{team} for #{metadata.name} (#{metadata.team_id})."
             active_subscription = team.active_stripe_subscription
-            active_subscription.delete(at_period_end: true)
+            Stripe::Subscription.update(active_subscription.id, cancel_at_period_end: true)
             amount = ActiveSupport::NumberHelper.number_to_currency(active_subscription.plan.amount.to_f / 100)
-            logger.warn "Successfully canceled auto-renew for #{active_subscription.plan.name} (#{amount}) for #{team}."
+            logger.warn "Successfully canceled auto-renew for #{active_subscription.plan.nickname} (#{amount}) for #{team}."
           else
             logger.warn "Inactive team #{team} for #{metadata.name} (#{metadata.team_id}), no active subscription to cancel."
           end

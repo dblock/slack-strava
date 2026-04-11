@@ -42,7 +42,7 @@ describe SlackStrava::App do
 
   context 'subscribed' do
     include_context 'stripe mock'
-    let(:plan) { stripe_helper.create_plan(id: 'slava-yearly', amount: 999) }
+    let(:plan) { stripe_helper.create_plan(id: 'slava-yearly', amount: 999, product: stripe_product.id, nickname: 'Plan') }
     let(:customer) { Stripe::Customer.create(source: stripe_helper.generate_card_token, plan: plan.id, email: 'foo@bar.com') }
     let!(:team) { Fabricate(:team, subscribed: true, stripe_customer_id: customer.id) }
 
@@ -54,24 +54,27 @@ describe SlackStrava::App do
       end
 
       it 'notifies past due subscription' do
-        customer.subscriptions.data.first['status'] = 'past_due'
-        expect(Stripe::Customer).to receive(:retrieve).and_return(customer)
-        expect_any_instance_of(Team).to receive(:inform!).with(text: "Your subscription to StripeMock Default Plan ID ($9.99) is past due. #{team.update_cc_text}")
-        expect_any_instance_of(Team).to receive(:inform_admin!).with(text: "Your subscription to StripeMock Default Plan ID ($9.99) is past due. #{team.update_cc_text}")
+        subscription = customer.subscriptions.data.first
+        subscription['status'] = 'past_due'
+        allow(Stripe::Subscription).to receive(:list).and_return([subscription])
+        expect_any_instance_of(Team).to receive(:inform!).with(text: "Your subscription to Plan ($9.99) is past due. #{team.update_cc_text}")
+        expect_any_instance_of(Team).to receive(:inform_admin!).with(text: "Your subscription to Plan ($9.99) is past due. #{team.update_cc_text}")
         subject.send(:check_subscribed_teams!)
       end
 
       it 'notifies canceled subscription' do
-        customer.subscriptions.data.first['status'] = 'canceled'
-        expect(Stripe::Customer).to receive(:retrieve).and_return(customer)
-        expect_any_instance_of(Team).to receive(:inform!).with(text: 'Your subscription to StripeMock Default Plan ID ($9.99) was canceled and your team has been downgraded. Thank you for being a customer!')
-        expect_any_instance_of(Team).to receive(:inform_admin!).with(text: 'Your subscription to StripeMock Default Plan ID ($9.99) was canceled and your team has been downgraded. Thank you for being a customer!')
+        subscription = customer.subscriptions.data.first
+        subscription['status'] = 'canceled'
+        allow(Stripe::Subscription).to receive(:list).and_return([subscription])
+        expect_any_instance_of(Team).to receive(:inform!).with(text: 'Your subscription to Plan ($9.99) was canceled and your team has been downgraded. Thank you for being a customer!')
+        expect_any_instance_of(Team).to receive(:inform_admin!).with(text: 'Your subscription to Plan ($9.99) was canceled and your team has been downgraded. Thank you for being a customer!')
         subject.send(:check_subscribed_teams!)
         expect(team.reload.subscribed?).to be false
       end
 
       it 'skips inactive teams' do
-        customer.subscriptions.data.first['status'] = 'canceled'
+        subscription = customer.subscriptions.data.first
+        subscription['status'] = 'canceled'
         expect_any_instance_of(Team).not_to receive(:inform!)
         expect_any_instance_of(Team).not_to receive(:inform_admin!)
         team.update_attributes!(active: false)
@@ -80,8 +83,7 @@ describe SlackStrava::App do
       end
 
       it 'notifies no active subscriptions' do
-        customer.subscriptions.data = []
-        expect(Stripe::Customer).to receive(:retrieve).and_return(customer)
+        allow(Stripe::Subscription).to receive(:list).and_return([])
         expect_any_instance_of(Team).to receive(:inform_admin!).with(text: 'Your subscription was canceled and your team has been downgraded. Thank you for being a customer!')
         subject.send(:check_subscribed_teams!)
         expect(team.reload.subscribed?).to be false

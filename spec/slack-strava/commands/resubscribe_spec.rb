@@ -28,7 +28,7 @@ describe SlackStrava::Commands::Resubscribe, vcr: { cassette_name: 'slack/user_i
     context 'with a plan' do
       include_context 'stripe mock'
       before do
-        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, name: 'Plan')
+        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, product: stripe_product.id, nickname: 'Plan')
       end
 
       context 'a customer' do
@@ -49,7 +49,7 @@ describe SlackStrava::Commands::Resubscribe, vcr: { cassette_name: 'slack/user_i
             stripe_customer_id: customer['id'],
             activated_user_id: activated_user.user_id
           )
-          active_subscription.delete(at_period_end: true)
+          Stripe::Subscription.update(active_subscription.id, cancel_at_period_end: true)
         end
 
         it 'displays subscription info' do

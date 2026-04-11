@@ -280,7 +280,7 @@ class Team
   def stripe_subcriptions
     return unless stripe_customer
 
-    stripe_customer.subscriptions
+    Stripe::Subscription.list(customer: stripe_customer.id)
   end
 
   def subscriber_text
@@ -294,12 +294,12 @@ class Team
   end
 
   def stripe_customer_subscriptions_info(with_unsubscribe = false)
-    stripe_customer.subscriptions.map do |subscription|
+    Stripe::Subscription.list(customer: stripe_customer.id).map do |subscription|
       amount = ActiveSupport::NumberHelper.number_to_currency(subscription.plan.amount.to_f / 100)
       current_period_end = Time.at(subscription.current_period_end).strftime('%B %d, %Y')
       if subscription.status == 'active'
         [
-          "Subscribed to #{subscription.plan.name} (#{amount}), will#{' not' if subscription.cancel_at_period_end} auto-renew on #{current_period_end}.",
+          "Subscribed to #{subscription.plan.nickname} (#{amount}), will#{' not' if subscription.cancel_at_period_end} auto-renew on #{current_period_end}.",
           if with_unsubscribe
             (
                       if subscription.cancel_at_period_end
@@ -311,15 +311,15 @@ class Team
           end
         ].compact.join("\n")
       else
-        "#{subscription.status.titleize} subscription created #{Time.at(subscription.created).strftime('%B %d, %Y')} to #{subscription.plan.name} (#{amount})."
+        "#{subscription.status.titleize} subscription created #{Time.at(subscription.created).strftime('%B %d, %Y')} to #{subscription.plan.nickname} (#{amount})."
       end
     end
   end
 
   def stripe_customer_invoices_info
-    stripe_customer.invoices.map do |invoice|
+    Stripe::Invoice.list(customer: stripe_customer.id).map do |invoice|
       amount = ActiveSupport::NumberHelper.number_to_currency(invoice.amount_due.to_f / 100)
-      "Invoice for #{amount} on #{Time.at(invoice.date).strftime('%B %d, %Y')}, #{invoice.paid ? 'paid' : 'unpaid'}."
+      "Invoice for #{amount} on #{Time.at(invoice.created).strftime('%B %d, %Y')}, #{invoice.paid ? 'paid' : 'unpaid'}."
     end
   end
 
@@ -363,7 +363,7 @@ class Team
   def active_stripe_subscription
     return unless stripe_customer
 
-    stripe_customer.subscriptions.detect do |subscription|
+    Stripe::Subscription.list(customer: stripe_customer.id).detect do |subscription|
       subscription.status == 'active'
     end
   end

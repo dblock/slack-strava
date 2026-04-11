@@ -25,7 +25,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
     context 'with a plan' do
       include_context 'stripe mock'
       before do
-        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, name: 'Plan')
+        stripe_helper.create_plan(id: 'slava-yearly', amount: 999, product: stripe_product.id, nickname: 'Plan')
       end
 
       pending 'a customer with an ach_credit_transfer source'
@@ -82,13 +82,16 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
 
         context 'past due subscription' do
           before do
-            customer.subscriptions.data.first['status'] = 'past_due'
+            subscription = customer.subscriptions.data.first
+            subscription['status'] = 'past_due'
             allow(Stripe::Customer).to receive(:retrieve).and_return(customer)
+            allow(Stripe::Subscription).to receive(:list).and_return([subscription])
           end
 
           it 'displays subscription info' do
             customer_info = "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}."
-            customer_info += "\nPast Due subscription created November 03, 2016 to Plan ($9.99)."
+            subscription = customer.subscriptions.first
+            customer_info += "\nPast Due subscription created #{Time.at(subscription.created).strftime('%B %d, %Y')} to Plan ($9.99)."
             card = customer.sources.first
             customer_info += "\nOn file Visa card, #{card.name} ending with #{card.last4}, expires #{card.exp_month}/#{card.exp_year}."
             customer_info += "\n#{team.update_cc_text}"

@@ -32,15 +32,10 @@ describe Api::Endpoints::SubscriptionsEndpoint do
 
     context 'team with a canceled subscription' do
       let!(:team) { Fabricate(:team, subscribed: false, stripe_customer_id: 'customer_id') }
-      let(:stripe_customer) { double(Stripe::Customer) }
-
-      before do
-        allow(Stripe::Customer).to receive(:retrieve).with(team.stripe_customer_id).and_return(stripe_customer)
-      end
 
       context 'with an active subscription' do
         before do
-          allow(stripe_customer).to receive(:subscriptions).and_return(
+          allow(Stripe::Subscription).to receive(:list).with(customer: team.stripe_customer_id).and_return(
             [
               double(Stripe::Subscription)
             ]
@@ -64,7 +59,7 @@ describe Api::Endpoints::SubscriptionsEndpoint do
 
       context 'without no active subscription' do
         before do
-          allow(stripe_customer).to receive(:subscriptions).and_return([])
+          allow(Stripe::Subscription).to receive(:list).with(customer: team.stripe_customer_id).and_return([])
         end
 
         it 'updates a subscription' do
