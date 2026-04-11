@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/04/11: Return a 1x1 transparent pixel instead of a 404/403 error when activity maps are not found or have expired - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/11: Upgraded Ruby to 4.0.2, puma to 8.0.0, addressable to 2.9.0, stripe to 13.5.1, stripe-ruby-mock to 5.0.0 - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/03/20: Added per-channel settings for maps, threads, fields, units, and userlimit - admin `set` in a channel overrides team defaults - [@dblock](https://github.com/dblock).
 * 2026/03/20: Added `set activities` to limit activity types posted in a channel - [@dblock](https://github.com/dblock).
