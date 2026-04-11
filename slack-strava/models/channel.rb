@@ -7,6 +7,7 @@ class Channel
   field :activity_types, type: Array, default: []
   field :maps, type: String
   field :units, type: String
+  field :temperature, type: String
   field :activity_fields, type: Array
   field :threads, type: String
   field :max_activities_per_user_per_day, type: Integer
@@ -27,10 +28,14 @@ class Channel
 
   def units_s
     {
-      'mi' => 'miles, feet, yards, and degrees Fahrenheit',
-      'km' => 'kilometers, meters, and degrees Celsius',
+      'mi' => 'miles, feet, and yards',
+      'km' => 'kilometers and meters',
       'both' => 'both units'
     }[units]
+  end
+
+  def temperature_s
+    { 'f' => 'degrees Fahrenheit', 'c' => 'degrees Celsius', 'both' => 'degrees Fahrenheit and Celsius' }[temperature]
   end
 
   def activity_fields_s
