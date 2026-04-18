@@ -31,7 +31,7 @@ GEM
       async-io
       websocket-driver (~> 0.7.0)
     base64 (0.3.0)
-    bigdecimal (4.1.1)
+    bigdecimal (4.1.2)
     bson (5.2.0)
     capybara (3.40.0)
       addressable
@@ -87,7 +87,7 @@ GEM
       zeitwerk (~> 2.6)
     erb (6.0.2)
     fabrication (3.0.0)
-    faker (3.7.1)
+    faker (3.8.0)
       i18n (>= 1.8.11, < 2)
     faraday (2.14.1)
       faraday-net_http (>= 2.0, < 3.5)
@@ -204,7 +204,7 @@ GEM
     newrelic-slack-ruby-bot (0.2.2)
       newrelic_rpm
       slack-ruby-bot (>= 0.10.5)
-    newrelic_rpm (10.3.0)
+    newrelic_rpm (10.4.0)
       logger
     nio4r (2.7.5)
     nokogiri (1.19.2)
