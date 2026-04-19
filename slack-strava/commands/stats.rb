@@ -9,7 +9,7 @@ module SlackStrava
 
       subscribe_command 'stats' do |client, data, match|
         stats_options = begin
-          Stats.parse_date_expression(match['expression'])
+          Stats.parse_date_expression(match['expression'], now: client.owner.now)
         rescue SlackStrava::Error
           {}
         end

@@ -16,11 +16,11 @@ module SlackStrava
           Time.new(year, 1, 1)
         end
 
-        def parse_date(date_time, guess = :first)
+        def parse_date(date_time, guess = :first, now: Time.now)
           if (year = parse_year(date_time))
             year
           else
-            parsed = Chronic.parse(date_time, context: :past, guess: false)
+            parsed = Chronic.parse(date_time, context: :past, guess: false, now: now)
             if parsed.is_a?(Chronic::Span)
               parsed.send(guess)
             elsif parsed.is_a?(Time)
@@ -31,37 +31,37 @@ module SlackStrava
           end
         end
 
-        def normalize_period(expression)
+        def normalize_period(expression, now: Time.now)
           return expression if expression.blank?
 
           downcased = expression.strip.downcase
           if PERIOD_ALIASES.key?(downcased)
             PERIOD_ALIASES[downcased]
           elsif downcased == 'quarterly'
-            quarter_start = Time.now.beginning_of_quarter
+            quarter_start = now.beginning_of_quarter
             expression.sub(/quarterly/i, "between #{quarter_start.strftime('%B %d %Y')} and now")
           else
             expression
           end
         end
 
-        def parse_date_expression(expression)
+        def parse_date_expression(expression, now: Time.now)
           result = {}
           return result if expression.blank?
 
-          expression = normalize_period(expression.strip)
+          expression = normalize_period(expression.strip, now: now)
 
           if expression.match?(/^between(\s)/i)
             expression = expression[('between'.length)..]&.strip
             dates = expression.strip.split(/\s+and\s+/)
             raise SlackStrava::Error, "Sorry, I don't understand '#{expression}'." unless dates.length == 2
 
-            result[:start_date] = parse_date(dates[0], :first)
-            result[:end_date] = parse_date(dates[1], :last)
+            result[:start_date] = parse_date(dates[0], :first, now: now)
+            result[:end_date] = parse_date(dates[1], :last, now: now)
           else
             if expression.match?(/^since(\s)/i)
               expression = expression[('since'.length)..]&.strip
-              result[:end_date] = Time.now
+              result[:end_date] = now
             end
 
             if expression.blank?
@@ -70,7 +70,7 @@ module SlackStrava
               result[:start_date] = year
               result[:end_date] ||= year.end_of_year
             else
-              parsed = Chronic.parse(expression, context: :past, guess: false)
+              parsed = Chronic.parse(expression, context: :past, guess: false, now: now)
               if parsed.is_a?(Chronic::Span)
                 result[:start_date] = parsed.first
                 result[:end_date] ||= parsed.last

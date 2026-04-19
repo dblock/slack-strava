@@ -74,7 +74,7 @@ describe SlackStrava::Commands::Leaderboard do
       it 'ignores it with an expression' do
         allow(client.web_client).to receive(:chat_postMessage)
         dt = Time.now - 2.days
-        expect(Chronic).to receive(:parse).with('two days ago', context: :past, guess: false).and_return(dt)
+        expect(Chronic).to receive(:parse).with('two days ago', hash_including(context: :past, guess: false)).and_return(dt)
         expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: dt).and_call_original
         message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard two days ago"))
       end
@@ -83,7 +83,7 @@ describe SlackStrava::Commands::Leaderboard do
     it 'parses start date' do
       allow(client.web_client).to receive(:chat_postMessage)
       dt = Time.now - 2.days
-      expect(Chronic).to receive(:parse).with('two days ago', context: :past, guess: false).and_return(dt)
+      expect(Chronic).to receive(:parse).with('two days ago', hash_including(context: :past, guess: false)).and_return(dt)
       expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: dt).and_call_original
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard two days ago"))
     end
@@ -170,6 +170,22 @@ describe SlackStrava::Commands::Leaderboard do
           end_date: quarter_end_parsed.last
         ).and_call_original
         message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard quarterly"))
+      end
+    end
+
+    context 'with team timezone' do
+      let!(:team) { Fabricate(:team, subscribed: true, timezone: 'Pacific Time (US & Canada)') }
+
+      it 'uses team timezone when parsing yearly' do
+        # At 01:00 UTC Jan 1, 2026 it is still Dec 31, 2025 in Pacific time.
+        # Without the timezone fix, 'yearly' would resolve to 2026. With it, 2025.
+        Timecop.freeze(Time.utc(2026, 1, 1, 1, 0, 0)) do
+          allow(client.web_client).to receive(:chat_postMessage)
+          expect_any_instance_of(Team).to receive(:leaderboard).with(
+            hash_including(metric: 'distance', start_date: have_attributes(year: 2025))
+          ).and_call_original
+          message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard yearly"))
+        end
       end
     end
   end

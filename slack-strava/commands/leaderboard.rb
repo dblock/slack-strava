@@ -6,7 +6,7 @@ module SlackStrava
       class << self
         include SlackStrava::Commands::Mixins::ParseDate
 
-        def parse_expression(expression)
+        def parse_expression(expression, now: Time.now)
           result = { metric: 'distance' }
           return result if expression.nil?
 
@@ -20,12 +20,12 @@ module SlackStrava
             break
           end
 
-          result.merge(parse_date_expression(expression))
+          result.merge(parse_date_expression(expression, now: now))
         end
       end
 
       subscribe_command 'leaderboard' do |client, data, match|
-        leaderboard_options = Leaderboard.parse_expression(match['expression'] || client.owner.default_leaderboard)
+        leaderboard_options = Leaderboard.parse_expression(match['expression'] || client.owner.default_leaderboard, now: client.owner.now)
         leaderboard_options = leaderboard_options.merge(channel_id: data.channel) unless data.channel[0] == 'D'
         leaderboard_s = client.owner.leaderboard(leaderboard_options).to_s
         client.web_client.chat_postMessage(
