@@ -249,7 +249,7 @@ module SlackStrava
           when 'activities'
             unless data.channel.start_with?('C')
               client.say(channel: data.channel, text: 'You can only set activity types in a channel, not a DM.')
-              return
+              next
             end
             channel_info = team.slack_client.conversations_info(channel: data.channel).channel
             channel_name = channel_info['name']
@@ -258,14 +258,12 @@ module SlackStrava
               changed = v && !team.channel_activity_types_for(data.channel).empty?
             else
               input_types = v.split(/[\s,]+/).map(&:strip).reject(&:empty?)
-              new_types = input_types.map do |t|
-                matched = ActivityMethods::ACTIVITY_TYPES.find { |at| at.casecmp(t).zero? }
-                unless matched
-                  client.say(channel: data.channel, text: "Invalid activity type: #{t}. Use: #{ActivityMethods::ACTIVITY_TYPES.or}.")
-                  return
-                end
-                matched
+              invalid = input_types.find { |t| ActivityMethods::ACTIVITY_TYPES.none? { |at| at.casecmp(t).zero? } }
+              if invalid
+                client.say(channel: data.channel, text: "Invalid activity type: #{invalid}. Use: #{ActivityMethods::ACTIVITY_TYPES.or}.")
+                next
               end
+              new_types = input_types.map { |t| ActivityMethods::ACTIVITY_TYPES.find { |at| at.casecmp(t).zero? } }
               changed = team.channel_activity_types_for(data.channel) != new_types
             end
             if !user.team_admin? && changed
