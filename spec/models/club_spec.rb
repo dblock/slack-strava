@@ -92,7 +92,7 @@ describe Club do
         activity = club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
         tt = activity.reload.updated_at.utc
         activity2 = club2.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-        tt2 = activity.reload.updated_at.utc
+        tt2 = activity2.reload.updated_at.utc
         Timecop.travel(Time.now + 1.hour)
         club.sync_new_strava_activities!
         expect(activity.reload.updated_at.utc.to_i).not_to eq(tt.to_i)
