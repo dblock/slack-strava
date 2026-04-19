@@ -792,6 +792,12 @@ describe SlackStrava::Commands::Set do
               )
             end
 
+            it 'displays an error for "none" activity type' do
+              expect(message: "#{SlackRubyBot.config.user} set activities none", channel: 'C1').to respond_with_slack_message(
+                "Invalid activity type: none. Use: #{ActivityMethods::ACTIVITY_TYPES.or}."
+              )
+            end
+
             it 'cannot be set in a DM' do
               expect(message: "#{SlackRubyBot.config.user} set activities Run").to respond_with_slack_message(
                 'You can only set activity types in a channel, not a DM.'
