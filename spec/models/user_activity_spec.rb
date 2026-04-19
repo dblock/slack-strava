@@ -675,7 +675,6 @@ describe UserActivity do
                 { title: 'Moving Time', value: '2h6m26s' },
                 { title: 'Elapsed Time', value: '2h8m6s' },
                 { title: 'Pace', value: '9m02s/mi' },
-                { title: 'Speed', value: '6.6mph' },
                 { title: 'Elevation', value: '475.4ft' },
                 { title: 'Weather', value: '70°F Rain' },
                 { title: 'Device', value: 'Garmin Forerunner' }
@@ -1000,7 +999,6 @@ describe UserActivity do
                   { title: 'Moving Time', value: '2h6m26s' },
                   { title: 'Elapsed Time', value: '2h8m6s' },
                   { title: 'Pace', value: '9m02s/mi' },
-                  { title: 'Speed', value: '6.6mph' },
                   { title: 'Elevation', value: '475.4ft' },
                   { title: 'Weather', value: '70°F Rain' },
                   { title: 'Device', value: 'Garmin Forerunner' }
@@ -1081,7 +1079,6 @@ describe UserActivity do
                 { title: 'Moving Time', value: '2h6m26s' },
                 { title: 'Elapsed Time', value: '2h8m6s' },
                 { title: 'Pace', value: '5m37s/km' },
-                { title: 'Speed', value: '10.7km/h' },
                 { title: 'Elevation', value: '144.9m' },
                 { title: 'Weather', value: '21°C Rain' },
                 { title: 'Device', value: 'Garmin Forerunner' }
@@ -1122,7 +1119,6 @@ describe UserActivity do
                 { title: 'Moving Time', value: '2h6m26s' },
                 { title: 'Elapsed Time', value: '2h8m6s' },
                 { title: 'Pace', value: '9m02s/mi 5m37s/km' },
-                { title: 'Speed', value: '6.6mph 10.7km/h' },
                 { title: 'Elevation', value: '475.4ft 144.9m' },
                 { title: 'Weather', value: '70°F 21°C Rain' },
                 { title: 'Device', value: 'Garmin Forerunner' }
@@ -1161,7 +1157,6 @@ describe UserActivity do
                 { title: 'Distance', value: '2050yd' },
                 { title: 'Time', value: '37m' },
                 { title: 'Pace', value: '1m48s/100yd' },
-                { title: 'Speed', value: '1.9mph' },
                 { title: 'Device', value: 'Garmin Forerunner' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
             }
@@ -1197,7 +1192,6 @@ describe UserActivity do
                 { title: 'Distance', value: '1874m' },
                 { title: 'Time', value: '37m' },
                 { title: 'Pace', value: '1m58s/100m' },
-                { title: 'Speed', value: '3.0km/h' },
                 { title: 'Device', value: 'Garmin Forerunner' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
             }
@@ -1233,7 +1227,6 @@ describe UserActivity do
                 { title: 'Distance', value: '2050yd 1874m' },
                 { title: 'Time', value: '37m' },
                 { title: 'Pace', value: '1m48s/100yd 1m58s/100m' },
-                { title: 'Speed', value: '1.9mph 3.0km/h' },
                 { title: 'Device', value: 'Garmin Forerunner' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
             }
@@ -1269,7 +1262,6 @@ describe UserActivity do
                 { title: 'Distance', value: '28.1km' },
                 { title: 'Moving Time', value: '1h10m7s' },
                 { title: 'Elapsed Time', value: '1h13m30s' },
-                { title: 'Pace', value: '2m30s/km' },
                 { title: 'Speed', value: '24.0km/h' },
                 { title: 'Device', value: 'Garmin Edge 1030' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
@@ -1306,7 +1298,6 @@ describe UserActivity do
                 { title: 'Distance', value: '17.46mi 28.1km' },
                 { title: 'Moving Time', value: '1h10m7s' },
                 { title: 'Elapsed Time', value: '1h13m30s' },
-                { title: 'Pace', value: '4m01s/mi 2m30s/km' },
                 { title: 'Speed', value: '14.9mph 24.0km/h' },
                 { title: 'Device', value: 'Garmin Edge 1030' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
@@ -1416,7 +1407,6 @@ describe UserActivity do
                   { title: 'Moving Time', value: '2h6m26s' },
                   { title: 'Elapsed Time', value: '2h8m6s' },
                   { title: 'Pace', value: '9m02s/mi' },
-                  { title: 'Speed', value: '6.6mph' },
                   { title: 'Elevation', value: '475.4ft' },
                   { title: 'Weather', value: '70°F Rain' },
                   { title: 'Device', value: 'Garmin Forerunner' }
@@ -1456,7 +1446,6 @@ describe UserActivity do
                   { title: 'Moving Time', value: '2h6m26s' },
                   { title: 'Elapsed Time', value: '2h8m6s' },
                   { title: 'Pace', value: '9m02s/mi' },
-                  { title: 'Speed', value: '6.6mph' },
                   { title: 'Elevation', value: '475.4ft' },
                   { title: 'Weather', value: '70°F Rain' },
                   { title: 'Device', value: 'Garmin Forerunner' }
@@ -1616,7 +1605,6 @@ describe UserActivity do
                     { title: 'Distance', value: '17.46mi' },
                     { title: 'Moving Time', value: '1h10m7s' },
                     { title: 'Elapsed Time', value: '1h13m30s' },
-                    { title: 'Pace', value: '4m01s/mi' },
                     { title: 'Speed', value: '14.9mph' },
                     { title: 'Elevation', value: '1692.9ft' },
                     { title: 'Device', value: 'Garmin Edge 1030' }
@@ -1688,7 +1676,6 @@ describe UserActivity do
                     { title: 'Distance', value: '17.46mi' },
                     { title: 'Moving Time', value: '1h10m7s' },
                     { title: 'Elapsed Time', value: '1h13m30s' },
-                    { title: 'Pace', value: '4m01s/mi' },
                     { title: 'Speed', value: '14.9mph' },
                     { title: 'Elevation', value: '1692.9ft' },
                     { title: 'Device', value: 'Garmin Edge 1030' }
