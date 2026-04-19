@@ -105,5 +105,21 @@ describe SlackStrava::Commands::Stats do
         message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} stats blah"))
       end
     end
+
+    context 'with team timezone' do
+      let!(:team) { Fabricate(:team, subscribed: true, timezone: 'Pacific Time (US & Canada)') }
+
+      it 'uses team timezone when parsing yearly' do
+        # At 01:00 UTC Jan 1, 2026 it is still Dec 31, 2025 in Pacific time.
+        # Without the timezone fix, 'yearly' would resolve to 2026. With it, 2025.
+        Timecop.freeze(Time.utc(2026, 1, 1, 1, 0, 0)) do
+          allow(client.web_client).to receive(:chat_postMessage)
+          expect_any_instance_of(Team).to receive(:stats).with(
+            hash_including(start_date: have_attributes(year: 2025))
+          ).and_call_original
+          message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} stats yearly"))
+        end
+      end
+    end
   end
 end
