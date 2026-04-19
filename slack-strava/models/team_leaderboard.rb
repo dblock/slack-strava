@@ -1,5 +1,6 @@
 class TeamLeaderboard
   include ActiveModel::Model
+  include DateHelper
 
   class Row
     include ActivityMethods
@@ -166,9 +167,9 @@ class TeamLeaderboard
       [
         'There are no activities',
         metric_field == 'count' ? nil : "with #{metric.downcase}",
-        start_date && end_date ? "between #{start_date.to_fs(:long)} and #{end_date.to_fs(:long)}" : nil,
-        start_date && end_date.nil? ? "after #{start_date.to_fs(:long)}" : nil,
-        start_date.nil? && end_date ? "before #{end_date.to_fs(:long)}" : nil,
+        start_date && end_date ? "between #{format_date(start_date)} and #{format_date(end_date)}" : nil,
+        start_date && end_date.nil? ? "after #{format_date(start_date)}" : nil,
+        start_date.nil? && end_date ? "before #{format_date(end_date)}" : nil,
         'in this channel.'
       ].compact.join(' ')
     end

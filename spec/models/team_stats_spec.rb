@@ -70,30 +70,29 @@ describe TeamStats do
 
       it 'describes start date only' do
         stats = team.stats(start_date: Time.new(2018, 1, 1))
-        expect(stats.period_s).to start_with('after ')
+        expect(stats.period_s).to eq('after January 01, 2018')
       end
 
       it 'describes end date only' do
         stats = team.stats(end_date: Time.new(2019, 1, 1))
-        expect(stats.period_s).to start_with('before ')
+        expect(stats.period_s).to eq('before January 01, 2019')
       end
 
       it 'describes date range' do
         stats = team.stats(start_date: Time.new(2018, 1, 1), end_date: Time.new(2018, 12, 31))
-        expect(stats.period_s).to start_with('between ')
+        expect(stats.period_s).to eq('between January 01, 2018 and December 31, 2018')
       end
     end
 
     describe '#to_slack with dates' do
       it 'includes period in text when activities found' do
         stats = team.stats(start_date: Time.new(2018, 1, 1), end_date: Time.new(2018, 12, 31))
-        expect(stats.to_slack[:text]).to include('Activities between')
+        expect(stats.to_slack[:text]).to eq('Activities between January 01, 2018 and December 31, 2018.')
       end
 
       it 'includes period in text when no activities' do
         stats = team.stats(start_date: Time.new(2019, 1, 1), end_date: Time.new(2019, 12, 31))
-        expect(stats.to_slack[:text]).to include('between')
-        expect(stats.to_slack[:text]).to include('no activities')
+        expect(stats.to_slack[:text]).to eq('There are no activities between January 01, 2019 and December 31, 2019 in this channel.')
       end
     end
   end

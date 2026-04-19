@@ -1,4 +1,5 @@
 require 'slack-strava/models/error'
+require 'slack-strava/models/date_helper'
 require 'slack-strava/models/brag'
 require 'slack-strava/models/strava_tokens'
 require 'slack-strava/models/array_validator'

@@ -111,20 +111,24 @@ describe SlackStrava::Commands::Leaderboard do
     end
 
     it 'parses since' do
-      allow(client.web_client).to receive(:chat_postMessage)
-      Timecop.freeze do
+      Timecop.freeze(Time.new(2026, 4, 19, 12, 0, 0)) do
         start_date = Time.new(2023, 9, 1, 0, 0, 0)
         end_date = Time.now
         expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: start_date, end_date: end_date).and_call_original
+        expect(client.web_client).to receive(:chat_postMessage).with(
+          hash_including(text: 'There are no activities with distance between September 01, 2023 and April 19, 2026 12:00 in this channel.')
+        )
         message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard since September 2023"))
       end
     end
 
     it 'parses between' do
-      allow(client.web_client).to receive(:chat_postMessage)
       start_date = Time.new(2023, 9, 1, 0, 0, 0)
       end_date = Time.new(2024, 9, 1, 0, 0, 0)
       expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: start_date, end_date: end_date).and_call_original
+      expect(client.web_client).to receive(:chat_postMessage).with(
+        hash_including(text: 'There are no activities with distance between September 01, 2023 and September 01, 2024 in this channel.')
+      )
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard between September 2023 and August 2024"))
     end
 
