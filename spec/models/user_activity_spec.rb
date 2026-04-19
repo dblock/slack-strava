@@ -604,6 +604,47 @@ describe UserActivity do
         activity.rebrag!
       end
     end
+
+    context 'originally bragged without activity threads, now switched to activity threads' do
+      before do
+        team.update_attributes!(threads: 'activity')
+        activity.update_attributes!(
+          bragged_at: Time.now.utc,
+          channel_messages: [ChannelMessage.new(channel: 'channel_id', ts: 'ts')]
+        )
+      end
+
+      it 'rebrags using the original non-activity thread mode' do
+        expect(user.team.slack_client).to receive(:chat_update).with(
+          activity.to_slack.merge(channel: 'channel_id', ts: 'ts', as_user: true)
+        ).and_return('ts' => 'new_ts')
+        rc = activity.rebrag!
+        expect(rc).to eq([{ ts: 'new_ts', channel: 'channel_id' }])
+      end
+    end
+
+    context 'originally bragged with activity threads, now switched to non-activity threads' do
+      before do
+        team.update_attributes!(threads: 'none')
+        activity.update_attributes!(
+          bragged_at: Time.now.utc,
+          channel_messages: [
+            ChannelMessage.new(channel: 'channel_id', ts: 'summary_ts', details_ts: 'details_ts')
+          ]
+        )
+      end
+
+      it 'rebrags using the original activity thread mode' do
+        expect(user.team.slack_client).to receive(:chat_update).with(
+          activity.to_slack_summary.merge(channel: 'channel_id', ts: 'summary_ts', as_user: true)
+        ).and_return('ts' => 'new_summary_ts')
+        expect(user.team.slack_client).to receive(:chat_update).with(
+          activity.to_slack_details.merge(channel: 'channel_id', ts: 'details_ts', as_user: true)
+        ).and_return('ts' => 'new_details_ts')
+        rc = activity.rebrag!
+        expect(rc).to eq([{ ts: 'new_summary_ts', channel: 'channel_id', details_ts: 'new_details_ts' }])
+      end
+    end
   end
 
   context 'miles' do

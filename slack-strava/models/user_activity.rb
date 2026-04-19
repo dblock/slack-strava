@@ -160,14 +160,15 @@ class UserActivity < Activity
 
   def rebrag_to_channel!(channel_message)
     channel_id = channel_message.channel
-    summary_rc = user.update!(summary_message(channel_id), [channel_message]).first
-    details = details_message(channel_id) if channel_message.details_ts
-    new_details_ts = if details
-                       msg = details.merge(channel: channel_id, ts: channel_message.details_ts, as_user: true)
-                       logger.info "Updating details thread '#{msg.to_json}' to #{user.team} on ##{channel_id}."
-                       user.team.slack_client.chat_update(msg)['ts']
-                     end
-    { ts: summary_rc[:ts], channel: channel_id, details_ts: new_details_ts }
+    if channel_message.details_ts
+      summary_rc = user.update!(to_slack_summary(channel_id), [channel_message]).first
+      details_msg = to_slack_details(channel_id).merge(channel: channel_id, ts: channel_message.details_ts, as_user: true)
+      logger.info "Updating details thread '#{details_msg.to_json}' to #{user.team} on ##{channel_id}."
+      new_details_ts = user.team.slack_client.chat_update(details_msg)['ts']
+      { ts: summary_rc[:ts], channel: channel_id, details_ts: new_details_ts }
+    else
+      user.update!(to_slack(channel_id), [channel_message]).first
+    end
   end
 
   def activity_thread?(channel_id)
