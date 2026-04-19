@@ -127,5 +127,46 @@ describe SlackStrava::Commands::Leaderboard do
       expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: start_date, end_date: end_date).and_call_original
       message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard between September 2023 and August 2024"))
     end
+
+    it 'parses weekly' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      Timecop.freeze do
+        parsed = Chronic.parse('this week', context: :past, guess: false)
+        expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: parsed.first, end_date: parsed.last).and_call_original
+        message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard weekly"))
+      end
+    end
+
+    it 'parses monthly' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      Timecop.freeze do
+        parsed = Chronic.parse('this month', context: :past, guess: false)
+        expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: parsed.first, end_date: parsed.last).and_call_original
+        message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard monthly"))
+      end
+    end
+
+    it 'parses yearly' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      Timecop.freeze do
+        parsed = Chronic.parse('this year', context: :past, guess: false)
+        expect_any_instance_of(Team).to receive(:leaderboard).with(metric: 'distance', start_date: parsed.first, end_date: parsed.last).and_call_original
+        message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard yearly"))
+      end
+    end
+
+    it 'parses quarterly' do
+      allow(client.web_client).to receive(:chat_postMessage)
+      Timecop.freeze do
+        quarter_start = Time.now.beginning_of_quarter
+        quarter_end_parsed = Chronic.parse('now', context: :past, guess: false)
+        expect_any_instance_of(Team).to receive(:leaderboard).with(
+          metric: 'distance',
+          start_date: quarter_start,
+          end_date: quarter_end_parsed.last
+        ).and_call_original
+        message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'DM', text: "#{SlackRubyBot.config.user} leaderboard quarterly"))
+      end
+    end
   end
 end
