@@ -1,5 +1,6 @@
 class TeamStats
   extend Forwardable
+  include DateHelper
 
   attr_reader :team, :stats, :options
 
@@ -21,11 +22,11 @@ class TeamStats
 
   def period_s
     if start_date && end_date
-      "between #{start_date.to_fs(:long)} and #{end_date.to_fs(:long)}"
+      "between #{format_date(start_date)} and #{format_date(end_date)}"
     elsif start_date
-      "after #{start_date.to_fs(:long)}"
+      "after #{format_date(start_date)}"
     elsif end_date
-      "before #{end_date.to_fs(:long)}"
+      "before #{format_date(end_date)}"
     end
   end
 
