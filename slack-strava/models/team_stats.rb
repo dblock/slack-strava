@@ -11,10 +11,33 @@ class TeamStats
 
   def_delegators :@stats, :each, :[], :count, :size, :keys, :values, :any?, :map
 
+  def start_date
+    options[:start_date]
+  end
+
+  def end_date
+    options[:end_date]
+  end
+
+  def period_s
+    if start_date && end_date
+      "between #{start_date.to_fs(:long)} and #{end_date.to_fs(:long)}"
+    elsif start_date
+      "after #{start_date.to_fs(:long)}"
+    elsif end_date
+      "before #{end_date.to_fs(:long)}"
+    end
+  end
+
   def to_slack
-    any? ? {
-      attachments: values.map(&:to_slack)
-    } : { text: 'There are no activities in this channel.' }
+    if any?
+      result = { attachments: values.map(&:to_slack) }
+      result[:text] = "Activities #{period_s}." if period_s
+      result
+    else
+      period_label = period_s ? " #{period_s}" : ''
+      { text: "There are no activities#{period_label} in this channel." }
+    end
   end
 
   private
@@ -22,6 +45,13 @@ class TeamStats
   def aggreate_options
     aggreate_options = { team_id: team.id }
     aggreate_options.merge!('channel_messages.channel' => options[:channel_id]) if options.key?(:channel_id)
+    if start_date && end_date
+      aggreate_options.merge!('start_date' => { '$gte' => start_date, '$lte' => end_date })
+    elsif start_date
+      aggreate_options.merge!('start_date' => { '$gte' => start_date })
+    elsif end_date
+      aggreate_options.merge!('start_date' => { '$lte' => end_date })
+    end
     aggreate_options
   end
 

@@ -23,6 +23,81 @@ describe TeamStats do
     end
   end
 
+  context 'with date filtering' do
+    let!(:user1) { Fabricate(:user, team: team) }
+    let!(:activity_past) { Fabricate(:user_activity, user: user1) }
+
+    describe 'start_date filter' do
+      it 'finds activities after start_date' do
+        stats = team.stats(start_date: Time.new(2018, 1, 1))
+        expect(stats['Run'].count).to eq(1)
+      end
+
+      it 'excludes activities before start_date' do
+        stats = team.stats(start_date: Time.new(2019, 1, 1))
+        expect(stats.count).to eq(0)
+      end
+    end
+
+    describe 'end_date filter' do
+      it 'finds activities before end_date' do
+        stats = team.stats(end_date: Time.new(2019, 1, 1))
+        expect(stats['Run'].count).to eq(1)
+      end
+
+      it 'excludes activities after end_date' do
+        stats = team.stats(end_date: Time.new(2017, 1, 1))
+        expect(stats.count).to eq(0)
+      end
+    end
+
+    describe 'date range filter' do
+      it 'finds activities within range' do
+        stats = team.stats(start_date: Time.new(2018, 1, 1), end_date: Time.new(2018, 12, 31))
+        expect(stats['Run'].count).to eq(1)
+      end
+
+      it 'excludes activities outside range' do
+        stats = team.stats(start_date: Time.new(2019, 1, 1), end_date: Time.new(2019, 12, 31))
+        expect(stats.count).to eq(0)
+      end
+    end
+
+    describe '#period_s' do
+      it 'returns nil with no dates' do
+        expect(team.stats.period_s).to be_nil
+      end
+
+      it 'describes start date only' do
+        stats = team.stats(start_date: Time.new(2018, 1, 1))
+        expect(stats.period_s).to start_with('after ')
+      end
+
+      it 'describes end date only' do
+        stats = team.stats(end_date: Time.new(2019, 1, 1))
+        expect(stats.period_s).to start_with('before ')
+      end
+
+      it 'describes date range' do
+        stats = team.stats(start_date: Time.new(2018, 1, 1), end_date: Time.new(2018, 12, 31))
+        expect(stats.period_s).to start_with('between ')
+      end
+    end
+
+    describe '#to_slack with dates' do
+      it 'includes period in text when activities found' do
+        stats = team.stats(start_date: Time.new(2018, 1, 1), end_date: Time.new(2018, 12, 31))
+        expect(stats.to_slack[:text]).to include('Activities between')
+      end
+
+      it 'includes period in text when no activities' do
+        stats = team.stats(start_date: Time.new(2019, 1, 1), end_date: Time.new(2019, 12, 31))
+        expect(stats.to_slack[:text]).to include('between')
+        expect(stats.to_slack[:text]).to include('no activities')
+      end
+    end
+  end
+
   context 'with activities' do
     let!(:user1) { Fabricate(:user, team: team) }
     let!(:user2) { Fabricate(:user, team: team) }

@@ -17,9 +17,13 @@ module SlackStrava
         Teams
         ------------
         stats                                            - stats in current channel
+          [weekly|monthly|quarterly|yearly]
+          [2025|last year|[month]|...]
+          [since|between [date] [and [date]]]
         leaderboard distance|... [when]                  - leaderboard by distance, etc.
-          2025|last year|[month]|...
-          since|between [date] [and [date]]
+          [weekly|monthly|quarterly|yearly]
+          [2025|last year|[month]|...]
+          [since|between [date] [and [date]]]
 
         Settings
         ------------
