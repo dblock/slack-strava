@@ -405,6 +405,14 @@ describe SlackStrava::Commands::Set do
             end
           end
 
+          it 'sets threads to activity' do
+            team.update_attributes!(threads: 'none')
+            expect(message: "#{SlackRubyBot.config.user} set threads activity").to respond_with_slack_message(
+              "Activities for team #{team.name} are now *posted with details in a thread*."
+            )
+            expect(team.reload.threads).to eq 'activity'
+          end
+
           it 'sets threads to none' do
             team.update_attributes!(threads: 'daily')
             expect(message: "#{SlackRubyBot.config.user} set threads none").to respond_with_slack_message(
@@ -415,7 +423,7 @@ describe SlackStrava::Commands::Set do
 
           it 'displays an error for an invalid threads value' do
             expect(message: "#{SlackRubyBot.config.user} set threads foobar").to respond_with_slack_message(
-              'Invalid value: foobar, possible values are none, daily, weekly and monthly.'
+              'Invalid value: foobar, possible values are none, daily, weekly, monthly and activity.'
             )
             expect(team.reload.threads).to eq 'none'
           end
@@ -707,6 +715,14 @@ describe SlackStrava::Commands::Set do
                   'Activities in <#C1> are now *rolled up in a weekly thread*.'
                 )
                 expect(team.reload.channel_threads_for('C1')).to eq 'weekly'
+                expect(team.reload.threads).to eq 'none'
+              end
+
+              it 'sets threads to activity for channel' do
+                expect(message: "#{SlackRubyBot.config.user} set threads activity", channel: 'C1').to respond_with_slack_message(
+                  'Activities in <#C1> are now *posted with details in a thread*.'
+                )
+                expect(team.reload.channel_threads_for('C1')).to eq 'activity'
                 expect(team.reload.threads).to eq 'none'
               end
             end

@@ -96,6 +96,8 @@ class Team
       'displayed individually'
     when 'daily', 'weekly', 'monthly'
       "rolled up in a #{threads} thread"
+    when 'activity'
+      'posted with details in a thread'
     else
       raise ArgumentError
     end

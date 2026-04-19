@@ -28,14 +28,7 @@ class ClubActivity < Activity
       nil
     else
       logger.info "Bragging about #{club}, #{self}"
-      message_with_channel = to_slack(club.channel_id).merge(channel: club.channel_id, as_user: true)
-      thread_ts = parent_thread(club.channel_id)
-      message_with_channel[:thread_ts] = thread_ts if thread_ts
-      logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
-      channel_message = club.team.slack_client.chat_postMessage(message_with_channel)
-      if channel_message
-        channel_message = { ts: channel_message['ts'], channel: club.channel_id }
-      end
+      channel_message = brag_to_channel!
       update_attributes!(bragged_at: Time.now.utc, channel_messages: [channel_message])
       [channel_message]
     end
@@ -108,18 +101,72 @@ class ClubActivity < Activity
     }
   end
 
-  def to_slack_blocks(channel_id = nil)
-    blocks = []
-    blocks << { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{name || strava_id}>*" } }
-    blocks << {
-      type: 'context',
-      elements: [
-        { type: 'mrkdwn', text: "#{athlete_name} via #{club.name}" }
-      ]
+  def to_slack_summary(channel_id = nil)
+    {
+      blocks: to_slack_summary_blocks(channel_id),
+      attachments: []
     }
+  end
+
+  def to_slack_details(channel_id = nil)
+    {
+      blocks: to_slack_details_blocks(channel_id),
+      attachments: []
+    }
+  end
+
+  def to_slack_blocks(channel_id = nil)
+    to_slack_summary_blocks(channel_id) + to_slack_details_blocks(channel_id)
+  end
+
+  def to_slack_summary_blocks(_channel_id = nil)
+    [
+      { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{name || strava_id}>*" } },
+      { type: 'context', elements: [{ type: 'mrkdwn', text: "#{athlete_name} via #{club.name}" }] }
+    ]
+  end
+
+  def to_slack_details_blocks(channel_id = nil)
     slack_fields_text = slack_fields_s(channel_id)
-    blocks << { type: 'section', text: { type: 'mrkdwn', text: slack_fields_text }, accessory: { type: 'image', image_url: club.logo, alt_text: club.name.to_s } } if slack_fields_text
-    blocks
+    return [] unless slack_fields_text
+
+    [{ type: 'section', text: { type: 'mrkdwn', text: slack_fields_text }, accessory: { type: 'image', image_url: club.logo, alt_text: club.name.to_s } }]
+  end
+
+  def brag_to_channel!
+    channel_id = club.channel_id
+    summary_with_channel = summary_message(channel_id).merge(channel: channel_id, as_user: true)
+    thread_ts = parent_thread(channel_id)
+    summary_with_channel[:thread_ts] = thread_ts if thread_ts
+    logger.info "Posting '#{summary_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
+    channel_message = club.team.slack_client.chat_postMessage(summary_with_channel)
+    if channel_message
+      ts = channel_message['ts']
+      channel_message = { ts: ts, channel: channel_id }
+      details = details_message(channel_id)
+      if details
+        details_with_channel = details.merge(channel: channel_id, as_user: true, thread_ts: ts)
+        logger.info "Posting details thread '#{details_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
+        details_rc = club.team.slack_client.chat_postMessage(details_with_channel)
+        channel_message[:details_ts] = details_rc['ts'] if details_rc
+      end
+    end
+    channel_message
+  end
+
+  def activity_thread?(channel_id)
+    team.channel_threads_for(channel_id) == 'activity'
+  end
+
+  def summary_message(channel_id)
+    activity_thread?(channel_id) ? to_slack_summary(channel_id) : to_slack(channel_id)
+  end
+
+  def details_message(channel_id)
+    return unless activity_thread?(channel_id)
+
+    msg = to_slack_details(channel_id)
+    msg if msg[:blocks].any?
   end
 
   def validate_team

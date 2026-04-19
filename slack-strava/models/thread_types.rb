@@ -5,6 +5,7 @@ class ThreadTypes
   define :DAILY, 'daily'
   define :WEEKLY, 'weekly'
   define :MONTHLY, 'monthly'
+  define :ACTIVITY, 'activity'
 
   def self.parse_s(s)
     return unless s

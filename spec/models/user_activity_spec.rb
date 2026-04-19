@@ -232,6 +232,39 @@ describe UserActivity do
           end
         end
       end
+
+      context 'with activity threads' do
+        before do
+          team.update_attributes!(threads: 'activity')
+        end
+
+        it 'posts a summary to channel and details in a thread' do
+          expect(user.team.slack_client).to receive(:chat_postMessage).with(
+            activity.to_slack_summary.merge(
+              as_user: true,
+              channel: 'channel_id'
+            )
+          ).and_return('ts' => 'summary_ts')
+          expect(user.team.slack_client).to receive(:chat_postMessage).with(
+            activity.to_slack_details.merge(
+              as_user: true,
+              channel: 'channel_id',
+              thread_ts: 'summary_ts'
+            )
+          ).and_return('ts' => 'details_ts')
+          expect(activity.brag!).to eq([{ ts: 'summary_ts', channel: 'channel_id', details_ts: 'details_ts' }])
+        end
+
+        it 'stores the summary and details ts in channel_messages' do
+          allow(user.team.slack_client).to receive(:chat_postMessage) do |args|
+            args[:thread_ts] ? { 'ts' => 'details_ts' } : { 'ts' => 'summary_ts' }
+          end
+          activity.brag!
+          cm = activity.channel_messages.first
+          expect(cm.ts).to eq 'summary_ts'
+          expect(cm.details_ts).to eq 'details_ts'
+        end
+      end
     end
 
     context 'a deleted user' do
@@ -472,6 +505,80 @@ describe UserActivity do
       )
       activity.unbrag!
       expect(activity.reload.channel_messages).to eq []
+    end
+
+    context 'with activity threads' do
+      before do
+        activity.update_attributes!(
+          channel_messages: [
+            ChannelMessage.new(channel: 'channel_id', ts: 'summary_ts', details_ts: 'details_ts')
+          ]
+        )
+      end
+
+      it 'deletes both the summary and the details thread reply' do
+        expect(activity.user.team.slack_client).to receive(:chat_delete).with(
+          { channel: 'channel_id', ts: 'summary_ts', as_user: true }
+        )
+        expect(activity.user.team.slack_client).to receive(:chat_delete).with(
+          { channel: 'channel_id', ts: 'details_ts', as_user: true }
+        )
+        activity.unbrag!
+        expect(activity.reload.channel_messages).to eq []
+      end
+    end
+  end
+
+  context 'rebrag!' do
+    let(:team) { Fabricate(:team) }
+    let(:user) { Fabricate(:user, team: team) }
+    let!(:activity) { Fabricate(:user_activity, user: user) }
+
+    context 'with activity threads' do
+      before do
+        team.update_attributes!(threads: 'activity')
+        activity.update_attributes!(
+          bragged_at: Time.now.utc,
+          channel_messages: [
+            ChannelMessage.new(channel: 'channel_id', ts: 'summary_ts', details_ts: 'details_ts')
+          ]
+        )
+      end
+
+      it 'updates the summary message with summary content' do
+        expect(user.team.slack_client).to receive(:chat_update).with(
+          activity.to_slack_summary.merge(channel: 'channel_id', ts: 'summary_ts', as_user: true)
+        ).and_return('ts' => 'new_summary_ts')
+        expect(user.team.slack_client).to receive(:chat_update).with(
+          activity.to_slack_details.merge(channel: 'channel_id', ts: 'details_ts', as_user: true)
+        ).and_return('ts' => 'new_details_ts')
+        rc = activity.rebrag!
+        expect(rc).to eq([{ ts: 'new_summary_ts', channel: 'channel_id', details_ts: 'new_details_ts' }])
+      end
+
+      it 'persists updated ts values in channel_messages' do
+        allow(user.team.slack_client).to receive(:chat_update).and_return('ts' => 'new_ts')
+        activity.rebrag!
+        cm = activity.reload.channel_messages.first
+        expect(cm.ts).to eq 'new_ts'
+        expect(cm.details_ts).to eq 'new_ts'
+      end
+    end
+
+    context 'without activity threads' do
+      before do
+        activity.update_attributes!(
+          bragged_at: Time.now.utc,
+          channel_messages: [ChannelMessage.new(channel: 'channel_id', ts: 'ts')]
+        )
+      end
+
+      it 'updates with the full message' do
+        expect(user.team.slack_client).to receive(:chat_update).with(
+          activity.to_slack.merge(channel: 'channel_id', ts: 'ts', as_user: true)
+        ).and_return('ts' => 'new_ts')
+        activity.rebrag!
+      end
     end
   end
 
