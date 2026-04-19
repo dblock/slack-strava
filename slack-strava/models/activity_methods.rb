@@ -11,6 +11,12 @@ module ActivityMethods
     Windsurf Workout Yoga
   ].freeze
 
+  # Activity types where speed (km/h, mph) is more meaningful than pace (min/km, min/mi).
+  SPEED_ACTIVITY_TYPES = %w[
+    Canoeing EBikeRide InlineSkate Kayaking Kitesurf Ride RollerSki Rowing
+    StandUpPaddling Surfing VirtualRide Windsurf
+  ].freeze
+
   def effective_units(channel_id = nil)
     team.channel_units_for(channel_id)
   end
@@ -295,8 +301,13 @@ module ActivityMethods
     end
   end
 
+  def speed_activity?
+    SPEED_ACTIVITY_TYPES.include?(type)
+  end
+
   def slack_fields(channel_id = nil)
     activity_fields = effective_activity_fields(channel_id)
+    default_fields = activity_fields == ['Default']
 
     case activity_fields
     when ['All']
@@ -327,8 +338,12 @@ module ActivityMethods
       when 'Elapsed Time'
         fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true } if elapsed_time&.positive? && moving_time&.positive? && elapsed_time != moving_time
       when 'Pace'
+        next if default_fields && speed_activity?
+
         fields << { title: 'Pace', value: pace_s(channel_id), short: true } if average_speed&.positive?
       when 'Speed'
+        next if default_fields && !speed_activity?
+
         fields << { title: 'Speed', value: speed_s(channel_id), short: true } if average_speed&.positive?
       when 'Max Speed'
         fields << { title: 'Max Speed', value: max_speed_s(channel_id), short: true } if max_speed&.positive?

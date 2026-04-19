@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/04/19: Automatically display pace for run/walk/swim/hike activities and speed for ride/bike activities when using default fields - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/19: Added `set threads activity` to post a summary to channel with full details in a thread reply, updating and deleting both messages as the activity changes - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/11: Added `set temperature f|c|both|auto` to control temperature units independently from distance units - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/11: Added `set temperature f|c|both|auto` to control temperature units independently from distance units - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).

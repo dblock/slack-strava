@@ -291,7 +291,6 @@ describe ClubActivity do
                 { title: 'Moving Time', value: '2h6m26s' },
                 { title: 'Elapsed Time', value: '2h8m6s' },
                 { title: 'Pace', value: '9m02s/mi' },
-                { title: 'Speed', value: '6.6mph' },
                 { title: 'Elevation', value: '475.4ft' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
             }
@@ -323,7 +322,6 @@ describe ClubActivity do
                 { title: 'Moving Time', value: '2h6m26s' },
                 { title: 'Elapsed Time', value: '2h8m6s' },
                 { title: 'Pace', value: '5m37s/km' },
-                { title: 'Speed', value: '10.7km/h' },
                 { title: 'Elevation', value: '144.9m' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
             }
@@ -355,7 +353,6 @@ describe ClubActivity do
                 { title: 'Moving Time', value: '2h6m26s' },
                 { title: 'Elapsed Time', value: '2h8m6s' },
                 { title: 'Pace', value: '9m02s/mi 5m37s/km' },
-                { title: 'Speed', value: '6.6mph 10.7km/h' },
                 { title: 'Elevation', value: '475.4ft 144.9m' }
               ].map { |f| "*#{f[:title]}*: #{f[:value]}" }.join("\n")
             }
