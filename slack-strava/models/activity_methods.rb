@@ -11,18 +11,16 @@ module ActivityMethods
     Windsurf Workout Yoga
   ].freeze
 
-  attr_accessor :current_channel_id
-
-  def effective_units
-    team.channel_units_for(current_channel_id)
+  def effective_units(channel_id = nil)
+    team.channel_units_for(channel_id)
   end
 
-  def effective_temperature
-    team.channel_temperature_for(current_channel_id)
+  def effective_temperature(channel_id = nil)
+    team.channel_temperature_for(channel_id)
   end
 
-  def effective_activity_fields
-    team.channel_activity_fields_for(current_channel_id)
+  def effective_activity_fields(channel_id = nil)
+    team.channel_activity_fields_for(channel_id)
   end
 
   #   field :name, type: String
@@ -74,15 +72,15 @@ module ActivityMethods
     format('%gkm', format('%.2f', distance_in_kilometers))
   end
 
-  def distance_s
+  def distance_s(channel_id = nil)
     if type == 'Swim'
-      case effective_units
+      case effective_units(channel_id)
       when 'km' then distance_in_meters_s
       when 'mi' then distance_in_yards_s
       when 'both' then [distance_in_yards_s, distance_in_meters_s].join(UNIT_SEPARATOR)
       end
     else
-      case effective_units
+      case effective_units(channel_id)
       when 'km' then distance_in_kilometers_s
       when 'mi' then distance_in_miles_s
       when 'both' then [distance_in_miles_s, distance_in_kilometers_s].join(UNIT_SEPARATOR)
@@ -158,24 +156,24 @@ module ActivityMethods
     format('%gft', format('%.1f', total_elevation_gain_in_feet))
   end
 
-  def total_elevation_gain_s
-    case effective_units
+  def total_elevation_gain_s(channel_id = nil)
+    case effective_units(channel_id)
     when 'km' then total_elevation_gain_in_meters_s
     when 'mi' then total_elevation_gain_in_feet_s
     when 'both' then [total_elevation_gain_in_feet_s, total_elevation_gain_in_meters_s].join(UNIT_SEPARATOR)
     end
   end
 
-  def pace_s
+  def pace_s(channel_id = nil)
     case type
     when 'Swim'
-      case effective_units
+      case effective_units(channel_id)
       when 'km' then pace_per_100_meters_s
       when 'mi' then pace_per_100_yards_s
       when 'both' then [pace_per_100_yards_s, pace_per_100_meters_s].join(UNIT_SEPARATOR)
       end
     else
-      case effective_units
+      case effective_units(channel_id)
       when 'km' then pace_per_kilometer_s
       when 'mi' then pace_per_mile_s
       when 'both' then [pace_per_mile_s, pace_per_kilometer_s].join(UNIT_SEPARATOR)
@@ -183,16 +181,16 @@ module ActivityMethods
     end
   end
 
-  def speed_s
-    case effective_units
+  def speed_s(channel_id = nil)
+    case effective_units(channel_id)
     when 'km' then kilometer_per_hour_s
     when 'mi' then miles_per_hour_s
     when 'both' then [miles_per_hour_s, kilometer_per_hour_s].join(UNIT_SEPARATOR)
     end
   end
 
-  def max_speed_s
-    case effective_units
+  def max_speed_s(channel_id = nil)
+    case effective_units(channel_id)
     when 'km' then max_kilometer_per_hour_s
     when 'mi' then max_miles_per_hour_s
     when 'both' then [max_miles_per_hour_s, max_kilometer_per_hour_s].join(UNIT_SEPARATOR)
@@ -282,8 +280,8 @@ module ActivityMethods
     ].compact.join
   end
 
-  def display_field?(name)
-    activity_fields = effective_activity_fields
+  def display_field?(name, channel_id = nil)
+    activity_fields = effective_activity_fields(channel_id)
 
     case activity_fields
     when ['All']
@@ -297,8 +295,8 @@ module ActivityMethods
     end
   end
 
-  def slack_fields
-    activity_fields = effective_activity_fields
+  def slack_fields(channel_id = nil)
+    activity_fields = effective_activity_fields(channel_id)
 
     case activity_fields
     when ['All']
@@ -315,7 +313,7 @@ module ActivityMethods
       when 'Type'
         fields << { title: 'Type', value: type_with_emoji, short: true }
       when 'Distance'
-        fields << { title: 'Distance', value: distance_s, short: true } if distance&.positive?
+        fields << { title: 'Distance', value: distance_s(channel_id), short: true } if distance&.positive?
       when 'Time'
         if elapsed_time&.positive? && moving_time&.positive?
           fields << { title: 'Time', value: moving_time_in_hours_s, short: true } if elapsed_time == moving_time
@@ -329,13 +327,13 @@ module ActivityMethods
       when 'Elapsed Time'
         fields << { title: 'Elapsed Time', value: elapsed_time_in_hours_s, short: true } if elapsed_time&.positive? && moving_time&.positive? && elapsed_time != moving_time
       when 'Pace'
-        fields << { title: 'Pace', value: pace_s, short: true } if average_speed&.positive?
+        fields << { title: 'Pace', value: pace_s(channel_id), short: true } if average_speed&.positive?
       when 'Speed'
-        fields << { title: 'Speed', value: speed_s, short: true } if average_speed&.positive?
+        fields << { title: 'Speed', value: speed_s(channel_id), short: true } if average_speed&.positive?
       when 'Max Speed'
-        fields << { title: 'Max Speed', value: max_speed_s, short: true } if max_speed&.positive?
+        fields << { title: 'Max Speed', value: max_speed_s(channel_id), short: true } if max_speed&.positive?
       when 'Elevation'
-        fields << { title: 'Elevation', value: total_elevation_gain_s, short: true } if total_elevation_gain&.positive?
+        fields << { title: 'Elevation', value: total_elevation_gain_s(channel_id), short: true } if total_elevation_gain&.positive?
       when 'Heart Rate'
         fields << { title: 'Heart Rate', value: average_heartrate_s, short: true } if average_heartrate&.positive?
       when 'Max Heart Rate'
@@ -345,7 +343,7 @@ module ActivityMethods
       when 'Calories'
         fields << { title: 'Calories', value: calories_s, short: true } if calories&.positive?
       when 'Weather'
-        fields << { title: 'Weather', value: weather_s, short: true } if respond_to?(:weather) && weather.present?
+        fields << { title: 'Weather', value: weather_s(channel_id), short: true } if respond_to?(:weather) && weather.present?
       when 'Device'
         fields << { title: 'Device', value: device, short: true } if device && !device.blank?
       when 'Gear'
@@ -355,8 +353,8 @@ module ActivityMethods
     fields.any? ? fields : nil
   end
 
-  def slack_fields_s
-    fields = slack_fields
+  def slack_fields_s(channel_id = nil)
+    fields = slack_fields(channel_id)
     return unless fields&.any?
 
     fields.map { |block|

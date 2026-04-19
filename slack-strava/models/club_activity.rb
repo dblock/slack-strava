@@ -28,7 +28,7 @@ class ClubActivity < Activity
       nil
     else
       logger.info "Bragging about #{club}, #{self}"
-      message_with_channel = to_slack.merge(channel: club.channel_id, as_user: true)
+      message_with_channel = to_slack(club.channel_id).merge(channel: club.channel_id, as_user: true)
       thread_ts = parent_thread(club.channel_id)
       message_with_channel[:thread_ts] = thread_ts if thread_ts
       logger.info "Posting '#{message_with_channel.to_json}' to #{club.team} on ##{club.channel_name}."
@@ -101,14 +101,14 @@ class ClubActivity < Activity
     ary.any? ? ary.join(' on ') : nil
   end
 
-  def to_slack
+  def to_slack(channel_id = nil)
     {
-      blocks: to_slack_blocks,
+      blocks: to_slack_blocks(channel_id),
       attachments: []
     }
   end
 
-  def to_slack_blocks
+  def to_slack_blocks(channel_id = nil)
     blocks = []
     blocks << { type: 'section', text: { type: 'mrkdwn', text: "*<#{club.strava_url}|#{name || strava_id}>*" } }
     blocks << {
@@ -117,7 +117,7 @@ class ClubActivity < Activity
         { type: 'mrkdwn', text: "#{athlete_name} via #{club.name}" }
       ]
     }
-    slack_fields_text = slack_fields_s
+    slack_fields_text = slack_fields_s(channel_id)
     blocks << { type: 'section', text: { type: 'mrkdwn', text: slack_fields_text }, accessory: { type: 'image', image_url: club.logo, alt_text: club.name.to_s } } if slack_fields_text
     blocks
   end

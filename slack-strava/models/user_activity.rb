@@ -82,10 +82,7 @@ class UserActivity < Activity
                    next
                  end
                end
-               self.current_channel_id = channel_id
-               message = to_slack
-               self.current_channel_id = nil
-               user.inform_channel!(message, channel, parent_thread(channel['id']))
+               user.inform_channel!(to_slack(channel_id), channel, parent_thread(channel['id']))
              }.flatten.compact
            else
              []
@@ -108,7 +105,9 @@ class UserActivity < Activity
     return unless channel_messages
 
     logger.info "Rebragging about #{user}, #{self}."
-    rc = user.update!(to_slack, channel_messages)
+    rc = channel_messages.map { |cm|
+      user.update!(to_slack(cm.channel), [cm]).first
+    }.compact
     update_attributes!(channel_messages: rc)
     rc
   end
@@ -203,50 +202,50 @@ class UserActivity < Activity
     activity
   end
 
-  def display_title_s
-    if display_field?(ActivityFields::TITLE) && display_field?(ActivityFields::URL)
+  def display_title_s(channel_id = nil)
+    if display_field?(ActivityFields::TITLE, channel_id) && display_field?(ActivityFields::URL, channel_id)
       if /\p{Emoji_Presentation}/ =~ name
         "*#{name}* <#{strava_url}|…>"
       else
         "*<#{strava_url}|#{name || strava_id}>*"
       end
-    elsif display_field?(ActivityFields::TITLE)
+    elsif display_field?(ActivityFields::TITLE, channel_id)
       "*#{name || strava_id}*"
-    elsif display_field?(ActivityFields::URL)
+    elsif display_field?(ActivityFields::URL, channel_id)
       "*<#{strava_url}|#{strava_id}>*"
     end
   end
 
-  def display_medal_s
-    return unless display_field?(ActivityFields::MEDAL)
+  def display_medal_s(channel_id = nil)
+    return unless display_field?(ActivityFields::MEDAL, channel_id)
 
     user.medal_s(type)
   end
 
-  def display_user_s
-    return unless display_field?(ActivityFields::USER)
+  def display_user_s(channel_id = nil)
+    return unless display_field?(ActivityFields::USER, channel_id)
 
     "<@#{user.user_name}>"
   end
 
-  def display_user_with_medal_s
+  def display_user_with_medal_s(channel_id = nil)
     ary = [
-      display_athlete_s,
-      display_user_s,
-      display_medal_s
+      display_athlete_s(channel_id),
+      display_user_s(channel_id),
+      display_medal_s(channel_id)
     ].compact
 
     ary.any? ? ary.join(' ') : nil
   end
 
-  def display_date_s
-    return unless display_field?(ActivityFields::DATE)
+  def display_date_s(channel_id = nil)
+    return unless display_field?(ActivityFields::DATE, channel_id)
 
     start_date_local_s
   end
 
-  def display_athlete_s
-    return unless display_field?(ActivityFields::ATHLETE) && user.athlete
+  def display_athlete_s(channel_id = nil)
+    return unless display_field?(ActivityFields::ATHLETE, channel_id) && user.athlete
 
     if /\p{Emoji_Presentation}/ =~ user.athlete.name
       "#{user.athlete.name} <#{user.athlete.strava_url}|…>"
@@ -255,19 +254,19 @@ class UserActivity < Activity
     end
   end
 
-  def display_context_s
+  def display_context_s(channel_id = nil)
     ary = [
-      display_user_with_medal_s,
-      display_date_s
+      display_user_with_medal_s(channel_id),
+      display_date_s(channel_id)
     ].compact
 
     ary.any? ? ary.join(' on ') : nil
   end
 
-  def context_block
+  def context_block(channel_id = nil)
     elements = []
-    elements << { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name.to_s } if user.athlete && display_field?(ActivityFields::ATHLETE)
-    elements << { type: 'mrkdwn', text: display_context_s }
+    elements << { type: 'image', image_url: user.athlete.profile_medium, alt_text: user.athlete.name.to_s } if user.athlete && display_field?(ActivityFields::ATHLETE, channel_id)
+    elements << { type: 'mrkdwn', text: display_context_s(channel_id) }
 
     {
       type: 'context',
@@ -275,9 +274,9 @@ class UserActivity < Activity
     }
   end
 
-  def to_slack
+  def to_slack(channel_id = nil)
     {
-      blocks: to_slack_blocks,
+      blocks: to_slack_blocks(channel_id),
       attachments: []
     }
   end
@@ -291,15 +290,15 @@ class UserActivity < Activity
     "#{description[0...(MAX_SLACK_TEXT_OBJECT_TEXT_LENGTH - 2)]} …"
   end
 
-  def to_slack_blocks
+  def to_slack_blocks(channel_id = nil)
     blocks = []
 
-    blocks << { type: 'section', text: { type: 'mrkdwn', text: display_title_s } }
-    blocks << context_block if display_field?(ActivityFields::MEDAL) || display_field?(ActivityFields::ATHLETE) || display_field?(ActivityFields::USER) || display_field?(ActivityFields::DATE)
-    blocks << { type: 'section', text: { type: 'plain_text', text: truncated_description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION)
+    blocks << { type: 'section', text: { type: 'mrkdwn', text: display_title_s(channel_id) } }
+    blocks << context_block(channel_id) if display_field?(ActivityFields::MEDAL, channel_id) || display_field?(ActivityFields::ATHLETE, channel_id) || display_field?(ActivityFields::USER, channel_id) || display_field?(ActivityFields::DATE, channel_id)
+    blocks << { type: 'section', text: { type: 'plain_text', text: truncated_description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION, channel_id)
 
-    fields_text = slack_fields_s
-    effective_maps = team.channel_maps_for(current_channel_id)
+    fields_text = slack_fields_s(channel_id)
+    effective_maps = team.channel_maps_for(channel_id)
     if map&.polyline? && effective_maps == 'full'
       blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text } } if fields_text
       blocks << { type: 'image', image_url: map.proxy_image_url, alt_text: '' }
@@ -309,7 +308,7 @@ class UserActivity < Activity
       blocks << { type: 'section', text: { type: 'mrkdwn', text: fields_text } }
     end
 
-    blocks.concat(photos.map(&:to_slack)) if display_field?(ActivityFields::PHOTOS) && photos.any?
+    blocks.concat(photos.map(&:to_slack)) if display_field?(ActivityFields::PHOTOS, channel_id) && photos.any?
 
     blocks
   end
@@ -363,7 +362,7 @@ class UserActivity < Activity
     logger.warn "Error getting weather at #{start_latlng.join(', ')} on #{finished_at.to_i} for #{user}, #{self}, #{e.message}."
   end
 
-  def weather_s
+  def weather_s(channel_id = nil)
     return unless weather.present?
 
     current_weather = OpenWeather::Models::OneCall::CurrentWeather.new(
@@ -372,7 +371,7 @@ class UserActivity < Activity
 
     main = current_weather.weather&.first&.main
 
-    case effective_temperature
+    case effective_temperature(channel_id)
     when 'c' then
       ["#{current_weather.temp_c.to_i}°C", main].compact.join(' ')
     when 'f' then

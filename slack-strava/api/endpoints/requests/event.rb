@@ -53,7 +53,7 @@ module Api
               next
             end
 
-            unfurls = { link.url => { blocks: activity.to_slack_blocks } }
+            unfurls = { link.url => { blocks: activity.to_slack_blocks(event.channel) } }
             logger.info "UNFURL: #{link.url}, #{user}, #{activity}"
             logger.debug unfurls
 
