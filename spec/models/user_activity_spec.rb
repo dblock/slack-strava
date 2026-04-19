@@ -404,22 +404,22 @@ describe UserActivity do
 
     it 'displays the title only' do
       activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
-      allow(activity).to receive(:display_field?).with(ActivityFields::URL).and_return(false)
-      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE).and_return(true)
+      allow(activity).to receive(:display_field?).with(ActivityFields::URL, nil).and_return(false)
+      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE, nil).and_return(true)
       expect(activity.display_title_s).to eq('*Test Activity*')
     end
 
     it 'displays the URL with ID only' do
       activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
-      allow(activity).to receive(:display_field?).with(ActivityFields::URL).and_return(true)
-      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE).and_return(false)
+      allow(activity).to receive(:display_field?).with(ActivityFields::URL, nil).and_return(true)
+      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE, nil).and_return(false)
       expect(activity.display_title_s).to eq('*<https://www.strava.com/activities/123|123>*')
     end
 
     it 'displays neither' do
       activity = Fabricate(:user_activity, name: 'Test Activity', strava_id: '123')
-      allow(activity).to receive(:display_field?).with(ActivityFields::URL).and_return(false)
-      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE).and_return(false)
+      allow(activity).to receive(:display_field?).with(ActivityFields::URL, nil).and_return(false)
+      allow(activity).to receive(:display_field?).with(ActivityFields::TITLE, nil).and_return(false)
       expect(activity.display_title_s).to be_nil
     end
   end

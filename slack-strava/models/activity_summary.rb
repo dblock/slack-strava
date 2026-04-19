@@ -32,7 +32,7 @@ class ActivitySummary
     [type.pluralize, emoji].compact.join(' ')
   end
 
-  def slack_fields
+  def slack_fields(channel_id = nil)
     [
       { short: true, title: type_with_emoji, value: count.to_s },
       { short: true, title: 'Athletes', value: athlete_count.to_s }
