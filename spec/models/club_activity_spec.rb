@@ -83,6 +83,39 @@ describe ClubActivity do
       end
     end
 
+    context 'with activity threads' do
+      before do
+        team.update_attributes!(threads: 'activity')
+      end
+
+      it 'posts a summary to channel and details in a thread' do
+        expect(club.team.slack_client).to receive(:chat_postMessage).with(
+          activity.to_slack_summary.merge(
+            channel: club.channel_id,
+            as_user: true
+          )
+        ).and_return('ts' => 'summary_ts')
+        expect(club.team.slack_client).to receive(:chat_postMessage).with(
+          activity.to_slack_details.merge(
+            channel: club.channel_id,
+            as_user: true,
+            thread_ts: 'summary_ts'
+          )
+        ).and_return('ts' => 'details_ts')
+        expect(activity.brag!).to eq([{ ts: 'summary_ts', channel: club.channel_id, details_ts: 'details_ts' }])
+      end
+
+      it 'stores the summary and details ts in channel_messages' do
+        allow(club.team.slack_client).to receive(:chat_postMessage) do |args|
+          args[:thread_ts] ? { 'ts' => 'details_ts' } : { 'ts' => 'summary_ts' }
+        end
+        activity.brag!
+        cm = activity.channel_messages.first
+        expect(cm.ts).to eq 'summary_ts'
+        expect(cm.details_ts).to eq 'details_ts'
+      end
+    end
+
     it 'warns if the bot leaves the channel' do
       expect {
         expect_any_instance_of(Logger).to receive(:warn).with(/not_in_channel/)

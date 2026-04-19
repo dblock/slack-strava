@@ -82,7 +82,7 @@ class UserActivity < Activity
                    next
                  end
                end
-               user.inform_channel!(to_slack(channel_id), channel, parent_thread(channel['id']))
+               brag_to_channel!(channel)
              }.flatten.compact
            else
              []
@@ -105,9 +105,7 @@ class UserActivity < Activity
     return unless channel_messages
 
     logger.info "Rebragging about #{user}, #{self}."
-    rc = channel_messages.map { |cm|
-      user.update!(to_slack(cm.channel), [cm]).first
-    }.compact
+    rc = channel_messages.map { |channel_message| rebrag_to_channel!(channel_message) }.compact
     update_attributes!(channel_messages: rc)
     rc
   end
@@ -147,6 +145,35 @@ class UserActivity < Activity
       timezone: response.timezone,
       photos: response.photos&.primary ? [Photo.summary_attrs_from_strava(response.photos&.primary)] : []
     }
+  end
+
+  def brag_to_channel!(channel)
+    channel_id = channel['id']
+    if team.channel_threads_for(channel_id) == 'activity'
+      rc = user.inform_channel!(to_slack_summary(channel_id), channel)
+      if rc && to_slack_details(channel_id)[:blocks].any?
+        details_rc = user.inform_channel!(to_slack_details(channel_id), channel, rc[:ts])
+        rc = rc.merge(details_ts: details_rc[:ts]) if details_rc
+      end
+      rc
+    else
+      user.inform_channel!(to_slack(channel_id), channel, parent_thread(channel_id))
+    end
+  end
+
+  def rebrag_to_channel!(channel_message)
+    if channel_message.details_ts
+      summary_rc = user.update!(to_slack_summary(channel_message.channel), [channel_message]).first
+      new_details_ts = if channel_message.details_ts.present?
+                         details_message = to_slack_details(channel_message.channel).merge(channel: channel_message.channel, ts: channel_message.details_ts, as_user: true)
+                         logger.info "Updating details thread '#{details_message.to_json}' to #{user.team} on ##{channel_message.channel}."
+                         response = user.team.slack_client.chat_update(details_message)
+                         response['ts']
+                       end
+      { ts: summary_rc[:ts], channel: channel_message.channel, details_ts: new_details_ts }
+    else
+      user.update!(to_slack(channel_message.channel), [channel_message]).first
+    end
   end
 
   def summary_attrs_from_strava(response)
@@ -281,6 +308,20 @@ class UserActivity < Activity
     }
   end
 
+  def to_slack_summary(channel_id = nil)
+    {
+      blocks: to_slack_summary_blocks(channel_id),
+      attachments: []
+    }
+  end
+
+  def to_slack_details(channel_id = nil)
+    {
+      blocks: to_slack_details_blocks(channel_id),
+      attachments: []
+    }
+  end
+
   # https://docs.slack.dev/reference/block-kit/composition-objects/text-object
   MAX_SLACK_TEXT_OBJECT_TEXT_LENGTH = 3000
 
@@ -291,10 +332,18 @@ class UserActivity < Activity
   end
 
   def to_slack_blocks(channel_id = nil)
-    blocks = []
+    to_slack_summary_blocks(channel_id) + to_slack_details_blocks(channel_id)
+  end
 
+  def to_slack_summary_blocks(channel_id = nil)
+    blocks = []
     blocks << { type: 'section', text: { type: 'mrkdwn', text: display_title_s(channel_id) } }
     blocks << context_block(channel_id) if display_field?(ActivityFields::MEDAL, channel_id) || display_field?(ActivityFields::ATHLETE, channel_id) || display_field?(ActivityFields::USER, channel_id) || display_field?(ActivityFields::DATE, channel_id)
+    blocks
+  end
+
+  def to_slack_details_blocks(channel_id = nil)
+    blocks = []
     blocks << { type: 'section', text: { type: 'plain_text', text: truncated_description, emoji: true } } if description && !description.blank? && display_field?(ActivityFields::DESCRIPTION, channel_id)
 
     fields_text = slack_fields_s(channel_id)
