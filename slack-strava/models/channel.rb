@@ -53,6 +53,7 @@ class Channel
     case threads
     when 'none' then 'displayed individually'
     when 'daily', 'weekly', 'monthly' then "rolled up in a #{threads} thread"
+    when 'activity' then 'posted with details in a thread'
     end
   end
 

@@ -1,5 +1,7 @@
 ### Changelog
 
+* 2026/04/19: Added `set threads activity` to post a summary to channel with full details in a thread reply, updating and deleting both messages as the activity changes - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
+* 2026/04/11: Added `set temperature f|c|both|auto` to control temperature units independently from distance units - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/11: Added `set temperature f|c|both|auto` to control temperature units independently from distance units - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/11: Return a 1x1 transparent pixel instead of a 404/403 error when activity maps are not found or have expired - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/11: Upgraded Ruby to 4.0.2, puma to 8.0.0, addressable to 2.9.0, stripe to 13.5.1, stripe-ruby-mock to 5.0.0 - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
