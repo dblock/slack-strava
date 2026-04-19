@@ -114,6 +114,31 @@ describe ClubActivity do
         expect(cm.ts).to eq 'summary_ts'
         expect(cm.details_ts).to eq 'details_ts'
       end
+
+      context 'with an existing thread parent in activity thread mode' do
+        let!(:thread_parent) do
+          Fabricate(
+            :club_activity,
+            club: club,
+            distance: 123,
+            bragged_at: Time.now.utc,
+            channel_messages: [
+              ChannelMessage.new(ts: 'ts', channel: club.channel_id)
+            ]
+          )
+        end
+
+        it 'posts the summary to the top-level channel, not into the existing thread' do
+          expect(club.team.slack_client).to receive(:chat_postMessage).with(
+            activity.to_slack_summary.merge(
+              channel: club.channel_id,
+              as_user: true
+            )
+          ).and_return('ts' => 'summary_ts')
+          allow(club.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 'details_ts')
+          activity.brag!
+        end
+      end
     end
 
     it 'warns if the bot leaves the channel' do

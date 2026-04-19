@@ -264,6 +264,30 @@ describe UserActivity do
           expect(cm.ts).to eq 'summary_ts'
           expect(cm.details_ts).to eq 'details_ts'
         end
+
+        context 'with an existing thread parent in activity thread mode' do
+          let!(:thread_parent) do
+            Fabricate(
+              :user_activity,
+              user: user,
+              bragged_at: Time.now.utc,
+              channel_messages: [
+                ChannelMessage.new(ts: 'ts', channel: 'channel_id')
+              ]
+            )
+          end
+
+          it 'posts the summary to the top-level channel, not into the existing thread' do
+            expect(user.team.slack_client).to receive(:chat_postMessage).with(
+              activity.to_slack_summary.merge(
+                as_user: true,
+                channel: 'channel_id'
+              )
+            ).and_return('ts' => 'summary_ts')
+            allow(user.team.slack_client).to receive(:chat_postMessage).and_return('ts' => 'details_ts')
+            activity.brag!
+          end
+        end
       end
     end
 
