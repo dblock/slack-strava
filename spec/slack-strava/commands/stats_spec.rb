@@ -43,7 +43,7 @@ describe SlackStrava::Commands::Stats do
       it 'parses weekly' do
         allow(client.web_client).to receive(:chat_postMessage)
         Timecop.freeze do
-          parsed = Chronic.parse('this week', context: :past, guess: false)
+          parsed = Chronic.parse('this week', context: :past, guess: false, now: client.owner.now)
           expect_any_instance_of(Team).to receive(:stats).with(start_date: parsed.first, end_date: parsed.last, channel_id: 'channel').and_call_original
           message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} stats weekly"))
         end
@@ -52,7 +52,7 @@ describe SlackStrava::Commands::Stats do
       it 'parses monthly' do
         allow(client.web_client).to receive(:chat_postMessage)
         Timecop.freeze do
-          parsed = Chronic.parse('this month', context: :past, guess: false)
+          parsed = Chronic.parse('this month', context: :past, guess: false, now: client.owner.now)
           expect_any_instance_of(Team).to receive(:stats).with(start_date: parsed.first, end_date: parsed.last, channel_id: 'channel').and_call_original
           message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} stats monthly"))
         end
@@ -61,7 +61,7 @@ describe SlackStrava::Commands::Stats do
       it 'parses yearly' do
         allow(client.web_client).to receive(:chat_postMessage)
         Timecop.freeze do
-          parsed = Chronic.parse('this year', context: :past, guess: false)
+          parsed = Chronic.parse('this year', context: :past, guess: false, now: client.owner.now)
           expect_any_instance_of(Team).to receive(:stats).with(start_date: parsed.first, end_date: parsed.last, channel_id: 'channel').and_call_original
           message_hook.call(client, Hashie::Mash.new(user: 'user', channel: 'channel', text: "#{SlackRubyBot.config.user} stats yearly"))
         end
@@ -71,7 +71,7 @@ describe SlackStrava::Commands::Stats do
         allow(client.web_client).to receive(:chat_postMessage)
         Timecop.freeze do
           quarter_start = Time.now.beginning_of_quarter
-          quarter_end_parsed = Chronic.parse('now', context: :past, guess: false)
+          quarter_end_parsed = Chronic.parse('now', context: :past, guess: false, now: client.owner.now)
           expect_any_instance_of(Team).to receive(:stats).with(
             start_date: quarter_start,
             end_date: quarter_end_parsed.last,
