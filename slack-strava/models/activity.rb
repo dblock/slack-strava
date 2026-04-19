@@ -81,7 +81,7 @@ class Activity
   # Look for the last activity thread.
   def parent_thread(channel_id, timestamp_field = :bragged_at, now = nil)
     effective_threads = team.channel_threads_for(channel_id)
-    return if effective_threads.nil? || effective_threads == 'none'
+    return if effective_threads.nil? || %w[none activity].include?(effective_threads)
 
     now ||= Time.now.utc
 
