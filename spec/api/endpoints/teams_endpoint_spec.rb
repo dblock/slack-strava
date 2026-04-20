@@ -35,6 +35,7 @@ describe Api::Endpoints::TeamsEndpoint do
     context 'register' do
       before do
         oauth_access = {
+          'ok' => true,
           'bot' => {
             'bot_access_token' => 'token',
             'bot_user_id' => 'bot_user_id'
@@ -139,6 +140,56 @@ describe Api::Endpoints::TeamsEndpoint do
         expect { client.teams._post(code: 'code') }.to raise_error Faraday::ClientError do |e|
           json = JSON.parse(e.response[:body])
           expect(json['message']).to eq "Team #{existing_team.name} is already registered."
+        end
+      end
+
+      context 'when oauth returns an error' do
+        before do
+          allow_any_instance_of(Slack::Web::Client).to receive(:oauth_access).and_return(
+            'ok' => false,
+            'error' => 'invalid_code'
+          )
+        end
+
+        it 'raises the error' do
+          expect { client.teams._post(code: 'bad_code') }.to raise_error Faraday::ClientError do |e|
+            json = JSON.parse(e.response[:body])
+            expect(json['message']).to eq 'invalid_code'
+          end
+        end
+      end
+
+      context 'when oauth returns ok: false without an error message' do
+        before do
+          allow_any_instance_of(Slack::Web::Client).to receive(:oauth_access).and_return(
+            'ok' => false
+          )
+        end
+
+        it 'raises an invalid OAuth response error' do
+          expect { client.teams._post(code: 'bad_code') }.to raise_error Faraday::ClientError do |e|
+            json = JSON.parse(e.response[:body])
+            expect(json['message']).to eq 'invalid OAuth response'
+          end
+        end
+      end
+
+      context 'when oauth returns an enterprise grid response without a team_id' do
+        before do
+          allow_any_instance_of(Slack::Web::Client).to receive(:oauth_access).and_return(
+            'ok' => true,
+            'access_token' => 'xoxb-enterprise',
+            'team_id' => nil,
+            'enterprise_id' => 'E123',
+            'enterprise_name' => 'My Enterprise'
+          )
+        end
+
+        it 'raises an enterprise not supported error' do
+          expect { client.teams._post(code: 'code') }.to raise_error Faraday::ClientError do |e|
+            json = JSON.parse(e.response[:body])
+            expect(json['message']).to eq 'Enterprise Grid is not supported.'
+          end
         end
       end
 
