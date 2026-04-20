@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/04/20: Raise a descriptive error when Slack OAuth returns `ok: false`, or when an Enterprise Grid install is attempted - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/20: Extended `stats` command to accept date expressions: year (e.g. `stats 2024`), period aliases (`weekly`, `monthly`, `quarterly`, `yearly`), and natural language ranges (e.g. `stats since January`, `stats last week`) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/19: Automatically display pace for run/walk/swim/hike activities and speed for ride/bike activities when using default fields - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/04/19: Added `set threads activity` to post a summary to channel with full details in a thread reply, updating and deleting both messages as the activity changes - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).

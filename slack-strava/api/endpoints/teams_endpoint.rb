@@ -46,6 +46,9 @@ module Api
             code: params[:code]
           )
 
+          raise rc['error'] || 'invalid OAuth response' unless rc['ok']
+          raise 'Enterprise Grid is not supported.' if rc['ok'] && rc['team_id'].nil?
+
           token = rc['bot']['bot_access_token']
           bot_user_id = rc['bot']['bot_user_id']
           user_id = rc['user_id']
