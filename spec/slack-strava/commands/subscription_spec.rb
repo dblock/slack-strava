@@ -44,7 +44,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
 
         it 'displays subscription info' do
           current_period_end = Time.at(customer.subscriptions.first.current_period_end).strftime('%B %d, %Y')
-          bank = customer.sources.first
+          bank = Stripe::Customer.list_sources(customer.id).first
           customer_info = [
             "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}.",
             "Subscribed to Plan ($9.99), will auto-renew on #{current_period_end}.",
@@ -69,7 +69,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
         end
 
         it 'displays subscription info' do
-          card = customer.sources.first
+          card = Stripe::Customer.list_sources(customer.id).first
           current_period_end = Time.at(customer.subscriptions.first.current_period_end).strftime('%B %d, %Y')
           customer_info = [
             "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}.",
@@ -92,7 +92,7 @@ describe SlackStrava::Commands::Subscription, vcr: { cassette_name: 'slack/user_
             customer_info = "Customer since #{Time.at(customer.created).strftime('%B %d, %Y')}."
             subscription = customer.subscriptions.first
             customer_info += "\nPast Due subscription created #{Time.at(subscription.created).strftime('%B %d, %Y')} to Plan ($9.99)."
-            card = customer.sources.first
+            card = Stripe::Customer.list_sources(customer.id).first
             customer_info += "\nOn file Visa card, #{card.name} ending with #{card.last4}, expires #{card.exp_month}/#{card.exp_year}."
             customer_info += "\n#{team.update_cc_text}"
             expect(message: "#{SlackRubyBot.config.user} subscription").to respond_with_slack_message customer_info
