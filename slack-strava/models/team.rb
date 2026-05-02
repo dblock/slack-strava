@@ -333,7 +333,7 @@ class Team
   end
 
   def stripe_customer_sources_info
-    stripe_customer.sources.map do |source|
+    Stripe::Customer.list_sources(stripe_customer.id).map do |source|
       case source.object
       when 'card'
         "On file #{source.brand} #{source.object}, #{source.name} ending with #{source.last4}, expires #{source.exp_month}/#{source.exp_year}."
