@@ -208,7 +208,7 @@ describe ClubActivity do
         expect(club.team.slack_client).not_to receive(:chat_postMessage)
         expect {
           expect(activity.brag!).to be_nil
-        }.to change(club.activities.unbragged, :count).by(-1)
+        }.to change(club.activities.not_bragged, :count).by(-1)
         expect(activity.bragged_at).not_to be_nil
       end
     end
@@ -246,7 +246,7 @@ describe ClubActivity do
           expect(club.team.slack_client).not_to receive(:chat_postMessage)
           expect {
             expect(activity.brag!).to be_nil
-          }.to change(club.activities.unbragged, :count).by(-1)
+          }.to change(club.activities.not_bragged, :count).by(-1)
           expect(activity.bragged_at).not_to be_nil
         end
       end

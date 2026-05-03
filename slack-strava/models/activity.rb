@@ -35,7 +35,7 @@ class Activity
   index({ team_id: 1, 'channel_messages.channel' => 1 })
   index({ team_id: 1, bragged_at: 1, 'channel_messages.channel' => 1 })
 
-  scope :unbragged, -> { where(bragged_at: nil) }
+  scope :not_bragged, -> { where(bragged_at: nil) }
   scope :bragged, -> { where(:bragged_at.ne => nil) }
 
   belongs_to :team, inverse_of: :activities

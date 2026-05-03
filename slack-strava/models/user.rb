@@ -257,7 +257,7 @@ class User
   end
 
   def brag_new_activities!
-    activity = activities.unbragged.asc(:start_date).first
+    activity = activities.not_bragged.asc(:start_date).first
     return unless activity
 
     if team.max_activities_per_user_per_day
