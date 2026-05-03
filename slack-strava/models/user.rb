@@ -387,7 +387,7 @@ class User
   end
 
   def latest_bragged_activity(dt = 12.hours)
-    activities.bragged.where(:start_date.gt => Time.now - dt).desc(:start_date).first
+    activities.bragged.where(unbragged_at: nil, :start_date.gt => Time.now - dt).desc(:start_date).first
   end
 
   def latest_activity_start_date

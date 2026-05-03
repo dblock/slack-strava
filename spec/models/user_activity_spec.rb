@@ -529,6 +529,7 @@ describe UserActivity do
       )
       activity.unbrag!
       expect(activity.reload.channel_messages).to eq []
+      expect(activity.reload.unbragged_at).not_to be_nil
     end
 
     context 'with activity threads' do

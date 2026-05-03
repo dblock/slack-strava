@@ -319,6 +319,21 @@ describe User do
           user.sync_new_strava_activities!
         end
 
+        context 'with an unbragged activity (deleted from Strava)' do
+          before do
+            user.activities.bragged.each { |a| a.update_attributes!(unbragged_at: Time.now.utc) }
+          end
+
+          it 'does not include unbragged activities in latest_bragged_activity' do
+            expect(user.send(:latest_bragged_activity)).to be_nil
+          end
+
+          it 'does not rebrag the unbragged activity' do
+            expect(user).not_to receive(:rebrag_activity!)
+            user.rebrag!
+          end
+        end
+
         context 'latest activity' do
           let(:last_activity) { user.activities.bragged.desc(:_id).first }
 
