@@ -16,6 +16,7 @@ class Activity
   field :pr_count, type: Integer
   field :calories, type: Float
   field :bragged_at, type: DateTime
+  field :unbragged_at, type: DateTime
   field :total_elevation_gain, type: Float
   field :private, type: Boolean
   field :visibility, type: String

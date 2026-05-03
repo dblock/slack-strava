@@ -115,7 +115,7 @@ class UserActivity < Activity
 
     logger.info "Unbragging about #{user}, #{self}."
     user.delete!(channel_messages)
-    update_attributes!(channel_messages: [])
+    update_attributes!(channel_messages: [], unbragged_at: Time.now.utc)
     nil
   end
 
