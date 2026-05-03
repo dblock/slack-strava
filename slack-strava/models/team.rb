@@ -37,6 +37,7 @@ class Team
   field :subscription_expired_at, type: DateTime
 
   field :trial_informed_at, type: DateTime
+  field :past_due_informed_at, type: DateTime
 
   scope :api, -> { where(api: true) }
   scope :striped, -> { where(subscribed: true, :stripe_customer_id.ne => nil) }
