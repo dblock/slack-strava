@@ -604,6 +604,13 @@ describe UserActivity do
         ).and_return('ts' => 'new_ts')
         activity.rebrag!
       end
+
+      it 'clears unbragged_at' do
+        activity.update_attributes!(unbragged_at: Time.now.utc)
+        allow(user.team.slack_client).to receive(:chat_update).and_return('ts' => 'new_ts')
+        activity.rebrag!
+        expect(activity.reload.unbragged_at).to be_nil
+      end
     end
 
     context 'originally bragged without activity threads, now switched to activity threads' do
