@@ -87,7 +87,7 @@ class UserActivity < Activity
            else
              []
            end
-      update_attributes!(bragged_at: Time.now.utc, channel_messages: rc)
+      update_attributes!(bragged_at: Time.now.utc, unbragged_at: nil, channel_messages: rc)
       rc
     end
   rescue Slack::Web::Api::Errors::SlackError => e
@@ -106,7 +106,7 @@ class UserActivity < Activity
 
     logger.info "Rebragging about #{user}, #{self}."
     rc = channel_messages.map { |channel_message| rebrag_to_channel!(channel_message) }.compact
-    update_attributes!(channel_messages: rc)
+    update_attributes!(channel_messages: rc, unbragged_at: nil)
     rc
   end
 
