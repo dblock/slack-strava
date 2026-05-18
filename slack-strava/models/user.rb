@@ -193,7 +193,8 @@ class User
     end
     raise 'Missing expires_at in OAuth response.' unless response.expires_at
 
-    create_athlete(Athlete.summary_attrs_from_strava(response.athlete))
+    athlete_attrs = Athlete.summary_attrs_from_strava(response.athlete)
+    athlete ? athlete.update_attributes!(athlete_attrs) : create_athlete(athlete_attrs)
     update_attributes!(
       token_type: response.token_type,
       access_token: response.access_token,
