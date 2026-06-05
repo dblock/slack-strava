@@ -54,14 +54,11 @@ module Api
           logger.info "CLUBS: #{channel_id}, #{user}, #{user.team}."
           if channel_id[0] == 'D'
             user.team.clubs_to_slack.merge(user: user_id, channel: channel_id)
-          elsif !user.team.bot_in_channel?(channel_id)
-            {
-              text: "Please invite #{user.team.bot_mention} to this channel before connecting a club.",
-              user: user_id,
-              channel: channel_id
-            }
           else
-            user.athlete_clubs_to_slack(channel_id).merge(user: user_id, channel: channel_id)
+            clubs = user.team.clubs.where(channel_id: channel_id).to_a
+            result = { text: Club::DEPRECATION_MESSAGE, user: user_id, channel: channel_id, attachments: [] }
+            clubs.each { |club| result[:attachments].concat(club.connect_to_slack[:attachments]) }
+            result
           end
         end
 
@@ -97,31 +94,7 @@ module Api
         end
 
         def club_connect_channel!
-          raise 'User not connected to Strava.' unless user.connected_to_strava?
-
-          strava_id = arg
-          strava_club = Club.detailed_attrs_from_strava(user.strava_client.club(strava_id))
-          club = user.team.clubs.where(channel_id: channel_id).first
-          club ||= Club.new(team: user.team, channel_id: channel_id)
-          club.assign_attributes(
-            strava_club.merge(
-              sync_activities: true,
-              access_token: user.access_token,
-              refresh_token: user.refresh_token,
-              token_expires_at: user.token_expires_at,
-              token_type: user.token_type,
-              channel_name: channel_name
-            )
-          )
-          club.save!
-          logger.info "Connected #{club}, #{user}, #{user.team}."
-          user.team.slack_client.chat_postMessage(
-            club.to_slack.merge(
-              as_user: true, channel: channel_id, text: "A club has been connected by #{user.slack_mention}."
-            )
-          )
-          club.sync_last_strava_activity!
-          user.athlete_clubs_to_slack(channel_id).merge(user: user_id, channel: channel_id)
+          { text: Club::DEPRECATION_MESSAGE, user: user_id, channel: channel_id }
         end
 
         def club_disconnect_channel!
