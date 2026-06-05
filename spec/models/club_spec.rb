@@ -228,14 +228,17 @@ describe Club do
 
   context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
     context 'upon creation' do
-      it 'syncs but does not brag' do
-        expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_postMessage)
+      it 'syncs, does not brag activities, but sends deprecation notice' do
+        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+          hash_including(text: Club::DEPRECATION_MESSAGE)
+        ).once.and_return('ts' => '1')
         club.sync_and_brag!
       end
     end
 
     context 'after an initial sync' do
       before do
+        club.update_attributes!(deprecation_informed_at: Time.now.utc)
         club.sync_and_brag!
       end
 
@@ -245,7 +248,7 @@ describe Club do
         end
 
         it 'syncs and brags' do
-          expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once
+          expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once.and_return('ts' => '1')
           club.sync_and_brag!
         end
       end
@@ -254,10 +257,55 @@ describe Club do
     it 'warns on error' do
       expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)
       allow(club).to receive(:sync_new_strava_activities!).and_raise 'unexpected error'
+      allow(club).to receive(:inform_deprecation!)
       expect { club.sync_and_brag! }.not_to raise_error
     end
 
     pending 'uses a lock'
+
+    context 'deprecation notice' do
+      it 'sends the deprecation notice once' do
+        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+          hash_including(text: Club::DEPRECATION_MESSAGE)
+        ).once.and_return('ts' => '1')
+        club.sync_and_brag!
+        expect(club.reload.deprecation_informed_at).not_to be_nil
+      end
+
+      it 'does not send the deprecation notice a second time' do
+        club.update_attributes!(deprecation_informed_at: Time.now.utc)
+        expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_postMessage).with(
+          hash_including(text: Club::DEPRECATION_MESSAGE)
+        )
+        club.sync_and_brag!
+      end
+
+      context 'with multiple clubs in the same channel' do
+        let!(:club2) do
+          Fabricate(:club, team: team, channel_id: club.channel_id, access_token: 'token',
+                           token_expires_at: Time.now + 1.day, token_type: 'Bearer')
+        end
+
+        it 'sends the deprecation notice only once to the channel' do
+          expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
+            hash_including(text: Club::DEPRECATION_MESSAGE)
+          ).once.and_return('ts' => '1')
+          club.sync_and_brag!
+          expect(club.reload.deprecation_informed_at).not_to be_nil
+          club2.sync_and_brag!
+          expect(club2.reload.deprecation_informed_at).not_to be_nil
+        end
+      end
+
+      it 'warns on Slack error sending deprecation notice' do
+        allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_raise(
+          Slack::Web::Api::Errors::SlackError.new('channel_not_found')
+        )
+        expect_any_instance_of(Logger).to receive(:warn).with(/Failed to send deprecation notice/)
+        expect { club.sync_and_brag! }.not_to raise_error
+        expect(club.reload.deprecation_informed_at).to be_nil
+      end
+    end
 
     context 'connected_to_strava' do
       let!(:club) { Fabricate(:club) }

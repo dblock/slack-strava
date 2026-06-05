@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/06/04: Strava is removing the Club Activities API on September 1, 2026. Blocked new club connections, show a deprecation notice in all club-related commands, and notify existing club channels once on next sync - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/05/03: Throttle past due subscription notifications to at most once every 72 hours - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/05/03: Fixed repeated 404 errors from Strava when trying to rebrag an activity that was deleted and already unbragged - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/05/02: Fixed `Team#subscription_info` failing with `NoMethodError: undefined method 'sources'` on `Stripe::Customer` in stripe 13.5.1 by using `Stripe::Customer.list_sources` - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).

@@ -232,7 +232,7 @@ class Team
 
   def clubs_to_slack
     result = {
-      text: "To connect a club, invite #{bot_mention} to a channel and use `/slava clubs`.",
+      text: Club::DEPRECATION_MESSAGE,
       attachments: []
     }
 

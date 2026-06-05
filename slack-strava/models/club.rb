@@ -1,5 +1,10 @@
 class Club
   include Mongoid::Document
+
+  DEPRECATION_MESSAGE = 'Strava is removing the Club Activities API on September 1, 2026. ' \
+                        'All club functionality will be removed before that deadline. ' \
+                        'Please ask your team members to connect individually by DMing me `connect`. ' \
+                        'See https://github.com/dblock/slack-strava/issues/264 for details.'.freeze
   include Mongoid::Timestamps
   include Mongoid::Locker
   include StravaTokens
@@ -25,6 +30,8 @@ class Club
 
   field :channel_id, type: String
   field :channel_name, type: String
+
+  field :deprecation_informed_at, type: DateTime
 
   index({ team_id: 1, strava_id: 1, channel_id: 1 }, unique: true)
 
@@ -142,6 +149,11 @@ class Club
     update_attributes!(first_sync_at: Time.now.utc) unless first_sync_at
   end
 
+  def sync_and_brag!
+    super
+    inform_deprecation!
+  end
+
   private
 
   def sync_strava_activities!(options = {})
@@ -177,6 +189,15 @@ class Club
     message_with_channel = to_slack.merge(text: message, channel: channel_id, as_user: true)
     logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel_name}."
     team.slack_client.chat_postMessage(message_with_channel)
+  end
+
+  def inform_deprecation!
+    return if deprecation_informed_at
+
+    dm! Club::DEPRECATION_MESSAGE unless team.clubs.where(channel_id: channel_id, :deprecation_informed_at.ne => nil).exists?
+    update_attributes!(deprecation_informed_at: Time.now.utc)
+  rescue Slack::Web::Api::Errors::SlackError => e
+    logger.warn "Failed to send deprecation notice to #{self}: #{e.message}."
   end
 
   def handle_not_found_error(e)
