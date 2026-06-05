@@ -77,7 +77,6 @@ describe Api::Endpoints::SlackEndpoint do
 
         it 'disconnects club' do
           expect {
-            expect_any_instance_of(Strava::Api::Client).to receive(:paginate)
             expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
               club.to_slack.merge(
                 as_user: true,
@@ -95,7 +94,7 @@ describe Api::Endpoints::SlackEndpoint do
             }.to_json
             expect(last_response.status).to eq 201
             response = JSON.parse(last_response.body)
-            expect(response['text']).to eq('Not connected to any clubs.')
+            expect(response['text']).to include 'Strava is removing the Club Activities API'
             expect(response['attachments']).to eq([])
           }.to change(Club, :count).by(-1)
         end

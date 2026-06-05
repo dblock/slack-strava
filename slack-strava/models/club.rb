@@ -5,6 +5,13 @@ class Club
                         'All club functionality will be removed before that deadline. ' \
                         'Please ask your team members to connect individually by DMing me `connect`. ' \
                         'See https://github.com/dblock/slack-strava/issues/264 for details.'.freeze
+
+  SYNC_DISABLED_MESSAGE = 'Club activity syncing has been disabled. ' \
+                          'Strava is removing the Club Activities API on September 1, 2026 and all club ' \
+                          'functionality will be removed before that deadline. ' \
+                          'Please ask your team members to connect individually by DMing me `connect`. ' \
+                          'See https://github.com/dblock/slack-strava/issues/264 for details.'.freeze
+
   include Mongoid::Timestamps
   include Mongoid::Locker
   include StravaTokens
@@ -21,7 +28,6 @@ class Club
   field :url, type: String
   field :member_count, type: Integer
   field :sync_activities, type: Boolean, default: true
-  field :first_sync_at, type: DateTime
   field :locking_name, type: String
   field :locked_at, type: Time
 
@@ -32,6 +38,7 @@ class Club
   field :channel_name, type: String
 
   field :deprecation_informed_at, type: DateTime
+  field :sync_disabled_informed_at, type: DateTime
 
   index({ team_id: 1, strava_id: 1, channel_id: 1 }, unique: true)
 
@@ -57,34 +64,6 @@ class Club
     results.map do |result|
       result.merge(activity: activity)
     end
-  end
-
-  def self.detailed_attrs_from_strava(response)
-    {
-      strava_id: response.id,
-      name: response.name,
-      description: response.description,
-      logo: response.profile_medium,
-      sport_type: response.sport_type,
-      city: response.city && !response.city.empty? ? response.city : nil,
-      state: response.state && !response.state.empty? ? response.state : nil,
-      country: response.country && !response.country.empty? ? response.country : nil,
-      url: response.url,
-      member_count: response.member_count
-    }
-  end
-
-  def self.summary_attrs_from_strava(response)
-    {
-      strava_id: response.id,
-      name: response.name,
-      sport_type: response.sport_type,
-      city: response.city && !response.city.empty? ? response.city : nil,
-      state: response.state && !response.state.empty? ? response.state : nil,
-      country: response.country && !response.country.empty? ? response.country : nil,
-      url: response.url,
-      member_count: response.member_count
-    }
   end
 
   def member_count_s
@@ -140,50 +119,16 @@ class Club
     }
   end
 
-  def sync_last_strava_activity!
-    sync_strava_activities!(page: 1, per_page: 1, limit: 1)
-  end
-
-  def sync_new_strava_activities!
-    sync_strava_activities!(per_page: 10, limit: 50)
-    update_attributes!(first_sync_at: Time.now.utc) unless first_sync_at
-  end
-
   def sync_and_brag!
-    super
-    inform_deprecation!
+    with_lock do
+      with_strava_error_handler do
+        brag!
+      end
+    end
+    inform_sync_disabled!
   end
 
   private
-
-  def sync_strava_activities!(options = {})
-    return unless sync_activities?
-
-    strava_client.club_activities(strava_id, options).map do |activity|
-      club_activity = ClubActivity.new(
-        ClubActivity.attrs_from_strava(activity).merge(
-          team: team, club: self, fetched_at: Time.now.utc, first_sync: first_sync_at.nil?
-        )
-      )
-
-      existing_activity = ClubActivity.where(strava_id: club_activity.strava_id, club: self).first
-      if existing_activity
-        # still fetching this activity, prevent the activity from being purged by a 30 day TTL index
-        existing_activity.update_attributes!(fetched_at: Time.now.utc)
-        next
-      end
-
-      club_activity.save!
-      logger.debug "Activity #{self}, team_id=#{team_id}, #{club_activity}"
-      club_activity
-    end
-  rescue Slack::Web::Api::Errors::NotInChannel => e
-    handle_slack_error e
-  rescue Faraday::ResourceNotFound => e
-    handle_not_found_error e
-  rescue Strava::Errors::Fault => e
-    handle_strava_error e
-  end
 
   def dm!(message)
     message_with_channel = to_slack.merge(text: message, channel: channel_id, as_user: true)
@@ -191,42 +136,12 @@ class Club
     team.slack_client.chat_postMessage(message_with_channel)
   end
 
-  def inform_deprecation!
-    return if deprecation_informed_at
+  def inform_sync_disabled!
+    return if sync_disabled_informed_at
 
-    dm! Club::DEPRECATION_MESSAGE unless team.clubs.where(channel_id: channel_id, :deprecation_informed_at.ne => nil).exists?
-    update_attributes!(deprecation_informed_at: Time.now.utc)
+    dm! Club::SYNC_DISABLED_MESSAGE unless team.clubs.where(channel_id: channel_id, :sync_disabled_informed_at.ne => nil).exists?
+    update_attributes!(sync_disabled_informed_at: Time.now.utc)
   rescue Slack::Web::Api::Errors::SlackError => e
-    logger.warn "Failed to send deprecation notice to #{self}: #{e.message}."
-  end
-
-  def handle_not_found_error(e)
-    set sync_activities: false
-    logger.error e
-    dm! 'Your club can no longer be found on Strava. Please disconnect and reconnect it via /slava clubs.'
-    raise e
-  end
-
-  def handle_slack_error(e)
-    set sync_activities: false
-    logger.error e
-    raise e
-  end
-
-  def handle_strava_error(e)
-    logger.error e
-    case e.message
-    when 'Forbidden', 'Authorization Error'
-      reset_access_tokens!
-      dm! 'There was an authorization problem. Please reconnect the club via /slava clubs.'
-    when 'Bad Request'
-      error = e.errors&.first
-      code = error && error['code']
-      if code == 'invalid'
-        reset_access_tokens!
-        dm! 'There was an authorization problem refreshing the club access token. Please reconnect the club via /slava clubs.'
-      end
-    end
-    raise e
+    logger.warn "Failed to send sync disabled notice to #{self}: #{e.message}."
   end
 end

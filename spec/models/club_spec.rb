@@ -4,203 +4,6 @@ describe Club do
   let(:team) { Fabricate(:team) }
   let!(:club) { Fabricate(:club, team: team, strava_id: '43749', access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
 
-  context 'sync_last_strava_activity!', vcr: { allow_playback_repeats: true, cassette_name: 'strava/club_sync_last_strava_activity' } do
-    it 'retrieves the last activity' do
-      expect {
-        club.sync_last_strava_activity!
-      }.to change(club.activities, :count).by(1)
-      activity = club.activities.last
-      expect(activity.strava_id).to eq '777e317fcba7e7c78d6ad584fd7219d8'
-      expect(activity.name).to eq 'Hard as fuck run home — tired + lots of aches '
-    end
-
-    it 'only saves the last activity once' do
-      expect {
-        2.times { club.sync_last_strava_activity! }
-      }.to change(club.activities, :count).by(1)
-    end
-
-    it 'retrieves an incremental set of activities', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
-      expect {
-        club.sync_new_strava_activities!
-      }.to change(club.activities, :count).by(8)
-    end
-
-    it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
-      # first activity from the cassette
-      club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-      expect {
-        club.sync_new_strava_activities!
-      }.to change(club.activities, :count).by(7)
-    end
-
-    it 'updates the existing duplicate', vcr: { cassette_name: 'strava/club_sync_new_strava_activities' } do
-      activity = club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-      tt = activity.reload.updated_at.utc
-      Timecop.travel(Time.now + 1.hour)
-      club.sync_new_strava_activities!
-      expect(activity.reload.updated_at.utc.to_i).not_to eq(tt.to_i)
-    end
-
-    context 'with two club channels' do
-      let!(:club2) { Fabricate(:club, team: team, strava_id: '43749', channel_id: '1HNTD0CW', channel_name: 'testing', access_token: 'token', token_expires_at: Time.now + 1.day, token_type: 'Bearer') }
-
-      it 'retrieves the last activity and stores it twice' do
-        expect {
-          club.sync_last_strava_activity!
-        }.to change(club.activities, :count).by(1)
-        expect {
-          club2.sync_last_strava_activity!
-        }.to change(club2.activities, :count).by(1)
-        expect(club.activities.count).to eq(1)
-        expect(club2.activities.count).to eq(1)
-      end
-
-      it 'only saves the last activity once per club' do
-        expect {
-          2.times { club.sync_last_strava_activity! }
-        }.to change(club.activities, :count).by(1)
-        expect {
-          2.times { club2.sync_last_strava_activity! }
-        }.to change(club2.activities, :count).by(1)
-        expect(club.activities.count).to eq(1)
-        expect(club2.activities.count).to eq(1)
-      end
-
-      it 'retrieves an incremental set of activities', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
-        expect {
-          club.sync_new_strava_activities!
-        }.to change(club.activities, :count).by(8)
-        expect {
-          club2.sync_new_strava_activities!
-        }.to change(club2.activities, :count).by(8)
-      end
-
-      it 'retrieves an incremental set of activities skipping duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
-        # first activity from the cassette
-        club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-        club2.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-        expect {
-          club.sync_new_strava_activities!
-        }.to change(club.activities, :count).by(7)
-        expect {
-          club2.sync_new_strava_activities!
-        }.to change(club2.activities, :count).by(7)
-      end
-
-      it 'updates the existing duplicates', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
-        activity = club.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-        tt = activity.reload.updated_at.utc
-        activity2 = club2.activities.create!(team: club.team, strava_id: '777e317fcba7e7c78d6ad584fd7219d8')
-        tt2 = activity2.reload.updated_at.utc
-        Timecop.travel(Time.now + 1.hour)
-        club.sync_new_strava_activities!
-        expect(activity.reload.updated_at.utc.to_i).not_to eq(tt.to_i)
-        expect(activity2.reload.updated_at.utc.to_i).to eq(tt2.to_i)
-      end
-    end
-
-    ['Authorization Error', 'Forbidden'].each do |message|
-      it 'disconnects club on auth failure' do
-        allow(club.strava_client).to receive(:club_activities).and_raise(
-          Strava::Errors::Fault.new(401, body: { 'message' => message, 'errors' => [] })
-        )
-        expect(club.team.slack_client).to receive(:chat_postMessage).with(
-          club.to_slack.merge(
-            text: 'There was an authorization problem. Please reconnect the club via /slava clubs.',
-            channel: club.channel_id,
-            as_user: true
-          )
-        ).and_return('ts' => 1)
-        expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
-        expect(club.access_token).to be_nil
-        expect(club.token_type).to be_nil
-        expect(club.refresh_token).to be_nil
-        expect(club.token_expires_at).to be_nil
-      end
-    end
-    it 'disconnects club on refresh token failure' do
-      allow(club.strava_client).to receive(:club_activities).and_raise(
-        Strava::Errors::Fault.new(
-          401,
-          body: {
-            'message' => 'Bad Request',
-            'errors' => [
-              {
-                'resource' => 'RefreshToken',
-                'field' => 'refresh_token',
-                'code' => 'invalid'
-              }
-            ]
-          }
-        )
-      )
-      expect(club.team.slack_client).to receive(:chat_postMessage).with(
-        club.to_slack.merge(
-          text: 'There was an authorization problem refreshing the club access token. Please reconnect the club via /slava clubs.',
-          channel: club.channel_id,
-          as_user: true
-        )
-      ).and_return('ts' => 1)
-      expect { club.sync_last_strava_activity! }.to raise_error Strava::Errors::Fault
-      expect(club.access_token).to be_nil
-      expect(club.token_type).to be_nil
-      expect(club.refresh_token).to be_nil
-      expect(club.token_expires_at).to be_nil
-    end
-
-    it 'disables sync on 404' do
-      expect(club.sync_activities?).to be true
-      allow(club.strava_client).to receive(:club_activities).and_raise(
-        Faraday::ResourceNotFound.new(404, body: { 'message' => 'Not Found', 'errors' => [] })
-      )
-      expect(club.team.slack_client).to receive(:chat_postMessage).with(
-        hash_including(
-          text: 'Your club can no longer be found on Strava. Please disconnect and reconnect it via /slava clubs.',
-          channel: club.channel_id,
-          as_user: true
-        )
-      ).and_return('ts' => 1)
-      expect { club.sync_last_strava_activity! }.to raise_error Faraday::ResourceNotFound
-      expect(club.sync_activities?).to be false
-    end
-
-    it 'disables sync on not_in_channel' do
-      expect(club.sync_activities?).to be true
-      allow(club.strava_client).to receive(:club_activities).and_raise(Slack::Web::Api::Errors::NotInChannel.new('not_in_channel'))
-      expect { club.sync_last_strava_activity! }.to raise_error Slack::Web::Api::Errors::NotInChannel
-      expect(club.sync_activities?).to be false
-    end
-
-    context 'without a refresh token (until October 2019)', vcr: { cassette_name: 'strava/refresh_access_token' } do
-      before do
-        club.update_attributes!(refresh_token: nil, token_expires_at: nil)
-      end
-
-      it 'refreshes access token using access token' do
-        club.send(:strava_client)
-        expect(club.refresh_token).to eq 'updated-refresh-token'
-        expect(club.access_token).to eq 'updated-access-token'
-        expect(club.token_expires_at).not_to be_nil
-        expect(club.token_type).to eq 'Bearer'
-      end
-    end
-
-    context 'with an expired refresh token', vcr: { cassette_name: 'strava/refresh_access_token' } do
-      before do
-        club.update_attributes!(refresh_token: 'refresh_token', token_expires_at: nil)
-      end
-
-      it 'refreshes access token' do
-        club.send(:strava_client)
-        expect(club.refresh_token).to eq 'updated-refresh-token'
-        expect(club.access_token).to eq 'updated-access-token'
-        expect(club.token_expires_at).not_to be_nil
-        expect(club.token_type).to eq 'Bearer'
-      end
-    end
-  end
-
   context 'brag!' do
     let!(:activity) { Fabricate(:club_activity, club: club) }
 
@@ -226,56 +29,57 @@ describe Club do
     end
   end
 
-  context 'sync_and_brag!', vcr: { cassette_name: 'strava/club_sync_new_strava_activities', allow_playback_repeats: true } do
+  context 'sync_and_brag!' do
+    it 'does not sync any activities' do
+      allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return('ts' => '1')
+      expect { club.sync_and_brag! }.not_to change(club.activities, :count)
+    end
+
     context 'upon creation' do
-      it 'syncs, does not brag activities, but sends deprecation notice' do
+      it 'sends sync disabled notice' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
-          hash_including(text: Club::DEPRECATION_MESSAGE)
+          hash_including(text: Club::SYNC_DISABLED_MESSAGE)
         ).once.and_return('ts' => '1')
         club.sync_and_brag!
+        expect(club.reload.sync_disabled_informed_at).not_to be_nil
       end
     end
 
-    context 'after an initial sync' do
+    context 'after initial sync_and_brag!' do
       before do
-        club.update_attributes!(deprecation_informed_at: Time.now.utc)
-        club.sync_and_brag!
+        club.update_attributes!(sync_disabled_informed_at: Time.now.utc)
       end
 
-      context 'with a new activity' do
-        before do
-          club.activities.desc(:_id).first.destroy
-        end
-
-        it 'syncs and brags' do
-          expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).once.and_return('ts' => '1')
-          club.sync_and_brag!
-        end
+      it 'does not send sync disabled notice again' do
+        expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_postMessage).with(
+          hash_including(text: Club::SYNC_DISABLED_MESSAGE)
+        )
+        club.sync_and_brag!
       end
     end
 
     it 'warns on error' do
       expect_any_instance_of(Logger).to receive(:warn).with(/unexpected error/)
-      allow(club).to receive(:sync_new_strava_activities!).and_raise 'unexpected error'
-      allow(club).to receive(:inform_deprecation!)
+      allow(club).to receive(:brag!).and_raise 'unexpected error'
+      allow(club).to receive(:inform_sync_disabled!)
       expect { club.sync_and_brag! }.not_to raise_error
     end
 
     pending 'uses a lock'
 
-    context 'deprecation notice' do
-      it 'sends the deprecation notice once' do
+    context 'sync disabled notice' do
+      it 'sends the notice once' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
-          hash_including(text: Club::DEPRECATION_MESSAGE)
+          hash_including(text: Club::SYNC_DISABLED_MESSAGE)
         ).once.and_return('ts' => '1')
         club.sync_and_brag!
-        expect(club.reload.deprecation_informed_at).not_to be_nil
+        expect(club.reload.sync_disabled_informed_at).not_to be_nil
       end
 
-      it 'does not send the deprecation notice a second time' do
-        club.update_attributes!(deprecation_informed_at: Time.now.utc)
+      it 'does not send the notice a second time' do
+        club.update_attributes!(sync_disabled_informed_at: Time.now.utc)
         expect_any_instance_of(Slack::Web::Client).not_to receive(:chat_postMessage).with(
-          hash_including(text: Club::DEPRECATION_MESSAGE)
+          hash_including(text: Club::SYNC_DISABLED_MESSAGE)
         )
         club.sync_and_brag!
       end
@@ -286,24 +90,24 @@ describe Club do
                            token_expires_at: Time.now + 1.day, token_type: 'Bearer')
         end
 
-        it 'sends the deprecation notice only once to the channel' do
+        it 'sends the notice only once to the channel' do
           expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
-            hash_including(text: Club::DEPRECATION_MESSAGE)
+            hash_including(text: Club::SYNC_DISABLED_MESSAGE)
           ).once.and_return('ts' => '1')
           club.sync_and_brag!
-          expect(club.reload.deprecation_informed_at).not_to be_nil
+          expect(club.reload.sync_disabled_informed_at).not_to be_nil
           club2.sync_and_brag!
-          expect(club2.reload.deprecation_informed_at).not_to be_nil
+          expect(club2.reload.sync_disabled_informed_at).not_to be_nil
         end
       end
 
-      it 'warns on Slack error sending deprecation notice' do
+      it 'warns on Slack error sending sync disabled notice' do
         allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_raise(
           Slack::Web::Api::Errors::SlackError.new('channel_not_found')
         )
-        expect_any_instance_of(Logger).to receive(:warn).with(/Failed to send deprecation notice/)
+        expect_any_instance_of(Logger).to receive(:warn).with(/Failed to send sync disabled notice/)
         expect { club.sync_and_brag! }.not_to raise_error
-        expect(club.reload.deprecation_informed_at).to be_nil
+        expect(club.reload.sync_disabled_informed_at).to be_nil
       end
     end
 
