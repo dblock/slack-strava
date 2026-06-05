@@ -332,24 +332,6 @@ class User
     handle_strava_error e
   end
 
-  def athlete_clubs_to_slack(channel_id)
-    result = { text: '', channel: channel_id, attachments: [] }
-    clubs = team.clubs.where(channel_id: channel_id).to_a
-    if connected_to_strava?
-      strava_client.athlete_clubs do |row|
-        strava_id = row.id.to_s
-        next if clubs.detect { |club| club.strava_id == strava_id }
-
-        clubs << Club.new(Club.summary_attrs_from_strava(row).merge(team: team))
-      end
-    end
-    clubs.sort_by(&:strava_id).each do |club|
-      result[:attachments].concat(club.connect_to_slack[:attachments])
-    end
-    result[:text] = 'Not connected to any clubs.' if result[:attachments].empty?
-    result
-  end
-
   def activated_user?
     team.activated_user_id && team.activated_user_id == user_id
   end

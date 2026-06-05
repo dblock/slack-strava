@@ -109,7 +109,10 @@ module Api
               as_user: true, channel: channel_id, text: "A club has been disconnected by #{user.slack_mention}."
             )
           )
-          user.athlete_clubs_to_slack(channel_id).merge(user: user_id, channel: channel_id)
+          clubs = user.team.clubs.where(channel_id: channel_id).to_a
+          result = { text: Club::DEPRECATION_MESSAGE, user: user_id, channel: channel_id, attachments: [] }
+          clubs.each { |c| result[:attachments].concat(c.connect_to_slack[:attachments]) }
+          result
         end
       end
     end
