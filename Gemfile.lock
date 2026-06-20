@@ -208,7 +208,7 @@ GEM
     newrelic_rpm (10.5.0)
       logger
     nio4r (2.7.5)
-    nokogiri (1.19.3)
+    nokogiri (1.19.4)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     numerizer (0.1.1)
