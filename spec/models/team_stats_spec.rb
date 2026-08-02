@@ -100,11 +100,9 @@ describe TeamStats do
   context 'with activities' do
     let!(:user1) { Fabricate(:user, team: team) }
     let!(:user2) { Fabricate(:user, team: team) }
-    let!(:club) { Fabricate(:club, team: team) }
     let!(:swim_activity) { Fabricate(:swim_activity, user: user2) }
     let!(:ride_activity1) { Fabricate(:ride_activity, user: user1) }
     let!(:ride_activity2) { Fabricate(:ride_activity, user: user1) }
-    let!(:club_activity) { Fabricate(:club_activity, club: club) }
     let!(:activity1) { Fabricate(:user_activity, user: user1) }
     let!(:activity2) { Fabricate(:user_activity, user: user1) }
     let!(:activity3) { Fabricate(:user_activity, user: user2) }
@@ -114,7 +112,7 @@ describe TeamStats do
 
       it 'returns stats sorted by count' do
         expect(stats.keys).to eq %w[Run Ride Swim]
-        expect(stats.values.map(&:count)).to eq [4, 2, 1]
+        expect(stats.values.map(&:count)).to eq [3, 2, 1]
       end
 
       it 'aggregates stats' do
@@ -130,12 +128,12 @@ describe TeamStats do
         )
         expect(stats['Run'].to_h).to eq(
           {
-            distance: [activity1, activity2, activity3, club_activity].map(&:distance).compact.sum,
-            moving_time: [activity1, activity2, activity3, club_activity].map(&:moving_time).compact.sum,
-            elapsed_time: [activity1, activity2, activity3, club_activity].map(&:elapsed_time).compact.sum,
-            pr_count: [activity1, activity2, activity3, club_activity].map(&:pr_count).compact.sum,
-            calories: [activity1, activity2, activity3, club_activity].map(&:calories).compact.sum,
-            total_elevation_gain: [activity1, activity2, activity3, club_activity].map(&:total_elevation_gain).compact.sum
+            distance: [activity1, activity2, activity3].map(&:distance).compact.sum,
+            moving_time: [activity1, activity2, activity3].map(&:moving_time).compact.sum,
+            elapsed_time: [activity1, activity2, activity3].map(&:elapsed_time).compact.sum,
+            pr_count: [activity1, activity2, activity3].map(&:pr_count).compact.sum,
+            calories: [activity1, activity2, activity3].map(&:calories).compact.sum,
+            total_elevation_gain: [activity1, activity2, activity3].map(&:total_elevation_gain).compact.sum
           }
         )
         expect(stats['Swim'].to_h).to eq(
@@ -155,7 +153,7 @@ describe TeamStats do
         let!(:another_team_activity) { Fabricate(:user_activity, user: Fabricate(:user, team: Fabricate(:team))) }
 
         it 'does not include that activity' do
-          expect(stats.values.map(&:count)).to eq [5, 2, 1]
+          expect(stats.values.map(&:count)).to eq [4, 2, 1]
         end
       end
     end
@@ -172,15 +170,12 @@ describe TeamStats do
   context 'with activities across multiple channels' do
     let!(:user) { Fabricate(:user, team: team) }
     let!(:user_activity) { Fabricate(:user_activity, user: user) }
-    let!(:club1) { Fabricate(:club, team: team, channel_id: 'channel1') }
-    let!(:club1_activity) { Fabricate(:club_activity, club: club1) }
-    let!(:club2) { Fabricate(:club, team: team, channel_id: 'channel2') }
-    let!(:club2_activity) { Fabricate(:club_activity, club: club2) }
+    let!(:user_activity2) { Fabricate(:user_activity, user: user) }
 
     describe '#stats' do
       context 'all channels' do
         let!(:stats) { team.stats }
-        let!(:activities) { [user_activity, club1_activity, club2_activity] }
+        let!(:activities) { [user_activity, user_activity2] }
 
         it 'returns stats for all activities' do
           expect(stats['Run'].to_h).to eq(
@@ -196,34 +191,11 @@ describe TeamStats do
         end
       end
 
-      context 'in channel with bragged club activity' do
-        before do
-          allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
-          club1_activity.brag!
-        end
-
-        context 'stats' do
-          let(:stats) { team.stats(channel_id: club1.channel_id) }
-          let(:activities) { [club1_activity] }
-
-          it 'returns stats for all activities' do
-            expect(stats['Run'].to_h).to eq(
-              {
-                distance: activities.map(&:distance).compact.sum,
-                moving_time: activities.map(&:moving_time).compact.sum,
-                elapsed_time: activities.map(&:elapsed_time).compact.sum,
-                pr_count: activities.map(&:pr_count).compact.sum,
-                calories: activities.map(&:calories).compact.sum,
-                total_elevation_gain: activities.map(&:total_elevation_gain).compact.sum
-              }
-            )
-          end
-        end
-      end
-
       context 'in channel with bragged user activity' do
+        let(:channel_id) { 'channel1' }
+
         before do
-          allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => club1_activity.club.channel_id }])
+          allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => channel_id }])
           allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
           allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
           allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
@@ -231,39 +203,10 @@ describe TeamStats do
         end
 
         context 'stats' do
-          let(:stats) { team.stats(channel_id: club1_activity.club.channel_id) }
+          let(:stats) { team.stats(channel_id: channel_id) }
           let(:activities) { [user_activity] }
 
-          it 'returns stats for all activities' do
-            expect(stats['Run'].to_h).to eq(
-              {
-                distance: activities.map(&:distance).compact.sum,
-                moving_time: activities.map(&:moving_time).compact.sum,
-                elapsed_time: activities.map(&:elapsed_time).compact.sum,
-                pr_count: activities.map(&:pr_count).compact.sum,
-                calories: activities.map(&:calories).compact.sum,
-                total_elevation_gain: activities.map(&:total_elevation_gain).compact.sum
-              }
-            )
-          end
-        end
-      end
-
-      context 'in channel with bragged user and club activities' do
-        before do
-          allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => club1_activity.club.channel_id }])
-          allow_any_instance_of(User).to receive(:user_deleted?).and_return(false)
-          allow_any_instance_of(User).to receive(:user_in_channel?).and_return(true)
-          allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).and_return(ts: 'ts')
-          club1_activity.brag!
-          user_activity.brag!
-        end
-
-        context 'stats' do
-          let(:stats) { team.stats(channel_id: club1.channel_id) }
-          let(:activities) { [user_activity, club1_activity] }
-
-          it 'returns stats for all activities' do
+          it 'returns stats for activities bragged in that channel' do
             expect(stats['Run'].to_h).to eq(
               {
                 distance: activities.map(&:distance).compact.sum,

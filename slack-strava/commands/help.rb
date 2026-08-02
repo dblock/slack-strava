@@ -10,9 +10,6 @@ module SlackStrava
         connect                                          - connect your Strava account
         disconnect                                       - disconnect your Strava account
 
-        Clubs
-        ------------
-        /slava clubs                                     - connect/disconnect clubs
 
         Teams
         ------------

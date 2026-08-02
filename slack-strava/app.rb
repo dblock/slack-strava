@@ -3,6 +3,7 @@ module SlackStrava
     def after_start!
       ::Async::Reactor.run do
         migrate_activity_team_id!
+        purge_club_data!
         ensure_strava_webhook!
         logger.info 'Starting crons.'
         once_and_every 60 * 60 * 24 do
@@ -19,9 +20,6 @@ module SlackStrava
         end
         continuously 10 do |task, tt|
           users_brag_and_rebrag!(task, tt)
-        end
-        continuously 60 do |task, tt|
-          clubs_brag_and_rebrag!(task, tt)
         end
       end
     end
@@ -59,12 +57,18 @@ module SlackStrava
       end
     end
 
+    def purge_club_data!
+      client = Mongoid.default_client
+      clubs_deleted = client[:clubs].delete_many({}).deleted_count
+      club_activities_deleted = client[:club_activities].delete_many({}).deleted_count
+      logger.info "Purged #{clubs_deleted} club(s) and #{club_activities_deleted} club activit(ies)." if clubs_deleted.positive? || club_activities_deleted.positive?
+    rescue StandardError => e
+      logger.error "Failed to purge club data: #{e.message}."
+    end
+
     def migrate_activity_team_id!
       UserActivity.no_timeout.where(:team_id.exists => false).each do |user_activity|
         user_activity.set(team_id: user_activity.user.team_id)
-      end
-      ClubActivity.no_timeout.where(:team_id.exists => false).each do |club_activity|
-        club_activity.set(team_id: club_activity.club.team_id)
       end
     end
 
@@ -148,27 +152,6 @@ module SlackStrava
             user.sync_and_brag!
             task.sleep tt
             user.rebrag!
-            task.sleep tt
-          end
-        rescue StandardError => e
-          backtrace = e.backtrace.join("\n")
-          logger.warn "Error in brag cron for team #{team}, #{e.message}, #{backtrace}."
-          NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s })
-        end
-      end
-    end
-
-    def clubs_brag_and_rebrag!(task, tt)
-      log_info_without_repeat "Checking club activities for #{Team.active.count} team(s)."
-      Team.no_timeout.active.each do |team|
-        next if team.subscription_expired?
-        next unless team.clubs.connected_to_strava.any?
-
-        log_info_without_repeat "Checking club activities for #{team}, #{team.clubs.connected_to_strava.count} club(s)."
-
-        begin
-          team.clubs.no_timeout.connected_to_strava.each do |club|
-            club.sync_and_brag!
             task.sleep tt
           end
         rescue StandardError => e
