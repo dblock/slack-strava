@@ -67,6 +67,7 @@ module SlackStrava
     end
 
     def migrate_activity_team_id!
+      UserActivity.no_timeout.where(:team_id.exists => false).each do |user_activity|
         user_activity.set(team_id: user_activity.user.team_id)
       end
     end

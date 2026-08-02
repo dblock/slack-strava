@@ -80,7 +80,6 @@ module Api
           logger.info "DISCONNECT: #{channel_id}, #{user}, #{user.team}."
           user.disconnect_from_strava.merge(user: user_id, channel: channel_id)
         end
-
       end
     end
   end
