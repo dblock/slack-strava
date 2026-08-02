@@ -25,8 +25,6 @@ module Api
             command.stats!
           when /^leaderboard\s?.*/
             command.leaderboard!
-          when 'clubs'
-            command.clubs!
           when 'connect'
             command.connect!
           when 'disconnect'
@@ -76,10 +74,6 @@ module Api
           command.slack_verification_token!
 
           case command.action
-          when 'club-connect-channel'
-            command.club_connect_channel!
-          when 'club-disconnect-channel'
-            command.club_disconnect_channel!
           else
             error!("Callback #{command.action} is not supported.", 404)
           end

@@ -55,11 +55,9 @@ describe SystemStats do
     let!(:team) { Fabricate(:team) }
     let!(:user1) { Fabricate(:user, team: team) }
     let!(:user2) { Fabricate(:user, team: team) }
-    let!(:club) { Fabricate(:club, team: team) }
     let!(:swim_activity) { Fabricate(:swim_activity, user: user2) }
     let!(:ride_activity1) { Fabricate(:ride_activity, user: user1) }
     let!(:ride_activity2) { Fabricate(:ride_activity, user: user1) }
-    let!(:club_activity) { Fabricate(:club_activity, club: club) }
     let!(:activity1) { Fabricate(:user_activity, user: user1) }
     let!(:activity2) { Fabricate(:user_activity, user: user1) }
     let!(:activity3) { Fabricate(:user_activity, user: user2) }

@@ -44,7 +44,6 @@ class Team
   scope :trials, -> { where(subscribed: false) }
 
   has_many :users, dependent: :destroy
-  has_many :clubs, dependent: :destroy
   has_many :activities
   has_many :channels, dependent: :destroy
 
@@ -230,25 +229,6 @@ class Team
     EOS
   end
 
-  def clubs_to_slack
-    result = {
-      text: Club::DEPRECATION_MESSAGE,
-      attachments: []
-    }
-
-    if clubs.any?
-      clubs.each do |club|
-        attachments = club.to_slack[:attachments]
-        attachments.each do |a|
-          a[:text] = [a[:text], club.channel_mention].compact.join("\n")
-        end
-        result[:attachments].concat(attachments)
-      end
-    else
-      result[:text] = "No clubs connected. #{result[:text]}"
-    end
-    result
-  end
 
   def trial_ends_at
     raise 'Team is subscribed.' if subscribed?
