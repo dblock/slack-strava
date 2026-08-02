@@ -229,7 +229,6 @@ class Team
     EOS
   end
 
-
   def trial_ends_at
     raise 'Team is subscribed.' if subscribed?
 

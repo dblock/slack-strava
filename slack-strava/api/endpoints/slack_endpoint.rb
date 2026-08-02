@@ -73,10 +73,7 @@ module Api
           command = Requests::Command.new(params)
           command.slack_verification_token!
 
-          case command.action
-          else
-            error!("Callback #{command.action} is not supported.", 404)
-          end
+          error!("Callback #{command.action} is not supported.", 404)
         end
 
         desc 'Handle Slack events.'
