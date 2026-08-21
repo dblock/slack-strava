@@ -312,12 +312,12 @@ class Team
           "Subscribed to #{subscription.plan.nickname} (#{amount}), will#{' not' if subscription.cancel_at_period_end} auto-renew on #{current_period_end}.",
           if with_unsubscribe
             (
-                      if subscription.cancel_at_period_end
-                        "Send `resubscribe #{subscription.id}` to resubscribe."
-                      else
-                        "Send `unsubscribe #{subscription.id}` to unsubscribe."
-                      end
-                    )
+              if subscription.cancel_at_period_end
+                "Send `resubscribe #{subscription.id}` to resubscribe."
+              else
+                "Send `unsubscribe #{subscription.id}` to unsubscribe."
+              end
+            )
           end
         ].compact.join("\n")
       else
