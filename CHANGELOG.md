@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/08/29: Improved SEO for public marketing pages with social metadata, noindex transactional pages, and a sitemap - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/08/21: Moved ruby version to a single `.ruby-version` file read by Gemfile and auto-detected by `ruby/setup-ruby` in CI workflows, and added a Renovate `ruby-version` datasource rule so future ruby bumps update everything in one PR - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/08/02: Removed all club code (Club model, ClubActivity model, `/slava clubs` command, sync loop) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/06/27: Upgraded ruby to 4.0.5, nokogiri to 1.19.4 (security), faraday to 2.14.3, concurrent-ruby to 1.3.7, rubocop-capybara to 3.0.0 - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).

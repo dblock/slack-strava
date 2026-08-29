@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<% base_url = SlackRubyBotServer::Service.url
+   pages = %w[/ /help.html /privacy.html] %>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<% pages.each do |page| %>
+  <url>
+    <loc><%= "#{base_url}#{page}" %></loc>
+  </url>
+<% end %>
+</urlset>

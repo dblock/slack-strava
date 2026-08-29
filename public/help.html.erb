@@ -1,11 +1,16 @@
-<html>
+<html lang="en">
   <head>
     <title>Slava: Help</title>
     <%= partial 'public/partials/_head.html.erb' %>
+    <meta name="description" content="How to use Slava: connect Strava, post activities in Slack, unfurl Strava links, view stats and leaderboards, and configure team settings."/>
+    <meta property="og:title" content="Slava: Help">
+    <meta property="og:description" content="How to use Slava: connect Strava, post activities in Slack, unfurl Strava links, view stats and leaderboards, and configure team settings.">
+    <meta name="twitter:title" content="Slava: Help">
+    <meta name="twitter:description" content="How to use Slava: connect Strava, post activities in Slack, unfurl Strava links, view stats and leaderboards, and configure team settings.">
   </head>
   <body>
     <p class='icon'>
-      <a href='/'><img src='img/icon.png'></a>
+      <a href='/'><img src='img/icon.png' alt="Slava logo"></a>
     </p>
     <p>
       <h1>Slava: Help</h1>
@@ -19,31 +24,31 @@
       Invite <b>@slava</b> to a channel.
     </p>
     <p>
-      <img src='img/welcome.png'>
+      <img src='img/welcome.png' alt="Slava welcome message in Slack">
     </p>
     <p>
       When a user joins a channel, they are prompted to connect their Strava account.
     </p>
     <p>
-      <img src='img/joined.png'>
+      <img src='img/joined.png' alt="Prompt to connect Strava after joining a Slack channel">
     </p>
     <p>
       Users can also DM "<b>connect</b>" to <b>@slava</b> or use <b>/slava connect</b> to connect their Strava account.
     </p>
     <p>
-      <img src='img/connect.png'>
+      <img src='img/connect.png' alt="Slava connect command in Slack">
     </p>
     <p>
       Notifications will be posted to any channel <b>@slava</b> is a member of.
     </p>
     <p class='image'>
-      <img src='img/notify.png'>
+      <img src='img/notify.png' alt="Example Strava activity notification posted to Slack">
     </p>
     <p>
       Users can DM "<b>disconnect</b>" to <b>@slava</b> or use <b>/slava disconnect</b> to disconnect their Strava account.
     </p>
     <p>
-      <img src='img/disconnect.png'>
+      <img src='img/disconnect.png' alt="Slava disconnect command in Slack">
     </p>
     <p>
       DM "<b>stats</b>" to <b>@slava</b> or use <b>/slava stats</b> to see aggregate team activity stats in the current channel for the past 30 days.
@@ -52,7 +57,7 @@
       Stats may require adjusting <b>retention</b> for longer ranges.
     </p>
     <p>
-      <img src='img/stats.png'>
+      <img src='img/stats.png' alt="Slava stats command output in Slack">
     </p>
     <p>
       DM "<b>leaderboard</b>" to <b>@slava</b> or use <b>/slava leaderboard</b> to see team activity leaderboard.
@@ -100,4 +105,3 @@
     <%= partial 'public/partials/_footer.html.erb' %>
   </body>
 </html>
-
