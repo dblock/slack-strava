@@ -1,4 +1,4 @@
-<html>
+<html lang="en">
  <head>
   <title>Slava: Strava integration with Slack</title>
   <%= partial 'public/partials/_head.html.erb' %>
@@ -8,10 +8,25 @@
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <meta name="description" content="Connects Strava in Slack and reposts athlete activities into Slack channels, including time, distance, pace, map and weather. Improves unfurling of Strava links for connected athletes."/>
+  <meta property="og:title" content="Slava: Strava integration with Slack">
+  <meta property="og:description" content="Connects Strava in Slack and reposts athlete activities into Slack channels, including time, distance, pace, map and weather. Improves unfurling of Strava links for connected athletes.">
+  <meta name="twitter:title" content="Slava: Strava integration with Slack">
+  <meta name="twitter:description" content="Connects Strava in Slack and reposts athlete activities into Slack channels, including time, distance, pace, map and weather. Improves unfurling of Strava links for connected athletes.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Slava",
+    "url": "<%= SlackRubyBotServer::Service.url %>",
+    "applicationCategory": "SocialNetworkingApplication",
+    "operatingSystem": "Slack",
+    "description": "Connects Strava in Slack and reposts athlete activities into Slack channels, including time, distance, pace, map and weather. Improves unfurling of Strava links for connected athletes."
+  }
+  </script>
  </head>
  <body>
   <p class='icon'>
-    <a href="/"><img src='img/icon.png'></a>
+    <a href="/"><img src='img/icon.png' alt="Slava logo"></a>
   </p>
   <p>
     <h1>Slava: Strava integration with Slack</h1>
@@ -29,11 +44,11 @@
   <p>&nbsp;</p>
   <p id='messages' />
   <p id='register'>
-    <a href="https://slack.com/oauth/authorize?scope=<%= ENV['SLACK_OAUTH_SCOPE'] %>&client_id=<%= ENV['SLACK_CLIENT_ID'] %>"><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
+    <a href="https://slack.com/oauth/authorize?scope=<%= ENV['SLACK_OAUTH_SCOPE'] %>&client_id=<%= ENV['SLACK_CLIENT_ID'] %>"><img alt="Add Slava to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"></a>
   </p>
   <p>&nbsp;</p>
   <p class='image'>
-    <img src='img/notify.png'>
+    <img src='img/notify.png' alt="Example Strava activity notification posted to a Slack channel">
   </p>
   <p>
     <small>
@@ -43,10 +58,10 @@
     </small>
   </p>
   <p class='logo'>
-    <a href="https://www.nyrr.org"><img src='img/nyrr.png'></a>
+    <a href="https://www.nyrr.org"><img src='img/nyrr.png' alt="New York Road Runners"></a>
   </p>
   <p class='logo'>
-    <img src='img/powered.png'>
+    <img src='img/powered.png' alt="Powered by Strava">
   </p>
   <p>
     <small>
@@ -56,4 +71,3 @@
   <%= partial 'public/partials/_footer.html.erb' %>
  </body>
 </html>
-

@@ -1,7 +1,8 @@
-<html>
+<html lang="en">
   <head>
     <title>Slava: Update Credit Card</title>
     <%= partial 'public/partials/_head.html' %>
+    <meta name="robots" content="noindex, nofollow">
     <%
       team = Team.where(team_id: request.params['team_id']).first
       stripe_token = request.params['stripeToken']
@@ -11,7 +12,7 @@
   </head>
   <body>
     <p class='icon'>
-      <a href='/'><img src='img/icon.png'></a>
+      <a href='/'><img src='img/icon.png' alt="Slava logo"></a>
     </p>
     <p>
       <h1>Slava: Update Credit Card Info</h1>
@@ -31,7 +32,7 @@
         </script>
       </form>
       <p>
-        <img src='/img/stripe.png' width='119' height='26'></img>
+        <img src='/img/stripe.png' width='119' height='26' alt="Powered by Stripe"></img>
         <div class='small'>
           Questions? Contact dblock[at]vestris[dot]com or DM <a href='https://twitter.com/playplayio'>@playplayio</a>.
         </div>

@@ -1,13 +1,14 @@
-<html>
+<html lang="en">
   <head>
     <title>Slava: Subscribe</title>
     <%= partial 'public/partials/_head.html.erb' %>
+    <meta name="robots" content="noindex, nofollow">
     <script src='https://checkout.stripe.com/checkout.js'></script>
     <link rel='stylesheet' href='https://checkout.stripe.com/v3/checkout/button.css'></link>
   </head>
   <body>
     <p class='icon'>
-      <a href='/'><img src='img/icon.png'></a>
+      <a href='/'><img src='img/icon.png' alt="Slava logo"></a>
     </p>
     <p>
       <h1>Slava: Subscribe</h1>
@@ -18,7 +19,7 @@
           <span style='display: block; min-height: 30px;'>Pay $9.99 with Card</span>
       </button>
       <p>
-        <img src='/img/stripe.png' width='119' height='26'></img>
+        <img src='/img/stripe.png' width='119' height='26' alt="Powered by Stripe"></img>
       </p>
       <script>
         $(document).ready(function() {
@@ -86,7 +87,7 @@
       </small>
     </p>
     <p class='logo'>
-      <a href="https://www.nyrr.org"><img src='img/nyrr.png'></a>
+      <a href="https://www.nyrr.org"><img src='img/nyrr.png' alt="New York Road Runners"></a>
     </p>
     <%= partial 'public/partials/_footer.html.erb' %>
   </body>
