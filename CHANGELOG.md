@@ -1,6 +1,7 @@
 ### Changelog
 
 * 2026/08/21: Moved ruby version to a single `.ruby-version` file read by Gemfile and auto-detected by `ruby/setup-ruby` in CI workflows, and added a Renovate `ruby-version` datasource rule so future ruby bumps update everything in one PR - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
+* 2026/08/02: Removed all club code (Club model, ClubActivity model, `/slava clubs` command, sync loop) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/06/27: Upgraded ruby to 4.0.5, nokogiri to 1.19.4 (security), faraday to 2.14.3, concurrent-ruby to 1.3.7, rubocop-capybara to 3.0.0 - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/06/04: Disabled club activity syncing (Strava Club Activities API removed September 1, 2026), removed dead sync code, notify club channels once that syncing has stopped - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/06/04: Strava is removing the Club Activities API on September 1, 2026. Blocked new club connections, show a deprecation notice in all club-related commands, and notify existing club channels once on next sync - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).

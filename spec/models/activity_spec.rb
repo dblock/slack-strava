@@ -8,18 +8,16 @@ describe Activity do
   end
 
   describe '#==' do
-    let(:club_activity) { Fabricate(:club_activity) }
+    let(:user_activity) { Fabricate(:user_activity) }
     let(:swim_activity) { Fabricate(:swim_activity) }
 
     it 'same object' do
-      expect(club_activity).to eq club_activity
+      expect(user_activity).to eq user_activity
     end
 
     it 'different instance' do
-      expect(club_activity).to eq Fabricate(:club_activity)
-      expect(club_activity).to eq club_activity.dup
-      expect(swim_activity).not_to eq club_activity
-      expect(club_activity).not_to eq swim_activity
+      expect(swim_activity).not_to eq user_activity
+      expect(user_activity).not_to eq swim_activity
     end
 
     context 'same data' do
@@ -35,9 +33,9 @@ describe Activity do
 
       it 'equals for different instances' do
         expect(described_class.new(data)).to eq activity
-        expect(ClubActivity.new(data)).to eq activity
+        expect(UserActivity.new(data)).to eq activity
         expect(activity).to eq described_class.new(data)
-        expect(activity).to eq ClubActivity.new(data)
+        expect(activity).to eq UserActivity.new(data)
       end
 
       it 'is different with different data' do

@@ -50,18 +50,6 @@ module Api
           )
         end
 
-        def clubs!
-          logger.info "CLUBS: #{channel_id}, #{user}, #{user.team}."
-          if channel_id[0] == 'D'
-            user.team.clubs_to_slack.merge(user: user_id, channel: channel_id)
-          else
-            clubs = user.team.clubs.where(channel_id: channel_id).to_a
-            result = { text: Club::DEPRECATION_MESSAGE, user: user_id, channel: channel_id, attachments: [] }
-            clubs.each { |club| result[:attachments].concat(club.connect_to_slack[:attachments]) }
-            result
-          end
-        end
-
         def stats!
           logger.info "STATS: #{channel_id}, #{user}, #{user.team}."
           options = {}
@@ -91,28 +79,6 @@ module Api
         def disconnect!
           logger.info "DISCONNECT: #{channel_id}, #{user}, #{user.team}."
           user.disconnect_from_strava.merge(user: user_id, channel: channel_id)
-        end
-
-        def club_connect_channel!
-          { text: Club::DEPRECATION_MESSAGE, user: user_id, channel: channel_id }
-        end
-
-        def club_disconnect_channel!
-          strava_id = arg
-          club = Club.where(team: user.team, channel_id: channel_id).first
-          raise "Club #{strava_id} not connected to #{channel_id}." unless club
-
-          club.destroy
-          logger.info "Disconnected #{club}, #{user}, #{user.team}."
-          user.team.slack_client.chat_postMessage(
-            club.to_slack.merge(
-              as_user: true, channel: channel_id, text: "A club has been disconnected by #{user.slack_mention}."
-            )
-          )
-          clubs = user.team.clubs.where(channel_id: channel_id).to_a
-          result = { text: Club::DEPRECATION_MESSAGE, user: user_id, channel: channel_id, attachments: [] }
-          clubs.each { |c| result[:attachments].concat(c.connect_to_slack[:attachments]) }
-          result
         end
       end
     end
