@@ -18,88 +18,6 @@ describe Api::Endpoints::SlackEndpoint do
     context 'interactive buttons' do
       let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
 
-      let(:osr) do
-        Club.new(
-          name: 'Orchard Street Runners',
-          description: 'www.orchardstreetrunners.com',
-          url: 'OrchardStreetRunners',
-          city: 'New York',
-          state: 'New York',
-          country: 'United States',
-          member_count: 146,
-          logo: 'https://dgalywyr863hv.cloudfront.net/pictures/clubs/43749/1121181/4/medium.jpg'
-        )
-      end
-
-      context 'without a club' do
-        it 'returns a deprecation message instead of connecting', vcr: { cassette_name: 'strava/retrieve_a_club' } do
-          expect {
-            post '/api/slack/action', payload: {
-              actions: [{ name: 'strava_id', value: '43749' }],
-              channel: { id: 'C12345', name: 'runs' },
-              user: { id: user.user_id },
-              team: { id: team.team_id },
-              token: token,
-              callback_id: 'club-connect-channel'
-            }.to_json
-            expect(last_response.status).to eq 201
-            response = JSON.parse(last_response.body)
-            expect(response['text']).to include 'Strava is removing the Club Activities API'
-          }.not_to change(Club, :count)
-        end
-      end
-
-      context 'with a club' do
-        let!(:club) { Fabricate(:club, team: team) }
-
-        context 'with sync disabled' do
-          before do
-            club.update_attributes!(sync_activities: false)
-          end
-
-          it 'returns a deprecation message instead of reconnecting', vcr: { cassette_name: 'strava/retrieve_a_club' } do
-            expect {
-              post '/api/slack/action', payload: {
-                actions: [{ name: 'strava_id', value: '43749' }],
-                channel: { id: club.channel_id, name: 'runs' },
-                user: { id: user.user_id },
-                team: { id: team.team_id },
-                token: token,
-                callback_id: 'club-connect-channel'
-              }.to_json
-              expect(last_response.status).to eq 201
-              response = JSON.parse(last_response.body)
-              expect(response['text']).to include 'Strava is removing the Club Activities API'
-            }.not_to change(Club, :count)
-            expect(club.reload.sync_activities).to be false
-          end
-        end
-
-        it 'disconnects club' do
-          expect {
-            expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
-              club.to_slack.merge(
-                as_user: true,
-                channel: club.channel_id,
-                text: "A club has been disconnected by #{user.slack_mention}."
-              )
-            )
-            post '/api/slack/action', payload: {
-              actions: [{ name: 'strava_id', value: club.strava_id }],
-              channel: { id: club.channel_id, name: 'runs' },
-              user: { id: user.user_id },
-              team: { id: team.team_id },
-              token: token,
-              callback_id: 'club-disconnect-channel'
-            }.to_json
-            expect(last_response.status).to eq 201
-            response = JSON.parse(last_response.body)
-            expect(response['text']).to include 'Strava is removing the Club Activities API'
-            expect(response['attachments']).to eq([])
-          }.to change(Club, :count).by(-1)
-        end
-      end
-
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/action', payload: {
           actions: [{ name: 'strava_id', value: '43749' }],
@@ -197,86 +115,8 @@ describe Api::Endpoints::SlackEndpoint do
       end
 
       context 'in channel' do
-        context 'disconnected user' do
-          let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
-          let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
-
-          it 'shows deprecation message with disconnect button for connected club' do
-            post '/api/slack/command',
-                 command: '/slava',
-                 text: 'clubs',
-                 channel_id: 'channel',
-                 channel_name: 'channel_name',
-                 user_id: user.user_id,
-                 team_id: team.team_id,
-                 token: token
-            expect(last_response.status).to eq 201
-            response = JSON.parse(last_response.body)
-            expect(response['text']).to include 'Strava is removing the Club Activities API'
-            expect(response['attachments'].count).to eq 1
-            expect(response['attachments'][0]['actions'][0]['text']).to eq 'Disconnect'
-          end
-        end
-
         context 'connected user' do
           let(:user) { Fabricate(:user, team: team, access_token: 'token', token_expires_at: Time.now + 1.day) }
-
-          it 'shows deprecation message with no clubs in channel' do
-            post '/api/slack/command',
-                 command: '/slava',
-                 text: 'clubs',
-                 channel_id: 'channel',
-                 channel_name: 'channel_name',
-                 user_id: user.user_id,
-                 team_id: team.team_id,
-                 token: token
-            expect(last_response.status).to eq 201
-            response = JSON.parse(last_response.body)
-            expect(response['text']).to include 'Strava is removing the Club Activities API'
-            expect(response['attachments']).to eq []
-          end
-
-          context 'with another connected club in the channel' do
-            let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
-            let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
-
-            it 'shows deprecation message with disconnect button for connected club' do
-              post '/api/slack/command',
-                   command: '/slava',
-                   text: 'clubs',
-                   channel_id: 'channel',
-                   channel_name: 'channel_name',
-                   user_id: user.user_id,
-                   team_id: team.team_id,
-                   token: token
-              response = JSON.parse(last_response.body)
-              expect(response['text']).to include 'Strava is removing the Club Activities API'
-              expect(response['attachments'].count).to eq 1
-              expect(response['attachments'][0]['title']).to eq club.name
-              expect(response['attachments'][0]['actions'].first['text']).to eq 'Disconnect'
-            end
-          end
-
-          context 'with another disabled club in the channel' do
-            let!(:club_in_another_channel) { Fabricate(:club, team: team, channel_id: 'another') }
-            let!(:club) { Fabricate(:club, team: team, channel_id: 'channel', sync_activities: false) }
-
-            it 'shows deprecation message with connect button for disabled club' do
-              post '/api/slack/command',
-                   command: '/slava',
-                   text: 'clubs',
-                   channel_id: 'channel',
-                   channel_name: 'channel_name',
-                   user_id: user.user_id,
-                   team_id: team.team_id,
-                   token: token
-              response = JSON.parse(last_response.body)
-              expect(response['text']).to include 'Strava is removing the Club Activities API'
-              expect(response['attachments'].count).to eq 1
-              expect(response['attachments'][0]['title']).to eq club.name
-              expect(response['attachments'][0]['actions'].first['text']).to eq 'Connect'
-            end
-          end
 
           context 'leaderboard' do
             it 'returns team leaderboard' do
@@ -318,78 +158,12 @@ describe Api::Endpoints::SlackEndpoint do
             end
           end
         end
-
-        context 'out of channel' do
-          let!(:club) { Fabricate(:club, team: team, channel_id: 'channel') }
-
-          it 'shows deprecation message' do
-            post '/api/slack/command',
-                 command: '/slava',
-                 text: 'clubs',
-                 channel_id: 'channel',
-                 channel_name: 'channel_name',
-                 user_id: user.user_id,
-                 team_id: team.team_id,
-                 token: token
-            response = JSON.parse(last_response.body)
-            expect(response['text']).to include 'Strava is removing the Club Activities API'
-          end
-        end
-
-        context 'DMs' do
-          it 'says no clubs are connected in a DM' do
-            post '/api/slack/command',
-                 command: '/slava',
-                 text: 'clubs',
-                 channel_id: 'D1234',
-                 channel_name: 'channel_name',
-                 user_id: user.user_id,
-                 team_id: team.team_id,
-                 token: token
-
-            expect(last_response.status).to eq 201
-            expect(JSON.parse(last_response.body)).to eq(
-              'attachments' => [],
-              'channel' => 'D1234',
-              'text' => "No clubs connected. #{Club::DEPRECATION_MESSAGE}",
-              'user' => user.user_id
-            )
-          end
-
-          context 'with a connected club' do
-            let!(:club) { Fabricate(:club, team: team) }
-
-            it 'lists connected clubs in a DM' do
-              post '/api/slack/command',
-                   command: '/slava',
-                   text: 'clubs',
-                   channel_id: 'D1234',
-                   channel_name: 'channel_name',
-                   user_id: user.user_id,
-                   team_id: team.team_id,
-                   token: token
-
-              expect(last_response.status).to eq 201
-              club_with_channel_id = club.to_slack
-              club_with_channel_id[:attachments].each do |attachment|
-                attachment[:text] += "\n#{club.channel_mention}"
-              end
-              expect(JSON.parse(last_response.body)).to eq(
-                JSON.parse(club_with_channel_id.merge(
-                  text: Club::DEPRECATION_MESSAGE,
-                  user: user.user_id,
-                  channel: 'D1234'
-                ).to_json)
-              )
-            end
-          end
-        end
       end
 
       it 'returns an error with a non-matching verification token' do
         post '/api/slack/command',
              command: '/slava',
-             text: 'clubs',
+             text: 'connect',
              channel_id: 'C1',
              channel_name: 'channel_1',
              user_id: 'user_id',
