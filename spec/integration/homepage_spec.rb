@@ -19,6 +19,6 @@ describe 'Homepage', :js, type: :feature do
   end
 
   it 'includes a link to add to slack with the client id' do
-    expect(find("a[href='https://slack.com/oauth/authorize?scope=scope:read&client_id=client_id']"))
+    expect(all("a[href='https://slack.com/oauth/authorize?scope=scope:read&client_id=client_id']").size).to eq(2)
   end
 end
