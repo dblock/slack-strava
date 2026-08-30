@@ -21,6 +21,16 @@ body {
   width: 100%;
 }
 
+.register img {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease-in-out;
+}
+
+.register img:hover {
+  transform: scale(1.03);
+}
+
 .has-error {
   color: red;
 }
