@@ -3,7 +3,7 @@ $(document).ready(function() {
   var code = $.url('?code')
   if (code) {
     SlackStrava.message('Working, please wait ...');
-    $('#register').hide();
+    $('.register').hide();
     $.ajax({
       type: "POST",
       url: "/api/teams",
