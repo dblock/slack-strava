@@ -28,7 +28,7 @@ gem 'ruby-enum'
 gem 'slack-ruby-bot-server-mailchimp'
 gem 'slack-ruby-bot-server-rtm'
 gem 'strava-ruby-client'
-gem 'stripe', '~> 13.0'
+gem 'stripe', '~> 19.0'
 gem 'wannabe_bool'
 
 group :development, :test do
