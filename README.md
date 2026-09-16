@@ -2,6 +2,7 @@ Slava
 =====
 
 [![Tests](https://github.com/dblock/slack-strava/actions/workflows/test.yml/badge.svg)](https://github.com/dblock/slack-strava/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/coverage-91.76%25-brightgreen)](https://github.com/dblock/slack-strava)
 
 Integrate Strava into Slack. Hosted at [slava.playplay.io](https://slava.playplay.io/).
 
