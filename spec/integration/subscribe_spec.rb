@@ -8,7 +8,7 @@ describe 'Subscribe', :js, type: :feature do
 
     it 'requires a team' do
       expect(find_by_id('messages')).to have_text('Missing or invalid team ID.')
-      find_by_id('subscribe', visible: false)
+      find_by_id('subscribe', visible: :all)
     end
   end
 
@@ -21,7 +21,7 @@ describe 'Subscribe', :js, type: :feature do
 
     it 'displays an error' do
       expect(find_by_id('messages')).to have_text("Team #{team.name} is already subscribed, thank you for your support.")
-      find_by_id('subscribe', visible: false)
+      find_by_id('subscribe', visible: :all)
     end
   end
 
@@ -62,7 +62,7 @@ describe 'Subscribe', :js, type: :feature do
 
       allow_any_instance_of(Team).to receive(:inform_everyone!)
 
-      find_by_id('subscribe', visible: true)
+      find_by_id('subscribe', visible: :visible)
 
       expect(Stripe::Customer).to receive(:create).and_return('id' => 'customer_id')
 
@@ -81,7 +81,7 @@ describe 'Subscribe', :js, type: :feature do
 
       sleep 5
 
-      find_by_id('subscribe', visible: false)
+      find_by_id('subscribe', visible: :all)
       expect(find_by_id('messages')).to have_text("Team #{team.name} successfully subscribed.\n\nThank you for your support!")
 
       team.reload
