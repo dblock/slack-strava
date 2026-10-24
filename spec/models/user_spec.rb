@@ -658,6 +658,31 @@ describe User do
     end
   end
 
+  describe '#with_strava_error_handler' do
+    let(:user) { Fabricate(:user) }
+
+    it 'deactivates an inactive bot account instead of repeatedly reporting it' do
+      error = Slack::Web::Api::Errors::AccountInactive.new('account_inactive')
+      expect(NewRelic::Agent).to receive(:notice_error).once.with(error, expected: true, custom_params: { team: user.team.to_s })
+      2.times do
+        user.with_strava_error_handler { raise error }
+      end
+      expect(user.team.reload.active?).to be false
+    end
+
+    it 'skips polling, webhook delivery and rebragging after another instance deactivates the team' do
+      team = user.team
+      activity = Fabricate(:user_activity, user: user)
+      Team.find(team.id).deactivate!
+      expect(user).not_to receive(:sync_new_strava_activities!)
+      expect(user).not_to receive(:sync_strava_activity!)
+      expect(user).not_to receive(:strava_client)
+      user.sync_and_brag!
+      user.sync_activity_and_brag!(activity.strava_id)
+      user.rebrag_activity!(activity)
+    end
+  end
+
   context 'sync_activity_and_brag!' do
     let!(:user) { Fabricate(:user) }
 

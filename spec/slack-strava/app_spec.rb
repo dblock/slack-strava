@@ -19,6 +19,26 @@ describe SlackStrava::App do
     end
   end
 
+  describe '#users_brag_and_rebrag!' do
+    let!(:failed_team) { Fabricate(:team) }
+    let!(:affected_users) { Array.new(2) { Fabricate(:user, team: failed_team, access_token: 'strava-token') } }
+    let!(:healthy_user) { Fabricate(:user, team: Fabricate(:team), access_token: 'strava-token') }
+
+    it 'stops the failed team immediately and continues healthy installations on later cycles' do
+      task = instance_double(Async::Task, sleep: nil)
+      synced_users = []
+      rebragged_users = []
+      allow_any_instance_of(User).to receive(:sync_and_brag!) do |user|
+        synced_users << user.id
+        user.team.deactivate! if user.team_id == failed_team.id
+      end
+      allow_any_instance_of(User).to receive(:rebrag!) { |user| rebragged_users << user.id }
+      2.times { subject.send(:users_brag_and_rebrag!, task, 0) }
+      expect(synced_users).to eq [affected_users.first.id, healthy_user.id, healthy_user.id]
+      expect(rebragged_users).to eq [healthy_user.id, healthy_user.id]
+    end
+  end
+
   describe '#deactivate_asleep_teams!' do
     let!(:active_team) { Fabricate(:team, created_at: Time.now.utc) }
     let!(:active_team_one_week_ago) { Fabricate(:team, created_at: 1.week.ago) }

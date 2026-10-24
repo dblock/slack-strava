@@ -129,6 +129,7 @@ describe UserActivity do
           }
           expect(activity.brag!).to eq []
         }.not_to change(User, :count)
+        expect(team.reload.active?).to be true
       end
 
       it 'warns if the account goes inactive' do
@@ -138,9 +139,72 @@ describe UserActivity do
             expect(user.team.slack_client).to receive(:chat_postMessage) {
               raise Slack::Web::Api::Errors::SlackError, 'account_inactive'
             }
-            expect(activity.brag!).to eq []
+            expect(activity.brag!).to be_nil
           }.not_to change(User, :count)
         }.not_to change(described_class, :count)
+        expect(team.reload.active?).to be false
+        expect(activity.reload.bragged_at).to be_nil
+      end
+
+      it 'stops delivery to other channels and users, including stale activity instances' do
+        stale_user = Fabricate(:user, team: Team.find(team.id))
+        stale_activity = Fabricate(:user_activity, user: stale_user)
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'channel_id' }, { 'id' => 'another_channel' }])
+        error = Slack::Web::Api::Errors::AccountInactive.new('account_inactive')
+        expect(user.team.slack_client).to receive(:chat_postMessage).once.and_raise(error)
+        expect(NewRelic::Agent).to receive(:notice_error).once.with(error, expected: true, custom_params: { team: team.to_s })
+        2.times do
+          activity.brag!
+          stale_activity.brag!
+        end
+        expect([activity.reload.bragged_at, stale_activity.reload.bragged_at]).to eq [nil, nil]
+      end
+
+      it 'deactivates when channel discovery reports an inactive bot account' do
+        allow(user).to receive(:user_deleted?).and_call_original
+        expect(user.team.slack_client).to receive(:users_info).once.and_raise(Slack::Web::Api::Errors::AccountInactive, 'account_inactive')
+        expect(user.team.slack_client).not_to receive(:chat_postMessage)
+        2.times { activity.brag! }
+        expect(team.reload.active?).to be false
+        expect(activity.reload.bragged_at).to be_nil
+      end
+
+      it 'does not hide unrelated Slack failures or deactivate healthy installations' do
+        allow(user.team.slack_client).to receive(:chat_postMessage).and_raise(Slack::Web::Api::Errors::SlackError, 'unexpected_error')
+        expect { activity.brag! }.to raise_error(Slack::Web::Api::Errors::SlackError, 'unexpected_error')
+        expect(team.reload.active?).to be true
+      end
+
+      it 'resumes partially delivered activities without reposting successful channels' do
+        allow_any_instance_of(Team).to receive(:slack_channels).and_return([{ 'id' => 'first' }, { 'id' => 'second' }])
+        posted_channels = []
+        allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage) do |_client, message|
+          posted_channels << message[:channel]
+          raise Slack::Web::Api::Errors::AccountInactive, 'account_inactive' if posted_channels.length == 2
+
+          { 'ts' => message[:channel] }
+        end
+        expect(activity.brag!).to be_nil
+        expect(activity.reload.channel_messages.map(&:channel)).to eq ['first']
+        team.activate!(team.token)
+        expect(activity.reload.brag!).to eq [{ ts: 'first', channel: 'first' }, { ts: 'second', channel: 'second' }]
+        expect(posted_channels).to eq %w[first second second]
+      end
+
+      it 'resumes a failed details thread without reposting its summary' do
+        team.update_attributes!(threads: 'activity')
+        posted_threads = []
+        allow_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage) do |_client, message|
+          posted_threads << message[:thread_ts]
+          raise Slack::Web::Api::Errors::AccountInactive, 'account_inactive' if posted_threads.length == 2
+
+          { 'ts' => posted_threads.length.to_s }
+        end
+        expect(activity.brag!).to be_nil
+        expect(activity.reload.channel_messages.first.ts).to eq '1'
+        team.activate!(team.token)
+        expect(activity.reload.brag!).to eq [{ ts: '1', channel: 'channel_id', details_ts: '3' }]
+        expect(posted_threads).to eq [nil, '1', '1']
       end
 
       it 'informs user on restricted_action' do

@@ -129,6 +129,8 @@ class User
   end
 
   def inform_channel!(message, channel, thread_ts = nil)
+    return unless team.reload.active?
+
     message_with_channel = message.merge(channel: channel['id'], as_user: true)
     message_with_channel[:thread_ts] = thread_ts if thread_ts
     logger.info "Posting '#{message_with_channel.to_json}' to #{team} on ##{channel['name']}."
@@ -145,7 +147,10 @@ class User
       dm!(text: "I wasn't allowed to post into <##{channel['id']}> because of a Slack workspace preference, please contact your Slack admin.")
       NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, user: to_s })
       nil
-    when 'not_in_channel', 'account_inactive'
+    when 'account_inactive'
+      team.deactivate_for_inactive_account!(e)
+      nil
+    when 'not_in_channel'
       logger.warn "Posting for #{self} into ##{channel['name']} failed, #{e.message}."
       NewRelic::Agent.notice_error(e, custom_params: { team: team.to_s, user: to_s })
       nil
