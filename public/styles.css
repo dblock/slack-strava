@@ -1,40 +1,501 @@
 body {
-  font-family: 'Arial', 'Helvetica', sans-serif;
-  text-align: center;
-  margin: 20px;
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    text-align: center;
+    margin: 20px;
 }
 
 .icon img {
-  width: 200px;
+    width: 200px;
 }
 
 .logo img {
-  width: 120px;
+    width: 120px;
 }
 
 .image {
-  max-width: 1024px;
-  margin: auto;
+    max-width: 512px;
+    margin: auto;
 }
 
 .image img {
-  width: 100%;
+    max-width: 100%;
+    height: auto;
 }
 
 .register img {
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: transform 0.1s ease-in-out;
+    transition: transform 0.1s ease-in-out;
 }
 
 .register img:hover {
-  transform: scale(1.03);
+    transform: scale(1.03);
 }
 
 #messages {
-  min-height: 1.5em;
+    min-height: 1.5em;
 }
 
-.has-error {
-  color: red;
+p.has-error {
+    color: red;
+}
+
+.site-page {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    min-height: 100vh;
+    color: #33251f;
+    line-height: 1.7;
+    background-color: #fff;
+}
+
+.site-page::before {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    content: "";
+    pointer-events: none;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42)), url("/img/screenshot-background.svg");
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.site-page > main {
+    flex: 1;
+}
+
+.site-page * {
+    box-sizing: border-box;
+}
+
+.site-page a {
+    color: #342016;
+    text-underline-offset: 3px;
+}
+
+.site-page p.has-error {
+    color: #611111;
+}
+
+.site-page a:hover {
+    text-decoration-thickness: 2px;
+}
+
+.site-page a:focus-visible {
+    outline: 3px solid #904737;
+    outline-offset: 5px;
+}
+
+.site-page [id] {
+    scroll-margin-top: 96px;
+}
+
+.site-page .page-container {
+    width: calc(100% - 48px);
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.site-page .narrow-container {
+    max-width: 760px;
+}
+
+.site-page .skip-link {
+    position: absolute;
+    top: -80px;
+    left: 16px;
+    z-index: 20;
+    padding: 10px 16px;
+    background: #fff;
+}
+
+.site-page .skip-link:focus {
+    top: 12px;
+}
+
+.site-page .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(233, 115, 88, 0.12);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+}
+
+.site-page .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 80px;
+}
+
+.site-page .site-brand {
+    font: italic 700 32px Georgia, serif;
+    text-decoration: none;
+}
+
+.site-page .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 28px;
+}
+
+.site-page .nav-links a {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.site-page .hero {
+    padding-top: 60px;
+}
+
+.site-page .hero-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    max-width: 920px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.site-page .hero-logo {
+    flex: 0 0 auto;
+    width: 112px;
+    height: auto;
+    margin-top: 12px;
+}
+
+.site-page h1 {
+    margin: 0;
+    color: #904737;
+    font-size: 48px;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+
+.site-page .hero-tagline {
+    margin: 16px 0;
+    font: italic 30px/1.35 Georgia, serif;
+}
+
+.site-page .hero-description {
+    max-width: 680px;
+    margin: 0 0 24px;
+    font-size: 18px;
+}
+
+.site-page .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.site-page .install-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    min-height: 42px;
+    padding: 8px 20px;
+    border-radius: 5px;
+    color: #fff;
+    background: #904737;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-decoration: none;
+    vertical-align: middle;
+    transition: transform 0.1s ease-in-out, background-color 0.1s ease-in-out;
+}
+
+.site-page .install-button:hover {
+    background: #723425;
+    transform: scale(1.03);
+}
+
+.site-page .secondary-button {
+    display: inline-block;
+    padding: 6px 20px;
+    border: 1px solid #904737;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.site-page .secondary-button:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.site-page .beta-note {
+    max-width: 680px;
+    margin: 18px 0 0;
+    font-size: 13px;
+}
+
+.site-page #messages {
+    margin: 12px 0 0;
+    font-size: 14px;
+}
+
+.site-page .hero-preview {
+    margin: 16px 0 0;
+}
+
+.site-page .hero-preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 1236px;
+    margin: 0 auto;
+    filter: drop-shadow(0 16px 24px rgba(144, 71, 55, 0.16));
+}
+
+.site-page .homepage-section {
+    padding: 64px 0;
+}
+
+.site-page .homepage-section h2 {
+    margin: 0 0 12px;
+    font-size: 26px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.site-page .section-intro {
+    margin: 0 0 32px;
+    font: italic 22px/1.5 Georgia, serif;
+}
+
+.site-page .setup-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 36px;
+    margin: 32px 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+    text-align: left;
+}
+
+.site-page .setup-steps li {
+    counter-increment: step;
+}
+
+.site-page .setup-steps li::before {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    background: #904737;
+    content: counter(step);
+    font-weight: 700;
+}
+
+.site-page .setup-steps h3 {
+    margin: 16px 0 8px;
+    font-size: 18px;
+}
+
+.site-page .setup-steps p {
+    margin: 0;
+}
+
+.site-page code {
+    padding: 2px 4px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 0.95em;
+    overflow-wrap: anywhere;
+}
+
+.site-page .install-cta {
+    margin: 28px 0;
+}
+
+.site-page .attribution-logos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    margin: 32px 0 20px;
+}
+
+.site-page .attribution-logos img {
+    width: 120px;
+    height: auto;
+}
+
+.site-page .affiliation-note,
+.site-page .site-footer {
+    font-size: 13px;
+}
+
+.site-page .site-footer {
+    padding: 28px 0;
+    border-top: 1px solid rgba(233, 115, 88, 0.2);
+}
+
+.site-page .content-page {
+    max-width: 860px;
+    padding: 40px 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.site-page .content-page h1 {
+    margin-bottom: 28px;
+}
+
+.site-page .content-page h3,
+.site-page .content-page h4 {
+    margin-top: 28px;
+    line-height: 1.4;
+}
+
+.site-page .centered-content {
+    text-align: center;
+}
+
+.site-page #subscribe,
+.site-page #update_cc {
+    margin-top: 28px;
+}
+
+.help-page .help-content {
+    max-width: 860px;
+    padding-bottom: 40px;
+    text-align: left;
+}
+
+.help-page .help-header {
+    padding: 40px 0 16px;
+}
+
+.help-page .help-section {
+    margin: 32px 0;
+}
+
+.help-page .help-section h2 {
+    font-size: 24px;
+}
+
+.help-page .getting-started-steps {
+    padding-left: 24px;
+}
+
+.help-page .getting-started-steps li {
+    margin: 14px 0;
+    padding-left: 6px;
+}
+
+.help-page .help-note {
+    font-size: 14px;
+}
+
+.help-page .help-topic {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(233, 115, 88, 0.2);
+}
+
+.help-page .help-topic summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.help-page .help-topic summary:focus-visible {
+    outline: 3px solid #904737;
+    outline-offset: 5px;
+}
+
+.help-page .help-topic dt {
+    margin-top: 20px;
+    font-weight: 700;
+}
+
+.help-page .help-topic dd {
+    margin: 6px 0 16px;
+}
+
+@media (max-width: 700px) {
+    .site-page .page-container {
+        width: calc(100% - 32px);
+    }
+
+    .site-page .nav-inner {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 0;
+    }
+
+    .site-page .nav-links {
+        gap: 8px 16px;
+    }
+
+    .site-page .nav-links a {
+        font-size: 10px;
+    }
+
+    .site-page [id] {
+        scroll-margin-top: 128px;
+    }
+
+    .site-page .hero {
+        padding-top: 32px;
+    }
+
+    .site-page .hero-intro {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .site-page .hero-logo {
+        width: 88px;
+        margin-top: 0;
+    }
+
+    .site-page h1 {
+        font-size: 40px;
+    }
+
+    .site-page .hero-tagline {
+        font-size: 25px;
+    }
+
+    .site-page .hero-description {
+        font-size: 16px;
+    }
+
+    .site-page .hero-actions {
+        justify-content: center;
+    }
+
+    .site-page .hero-preview {
+        width: calc(100% + 32px);
+        margin-left: -16px;
+    }
+
+    .site-page .homepage-section {
+        padding: 40px 0;
+    }
+
+    .site-page .setup-steps {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
 }

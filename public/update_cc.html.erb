@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Slava: Update Credit Card</title>
-    <%= partial 'public/partials/_head.html' %>
+    <%= partial 'public/partials/_head.html.erb' %>
     <meta name="robots" content="noindex, nofollow">
     <%
       team = Team.where(team_id: request.params['team_id']).first
@@ -10,16 +11,13 @@
       stripe_email = request.params['stripeEmail']
     %>
   </head>
-  <body>
-    <p class='icon'>
-      <a href='/'><img src='img/icon.png' alt="Slava logo"></a>
-    </p>
-    <p>
+  <body class="site-page">
+    <%= partial 'public/partials/_navigation.html.erb' %>
+    <main id="main" class="page-container content-page centered-content">
       <h1>Slava: Update Credit Card Info</h1>
-    </p>
-    <p id='messages' />
-    <p id='update_cc'>
-      <form action="" method="POST">
+      <p id="messages" role="status" aria-live="polite"></p>
+      <div id="update_cc">
+        <form action="" method="POST">
         <script
           src="https://checkout.stripe.com/checkout.js" class="stripe-button"
           data-key="<%= ENV['STRIPE_API_PUBLISHABLE_KEY'] %>"
@@ -30,13 +28,10 @@
           data-allow-remember-me=false
           data-locale="auto">
         </script>
-      </form>
-      <p>
-        <img src='/img/stripe.png' width='119' height='26' alt="Powered by Stripe"></img>
-        <div class='small'>
-          Questions? Contact dblock[at]vestris[dot]com or DM <a href='https://twitter.com/playplayio'>@playplayio</a>.
-        </div>
-      </p>
+        </form>
+        <p><img src="/img/stripe.png" width="119" height="26" alt="Powered by Stripe"></p>
+        <p>Need a hand? <a href="/help.html#support">Contact support</a>.</p>
+      </div>
       <script>
         $(document).ready(function() {
           var data = {
@@ -72,7 +67,7 @@
           }
         });
       </script>
-    </p>
+    </main>
     <%= partial 'public/partials/_footer.html.erb' %>
   </body>
 </html>

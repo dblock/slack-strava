@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Slava: Subscribe</title>
@@ -6,21 +7,17 @@
     <script src='https://checkout.stripe.com/checkout.js'></script>
     <link rel='stylesheet' href='https://checkout.stripe.com/v3/checkout/button.css'></link>
   </head>
-  <body>
-    <p class='icon'>
-      <a href='/'><img src='img/icon.png' alt="Slava logo"></a>
-    </p>
-    <p>
+  <body class="site-page">
+    <%= partial 'public/partials/_navigation.html.erb' %>
+    <main id="main" class="page-container content-page centered-content">
       <h1>Slava: Subscribe</h1>
-    </p>
-    <p id='messages' />
-    <p id='subscribe'>
-      <button id='subscribeButton' class='stripe-button-el'>
+      <p id="messages" role="status" aria-live="polite"></p>
+      <div id="subscribe">
+        <button id='subscribeButton' class='stripe-button-el'>
           <span style='display: block; min-height: 30px;'>Pay $9.99 with Card</span>
-      </button>
-      <p>
-        <img src='/img/stripe.png' width='119' height='26' alt="Powered by Stripe"></img>
-      </p>
+        </button>
+        <p><img src="/img/stripe.png" width="119" height="26" alt="Powered by Stripe"></p>
+      </div>
       <script>
         $(document).ready(function() {
 
@@ -80,7 +77,6 @@
           });
         });
       </script>
-    </p>
     <p>
       <small>
         All proceeds go to <a href="https://www.nyrr.org" target="_blank">nyrr.org</a>.
@@ -89,6 +85,7 @@
     <p class='logo'>
       <a href="https://www.nyrr.org"><img src='img/nyrr.png' alt="New York Road Runners"></a>
     </p>
+    </main>
     <%= partial 'public/partials/_footer.html.erb' %>
   </body>
 </html>
