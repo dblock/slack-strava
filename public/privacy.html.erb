@@ -11,14 +11,10 @@
   <meta name="twitter:description" content="Slava's privacy policy: what data we collect from Strava and Slack, how it's used and retained, and your rights.">
 </head>
 
-<body style="text-align: center">
-  <p style="margin: 50px;">
-    <a href='/'><img src='img/icon.png' width="120px" alt="Slava logo"></a>
-  </p>
-  <p>
+<body class="site-page">
+  <%= partial 'public/partials/_navigation.html.erb' %>
+  <main id="main" class="page-container content-page">
     <h1>Slava: Privacy Policy</h1>
-  </p>
-  <div style='text-align: left'>
     <h3>tl;dr</h3>
     <p>
       Slava does not want to know who you are and tries to collect just enough data to enable our services.
@@ -92,7 +88,7 @@
     <p>
       You have a right to access the data we hold about you, get a copy of it, make us correct or amend the data we hold about you, ask us to delete, block, or suppress data we hold about you (though for legal reasons we may not always be able to do it), object to us using your data for certain purposes, such as direct marketing or research or statistical reasons, request transfer of your data to you or a third party, and withdraw any consent you've previously given us. If you need to exercise this right for any reason, please e-mail <b>dblock[at]vestris[dot]com</b>.
     </p>
-  </div>
+  </main>
   <%= partial 'public/partials/_footer.html.erb' %>
 </body>
 </html>

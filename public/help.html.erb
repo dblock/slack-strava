@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Slava: Help</title>
@@ -8,100 +9,82 @@
     <meta name="twitter:title" content="Slava: Help">
     <meta name="twitter:description" content="How to use Slava: connect Strava, post activities in Slack, unfurl Strava links, view stats and leaderboards, and configure team settings.">
   </head>
-  <body>
-    <p class='icon'>
-      <a href='/'><img src='img/icon.png' alt="Slava logo"></a>
-    </p>
-    <p>
-      <h1>Slava: Help</h1>
-    </p>
-    <p>
-      This bot is powered by Strava and posts your Strava activities to Slack. It can also unfurl Strava URLs.
-      It is not made by, nor is officially affiliated with <a target="_blank" href="https://www.strava.com">Strava</a>.
-    </p>
-    <p>&nbsp;</p>
-    <p>
-      Invite <b>@slava</b> to a channel.
-    </p>
-    <p>
-      <img src='img/welcome.png' alt="Slava welcome message in Slack">
-    </p>
-    <p>
-      When a user joins a channel, they are prompted to connect their Strava account.
-    </p>
-    <p>
-      <img src='img/joined.png' alt="Prompt to connect Strava after joining a Slack channel">
-    </p>
-    <p>
-      Users can also DM "<b>connect</b>" to <b>@slava</b> or use <b>/slava connect</b> to connect their Strava account.
-    </p>
-    <p>
-      <img src='img/connect.png' alt="Slava connect command in Slack">
-    </p>
-    <p>
-      Notifications will be posted to any channel <b>@slava</b> is a member of.
-    </p>
-    <p class='image'>
-      <img src='img/notify.png' alt="Example Strava activity notification posted to Slack">
-    </p>
-    <p>
-      Users can DM "<b>disconnect</b>" to <b>@slava</b> or use <b>/slava disconnect</b> to disconnect their Strava account.
-    </p>
-    <p>
-      <img src='img/disconnect.png' alt="Slava disconnect command in Slack">
-    </p>
-    <p>
-      DM "<b>stats</b>" to <b>@slava</b> or use <b>/slava stats</b> to see aggregate team activity stats in the current channel for the past 30 days.
-      Stats supports date filters: try <b>stats weekly</b>, <b>stats monthly</b>, <b>stats quarterly</b>, or <b>stats yearly</b>.
-      You can also use <b>stats 2024</b>, <b>stats last week</b>, <b>stats since January</b>, or <b>stats between January and March</b>.
-      Stats may require adjusting <b>retention</b> for longer ranges.
-    </p>
-    <p>
-      <img src='img/stats.png' alt="Slava stats command output in Slack">
-    </p>
-    <p>
-      DM "<b>leaderboard</b>" to <b>@slava</b> or use <b>/slava leaderboard</b> to see team activity leaderboard.
-      Try <b>leaderboard distance</b>, <b>leaderboard time</b> or <b>leaderboard count</b>.
-      Leaderboard supports date filters: try <b>leaderboard weekly</b>, <b>leaderboard monthly</b>, <b>leaderboard quarterly</b>, or <b>leaderboard yearly</b>.
-      You can also use <b>leaderboard 2024</b>, <b>leaderboard last week</b>, <b>leaderboard elapsed time last month</b>, <b>leaderboard since 2024</b>, or <b>leaderboard between January and March</b>.
-      Leaderboard may require adjusting <b>retention</b> for longer ranges.
-    </p>
-    <p>
-      DM "<b>set</b>" to <b>@slava</b> to see current settings.
-    </p>
-    <p>
-      Slava retains activities for 30 days. Try <b>set retention 60 days</b> or <b>set retention 6 months</b> to change this.
-    </p>
-    <p>
-      You can change <b>units</b> with <b>set units imperial</b> (miles, feet, yards, and degrees Fahrenheit, default),
-      <b>set units metric</b> (kilometers, meters, and degrees Celsius), or <b>set units both</b> to display both values.
-    </p>
-    <p>
-      You can change displayed fields with <b>set fields</b>, eg. <b>set fields default</b>, <b>set fields all</b> or <b>set fields none</b>.
-      Available fields are <%= ActivityFields.values.and { |v| '<b>' + v + '</b>' } %>.
-    </p>
-    <p>
-      Turn maps off with <b>set maps off</b>, display thumbnails with <b>set maps thumb</b> and full maps with <b>set maps full</b> (default).
-    </p>
-    <p>
-      Thread posted activities daily, weekly or monthly with <b>set threads daily</b>, <b>set threads weekly</b> or <b>set threads monthly</b>.
-      Post a summary to the channel with full details in a thread reply using <b>set threads activity</b>.
-      Remove threading with <b>set threads none</b> (default).
-    </p>
-    <p>
-      Set the default leaderboard with <b>set leaderboard</b>.
-    </p>
-    <p>
-      Stop syncing activities with <b>set sync false</b> and resume with <b>set sync true</b> (default).
-      Publish private (only you) activities with <b>set private true</b> or hide them with <b>set private false</b> (default).
-      Publish followers only activities with <b>set followers true</b> (default) or hide them with <b>set followers false</b>.
-    </p>
-    <p>
-      Paste a link to a registered user's activity into Slack to unfurl it.
-    </p>
-    <p>
-      DM <b>help</b> to <b>@slava</b> for more commands and options.
-    </p>
+  <body id="page-top" class="site-page help-page">
+    <%= partial 'public/partials/_navigation.html.erb' %>
+    <main id="main" class="page-container help-content">
+      <header class="help-header">
+        <h1>Slava: Help</h1>
+        <p>Connect Strava, share activities, and manage your Slack channel.</p>
+      </header>
+      <section id="get-started" class="help-section">
+        <h2>Get started</h2>
+        <p>You'll need a Slack workspace and a Strava account. <a href="https://www.strava.com/register">Sign up for Strava</a> if you need one.</p>
+        <ol class="getting-started-steps">
+          <li><a href="https://slack.com/oauth/authorize?scope=<%= ENV['SLACK_OAUTH_SCOPE'] %>&client_id=<%= ENV['SLACK_CLIENT_ID'] %>">Add Slava to Slack</a> and authorize it for your workspace.</li>
+          <li>Invite <code>@slava</code> to the channels where you want activities to appear.</li>
+          <li>Use <code>/slava connect</code> or DM <code>connect</code> to <code>@slava</code>, then follow the link to authorize Strava.</li>
+          <li>Save a new Strava activity. Notifications appear in channels where Slava is a member.</li>
+        </ol>
+        <p class="help-note">To stop sharing, use <code>/slava disconnect</code> or DM <code>disconnect</code>.</p>
+      </section>
+      <section id="commands" class="help-section">
+        <h2>Commands and settings</h2>
+        <p>Use slash commands in Slack, or DM commands to @slava without the /slava prefix. Choose a topic for examples.</p>
+        <details class="help-topic">
+          <summary>Leaderboards and statistics</summary>
+          <dl>
+            <dt><code>/slava leaderboard</code></dt>
+            <dd>Show the channel's distance leaderboard. Choose a metric with <code>/slava leaderboard distance</code>, <code>/slava leaderboard time</code>, or <code>/slava leaderboard count</code>.</dd>
+            <dt><code>/slava stats</code></dt>
+            <dd>Show aggregate activity statistics for the past 30 days.</dd>
+            <dt><code>/slava leaderboard last week</code></dt>
+            <dd>Stats and leaderboards accept <code>weekly</code>, <code>monthly</code>, <code>quarterly</code>, or <code>yearly</code>, as well as date ranges such as <code>elapsed time last month</code>, <code>since 2024</code>, or <code>between January and March</code>. Longer ranges may require increasing retention below.</dd>
+          </dl>
+        </details>
+        <details class="help-topic">
+          <summary>Sharing and privacy</summary>
+          <dl>
+            <dt><code>set sync false</code></dt>
+            <dd>Pause activity sharing. Resume with <code>set sync true</code> (the default).</dd>
+            <dt><code>set private true</code></dt>
+            <dd>Include private activities. They are hidden by default; restore that setting with <code>set private false</code>.</dd>
+            <dt><code>set followers false</code></dt>
+            <dd>Hide followers-only activities. They are included by default; restore with <code>set followers true</code>.</dd>
+            <dt><code>/slava disconnect</code></dt>
+            <dd>Unlink your Strava account. This stops future activity sharing.</dd>
+          </dl>
+        </details>
+        <details class="help-topic">
+          <summary>Units, maps, and fields</summary>
+          <dl>
+            <dt><code>set units metric</code></dt>
+            <dd>Use kilometers, meters, and Celsius. Choose <code>imperial</code> for miles, feet, yards, and Fahrenheit (the default), or <code>both</code> to display both sets.</dd>
+            <dt><code>set maps thumb</code></dt>
+            <dd>Use map thumbnails. Choose <code>off</code> to hide maps or <code>full</code> for full maps (the default).</dd>
+            <dt><code>set fields</code></dt>
+            <dd>Choose displayed fields with <code>default</code>, <code>all</code>, or <code>none</code>. Available fields: <%= ActivityFields.values.and { |v| '<code>' + v + '</code>' } %>.</dd>
+          </dl>
+        </details>
+        <details class="help-topic">
+          <summary>Retention, threading, and link previews</summary>
+          <dl>
+            <dt><code>set retention 60 days</code></dt>
+            <dd>Change the default 30-day retention. Durations such as <code>6 months</code> also work.</dd>
+            <dt><code>set threads daily</code></dt>
+            <dd>Group activities into <code>daily</code>, <code>weekly</code>, or <code>monthly</code> threads. Use <code>activity</code> for a channel summary with details in a thread, or <code>none</code> to disable threading (the default).</dd>
+            <dt><code>set leaderboard</code></dt>
+            <dd>Configure the default leaderboard. DM <code>set</code> to see current settings.</dd>
+            <dt>Strava link previews</dt>
+            <dd>Paste a registered user's Strava activity link into Slack to unfurl it. DM <code>help</code> for more commands.</dd>
+          </dl>
+        </details>
+      </section>
+      <section id="support" class="help-section">
+        <h2>Contact support</h2>
+        <p>Email <a href="mailto:dblock@vestris.com">dblock@vestris.com</a> with the command, channel type, approximate time and time zone, and any error message. Don't send passwords or access tokens.</p>
+      </section>
+      <p class="affiliation-note">Powered by Strava; not officially affiliated with <a href="https://www.nyrr.org/">NYRR</a> or <a href="https://www.strava.com">Strava</a>.</p>
+    </main>
     <%= partial 'public/partials/_footer.html.erb' %>
   </body>
 </html>

@@ -1,23 +1,18 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Slava: Connect to Strava</title>
-    <%= partial 'public/partials/_head.html' %>
+    <%= partial 'public/partials/_head.html.erb' %>
     <meta name="robots" content="noindex, nofollow">
   </head>
-  <body style='text-align: center'>
-    <p style='margin: 50px;'>
-      <a href='/'><img src='img/icon.png' width='120px' alt="Slava logo"></a>
-    </p>
-    <p>
+  <body class="site-page">
+    <%= partial 'public/partials/_navigation.html.erb' %>
+    <main id="main" class="page-container content-page centered-content">
       <h1>Slava: Connect to Strava</h1>
-    </p>
-    <p id='messages' />
-    <p id='connect'>
-      <p>
-        <div class='small'>
-          Questions? Contact dblock[at]vestris[dot]com or DM <a href='https://twitter.com/playplayio'>@playplayio</a>.
-        </div>
-      </p>
+      <p id="messages" role="status" aria-live="polite"></p>
+      <div id="connect">
+        <p>Need a hand? <a href="/help.html#support">Contact support</a>.</p>
+      </div>
       <script>
         $(document).ready(function() {
           <% user = User.where(id: request.params['state']).first %>
@@ -47,6 +42,7 @@
           }
         });
       </script>
-    </p>
+    </main>
+    <%= partial 'public/partials/_footer.html.erb' %>
   </body>
 </html>

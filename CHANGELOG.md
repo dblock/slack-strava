@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/10/24: Redesign all website pages with shared navigation, fixed orange ribbon artwork derived from the logo, transparent branding, crisp install buttons, and expandable help while preserving OAuth and payment flows - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/23: Upgrade Ruby to 4.0.9 and refresh dependencies, leaving Stripe dependencies unchanged - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/09/16: Add SimpleCov test coverage reporting and a coverage badge to the README - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/08/29: Improved SEO for public marketing pages with social metadata, noindex transactional pages, and a sitemap - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
