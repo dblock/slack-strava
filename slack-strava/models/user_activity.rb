@@ -38,6 +38,7 @@ class UserActivity < Activity
 
   def brag!
     return if bragged_at
+    return unless team.reload.active?
 
     if hidden?
       logger.info "Skipping #{user}, #{self}, private."
@@ -48,6 +49,8 @@ class UserActivity < Activity
       connected_channels = user.connected_channels
       rc = if connected_channels
              connected_channels.map { |channel|
+               next unless team.reload.active?
+
                channel_id = channel['id']
                unless user.sync_activities_for_channel?(channel_id)
                  logger.info "Skipping #{user} in #{channel_id}, sync disabled for channel."
@@ -87,12 +90,22 @@ class UserActivity < Activity
            else
              []
            end
+      unless team.reload.active?
+        messages = channel_messages.to_h { |message| [message.channel, message.attributes] }
+        rc.each { |message| messages[message[:channel]] = message }
+        update_attributes!(channel_messages: messages.values)
+        return
+      end
+
       update_attributes!(bragged_at: Time.now.utc, unbragged_at: nil, channel_messages: rc)
       rc
     end
   rescue Slack::Web::Api::Errors::SlackError => e
     case e.message
-    when 'not_in_channel', 'account_inactive' then
+    when 'account_inactive'
+      user.team.deactivate_for_inactive_account!(e)
+      nil
+    when 'not_in_channel' then
       logger.warn "Bragging to #{user} failed, #{e.message}."
       NewRelic::Agent.notice_error(e, custom_params: { team: user.team.to_s, user: user.to_s, activity: to_s })
       nil
@@ -149,9 +162,14 @@ class UserActivity < Activity
 
   def brag_to_channel!(channel)
     channel_id = channel['id']
-    rc = user.inform_channel!(summary_message(channel_id), channel, parent_thread(channel_id))
+    channel_message = channel_messages.detect { |message| message.channel == channel_id }
+    rc = if channel_message
+           { ts: channel_message.ts, channel: channel_id, details_ts: channel_message.details_ts }.compact
+         else
+           user.inform_channel!(summary_message(channel_id), channel, parent_thread(channel_id))
+         end
     details = details_message(channel_id)
-    if rc && details
+    if rc && details && !rc[:details_ts]
       details_rc = user.inform_channel!(details, channel, rc[:ts])
       rc = rc.merge(details_ts: details_rc[:ts]) if details_rc
     end

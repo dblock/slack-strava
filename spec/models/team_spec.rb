@@ -34,6 +34,37 @@ describe Team do
     end
   end
 
+  describe '#deactivate_for_inactive_account!' do
+    let(:team) { Fabricate(:team) }
+    let(:error) { Slack::Web::Api::Errors::AccountInactive.new('account_inactive') }
+
+    it 'reports the installation failure once, including with stale team instances' do
+      stale_team = described_class.find(team.id)
+      expect(NewRelic::Agent).to receive(:notice_error).once.with(error, expected: true, custom_params: { team: team.to_s })
+      team.deactivate_for_inactive_account!(error)
+      stale_team.deactivate_for_inactive_account!(error)
+      expect(team.reload.active?).to be false
+    end
+
+    it 'does not deactivate a replacement installation for a superseded token' do
+      described_class.find(team.id).activate!('replacement-token')
+      expect(NewRelic::Agent).not_to receive(:notice_error)
+      team.deactivate_for_inactive_account!(error)
+      expect(team.reload.active?).to be true
+    end
+  end
+
+  describe '#slack_client' do
+    let(:team) { Fabricate(:team) }
+
+    it 'uses the replacement token after reactivation' do
+      previous_client = team.slack_client
+      team.activate!('replacement-token')
+      expect(team.slack_client).not_to equal(previous_client)
+      expect(team.slack_client.token).to eq 'replacement-token'
+    end
+  end
+
   describe '#admins' do
     let!(:team) { Fabricate(:team) }
     let!(:activated_user) { Fabricate(:user, team: team) }

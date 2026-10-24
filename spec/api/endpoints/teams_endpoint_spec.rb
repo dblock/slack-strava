@@ -129,6 +129,27 @@ describe Api::Endpoints::TeamsEndpoint do
         }.not_to change(Team, :count)
       end
 
+      it 'reinstalls an inactive account with a new token while preserving its data' do
+        existing_team = Fabricate(:team, token: 'retired-token', team_id: 'team_id')
+        user = Fabricate(:user, team: existing_team, access_token: 'strava-token')
+        activity = Fabricate(:user_activity, user: user)
+        expect_any_instance_of(Team).to receive(:ping!) do |team|
+          expect(team.slack_client.token).to eq 'retired-token'
+          raise Slack::Web::Api::Errors::AccountInactive, 'account_inactive'
+        end
+        expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage) do |slack_client|
+          expect(slack_client.token).to eq 'token'
+        end
+        expect(SlackRubyBotServer::Service.instance).to receive(:start!)
+        expect {
+          reinstalled_team = client.teams._post(code: 'code')
+          expect(reinstalled_team.id).to eq existing_team.id.to_s
+          expect(reinstalled_team.active).to be true
+        }.not_to change(Team, :count)
+        expect(user.reload.access_token).to eq 'strava-token'
+        expect(activity.reload.bragged_at).to be_nil
+      end
+
       it 'returns a useful error when team already exists' do
         expect_any_instance_of(Slack::Web::Client).to receive(:chat_postMessage).with(
           text: "Welcome to Slava!\nInvite <@bot_user_id> to a channel to publish activities to it.\nType \"*connect*\" to connect your Strava account.\"\n",

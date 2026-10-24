@@ -128,6 +128,7 @@ class Team
   end
 
   def slack_client
+    @slack_client = nil if @slack_client && @slack_client.token != token
     @slack_client ||= Slack::Web::Client.new(token: token)
   end
 
@@ -362,13 +363,27 @@ class Team
 
     ping!
   rescue Slack::Web::Api::Errors::SlackError => e
+    return deactivate_for_inactive_account!(e) if e.message == 'account_inactive'
+
     logger.warn "Active team #{self} ping, #{e.message}."
     case e.message
-    when 'account_inactive', 'invalid_auth'
+    when 'invalid_auth'
       logger.warn "Active team #{self} ping failed auth, deactivating."
       deactivate!
     end
     NewRelic::Agent.notice_error(e, custom_params: { team: to_s })
+  end
+
+  def deactivate_for_inactive_account!(error)
+    # Claim the transition once, without letting an old token deactivate a reinstallation.
+    deactivated = self.class.collection.find(_id: id, active: true, token: token).find_one_and_update(
+      '$set' => { active: false, updated_at: Time.now.utc }
+    )
+    reload
+    return unless deactivated
+
+    logger.warn "Slack account_inactive for team #{self}, deactivated; reinstall to resume activity delivery."
+    NewRelic::Agent.notice_error(error, expected: true, custom_params: { team: to_s })
   end
 
   def stats(options = {})

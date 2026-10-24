@@ -139,7 +139,11 @@ module SlackStrava
 
         begin
           team.users.no_timeout.connected_to_strava.each do |user|
+            break unless team.reload.active?
+
             user.sync_and_brag!
+            break unless team.reload.active?
+
             task.sleep tt
             user.rebrag!
             task.sleep tt

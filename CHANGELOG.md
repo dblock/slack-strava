@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/10/24: Deactivate inactive Slack installations once, stop repeated activity delivery failures, and preserve pending activities for reinstallation ([#297](https://github.com/dblock/slack-strava/pull/297)) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/24: Redesign all website pages with shared navigation, fixed orange ribbon artwork derived from the logo, transparent branding, crisp install buttons, and expandable help while preserving OAuth and payment flows - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/23: Upgrade Ruby to 4.0.9 and refresh dependencies, leaving Stripe dependencies unchanged - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/09/16: Add SimpleCov test coverage reporting and a coverage badge to the README - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
