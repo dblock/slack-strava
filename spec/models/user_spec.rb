@@ -661,6 +661,15 @@ describe User do
   describe '#with_strava_error_handler' do
     let(:user) { Fabricate(:user) }
 
+    it 'reports rate limits and re-raises them so callers can back off' do
+      response = { status: 429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [] }, response_headers: {} }
+      env = Faraday::Env.from(response)
+      env.response = Faraday::Response.new(env)
+      failure = Strava::Errors::RatelimitError.new(env, response)
+      expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: user.team.to_s, response: { body: failure.response[:body] }, self: user.to_s })
+      expect { user.with_strava_error_handler { raise failure } }.to raise_error(failure)
+    end
+
     it 'deactivates an inactive bot account instead of repeatedly reporting it' do
       error = Slack::Web::Api::Errors::AccountInactive.new('account_inactive')
       expect(NewRelic::Agent).to receive(:notice_error).once.with(error, expected: true, custom_params: { team: user.team.to_s })
@@ -745,8 +754,10 @@ describe User do
 
         it 'rebrags' do
           expect_any_instance_of(UserActivity).not_to receive(:brag!)
-          expect_any_instance_of(UserActivity).to receive(:rebrag!)
-          user.rebrag_activity!(activity)
+          expect_any_instance_of(UserActivity).to receive(:rebrag!).and_return([{ ts: 'updated', channel: 'C1' }])
+          results = user.rebrag_activity!(activity)
+          expect(results.first).to include(ts: 'updated', channel: 'C1')
+          expect(results.first[:activity].id).to eq activity.id
         end
       end
 
@@ -895,6 +906,36 @@ describe User do
     end
   end
 
+  describe '#dm!' do
+    let(:user) { Fabricate(:user) }
+
+    it 'posts a direct message to the channel returned by Slack' do
+      expect(user.team.slack_client).to receive(:conversations_open).with(users: user.user_id).and_return('channel' => { 'id' => 'D-user' })
+      expect(user.team.slack_client).to receive(:chat_postMessage).with({ text: 'Reconnect Strava', channel: 'D-user', as_user: true })
+      user.dm!(text: 'Reconnect Strava')
+    end
+  end
+
+  describe '#connect!' do
+    it 'rejects incomplete OAuth credentials before changing the connection' do
+      user = Fabricate(:user, access_token: 'existing-token')
+      allow(user).to receive(:get_access_token!).with('code').and_return(Hashie::Mash.new(access_token: 'replacement'))
+      expect(user).not_to receive(:dm!)
+      expect { user.connect!('code') }.to raise_error('Missing refresh_token in OAuth response.')
+      expect(user.reload.access_token).to eq 'existing-token'
+    end
+  end
+
+  describe '#sync_strava_activity!' do
+    it 'propagates missing-activity faults without discarding valid credentials' do
+      user = Fabricate(:user, access_token: 'existing-token', token_expires_at: 2.hours.from_now)
+      failure = Strava::Errors::Fault.new(404, body: { 'message' => 'Not Found', 'errors' => [] })
+      allow(user.strava_client).to receive(:activity).with('missing').and_raise(failure)
+      expect { user.sync_strava_activity!('missing') }.to raise_error(failure)
+      expect(user.reload.access_token).to eq 'existing-token'
+    end
+  end
+
   describe '#connected_channels' do
     let(:user) { Fabricate(:user) }
 
@@ -914,6 +955,15 @@ describe User do
         user_in_channel?: false
       )
       expect(user.connected_channels).to eq([])
+    end
+
+    it 'does not publish to channels whose complete member list omits the athlete' do
+      allow(user).to receive(:user_deleted?).and_return(false)
+      allow(user.team).to receive(:slack_channels).and_return([{ 'id' => 'C1' }])
+      expect(user.team.slack_client).to receive(:conversations_members).with(channel: 'C1')
+                                                                       .and_yield(Hashie::Mash.new(members: ['U-other']))
+                                                                       .and_yield(Hashie::Mash.new(members: ['U-another']))
+      expect(user.connected_channels).to eq []
     end
 
     it 'returns nil if user_id is nil' do

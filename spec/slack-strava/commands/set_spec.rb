@@ -18,6 +18,71 @@ describe SlackStrava::Commands::Set do
     context 'subscribed team' do
       let(:team) { Fabricate(:team, subscribed: true) }
 
+      context 'channel temperature' do
+        before do
+          allow_any_instance_of(Slack::Web::Client).to receive(:conversations_info).with(channel: 'C1').and_return(
+            Hashie::Mash.new(channel: { id: 'C1', name: 'general' })
+          )
+        end
+
+        it 'shows the inherited temperature without creating an override' do
+          expect(message: "#{SlackRubyBot.config.user} set temperature", channel: 'C1').to respond_with_slack_message(
+            'Activities in <#C1> display *degrees Fahrenheit*.'
+          )
+          expect(team.channels.count).to eq 0
+        end
+
+        it 'changes only the requested channel temperature' do
+          expect(message: "#{SlackRubyBot.config.user} set temperature celsius", channel: 'C1').to respond_with_slack_message(
+            'Activities in <#C1> now display *degrees Celsius*.'
+          )
+          expect(team.reload.channel_temperature_for('C1')).to eq 'c'
+          expect(team.channel_temperature_for('C2')).to eq 'f'
+          expect(team.temperature).to eq 'f'
+        end
+      end
+
+      context 'non-admin settings' do
+        let(:user) { Fabricate(:user, team: team, user_id: 'U-not-admin', is_admin: false) }
+
+        before do
+          allow_any_instance_of(Slack::Web::Client).to receive(:conversations_info).with(channel: 'C1').and_return(
+            Hashie::Mash.new(channel: { id: 'C1', name: 'general' })
+          )
+        end
+
+        [
+          ['units km', 'units', 'Activities in <#C1> display *miles, feet, and yards*.'],
+          ['temperature c', 'temperature', 'Activities in <#C1> display *degrees Fahrenheit*.'],
+          ['fields All', 'fields', 'Activity fields for <#C1> are *set to default*.'],
+          ['maps off', 'maps', 'Maps for <#C1> are *displayed in full*.'],
+          ['threads daily', 'whether activities roll up in threads', 'Activities in <#C1> are *displayed individually*.'],
+          ['userlimit 3', 'the max activities per user per day', 'Max activities per user per day in <#C1> are *unlimited*.']
+        ].each do |command, setting, current|
+          it "rejects unauthorized channel changes to #{setting}" do
+            expect {
+              expect(message: "#{SlackRubyBot.config.user} set #{command}", channel: 'C1').to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change #{setting}. #{current}"
+              )
+            }.not_to(change { team.reload.channels.count })
+          end
+        end
+
+        [
+          ['temperature c', :temperature, 'temperature'],
+          ['threads daily', :threads, 'whether activities roll up in threads']
+        ].each do |command, attribute, setting|
+          it "rejects unauthorized team changes to #{attribute}" do
+            current = attribute == :temperature ? 'display *degrees Fahrenheit*' : 'are *displayed individually*'
+            expect {
+              expect(message: "#{SlackRubyBot.config.user} set #{command}").to respond_with_slack_message(
+                "Sorry, only <@#{team.activated_user_id}> or a Slack admin can change #{setting}. Activities for team #{team.name} #{current}."
+              )
+            }.not_to(change { team.reload.public_send(attribute) })
+          end
+        end
+      end
+
       it 'errors on invalid setting' do
         expect(message: "#{SlackRubyBot.config.user} set whatever").to respond_with_slack_message(
           'Invalid setting whatever, type `help` for instructions.'

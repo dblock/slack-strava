@@ -19,6 +19,160 @@ describe SlackStrava::App do
     end
   end
 
+  describe '#after_start!' do
+    it 'initializes the webhook and statistics and schedules each maintenance interval' do
+      task = instance_double(Async::Task)
+      allow(Async::Reactor).to receive(:run).and_wrap_original do |_reactor, &job|
+        job.call(task)
+      end
+      allow(Stripe::Subscription).to receive(:list).with(plan: 'slava-yearly').and_return(
+        Stripe::ListObject.construct_from(data: [], has_more: false)
+      )
+      expect(StravaWebhook.instance).to receive(:ensure!).ordered
+      [86_400, 3600, 10].each do |interval|
+        expect(task).to receive(:sleep).with(interval).ordered.and_raise(StopIteration)
+      end
+      subject.after_start!
+      expect(SystemStats.count).to eq 1
+    end
+  end
+
+  %i[once_and_every continuously].each do |scheduler|
+    describe "##{scheduler}" do
+      let(:task) { instance_double(Async::Task) }
+
+      before do
+        allow(Async::Reactor).to receive(:run).and_yield(task)
+      end
+
+      it 'runs the job and waits the configured interval' do
+        yielded = []
+        expect(task).to receive(:sleep).with(60).and_raise(StopIteration)
+        subject.send(scheduler, 60) { |*args| yielded << args }
+        expect(yielded).to eq [scheduler == :continuously ? [task, 60] : []]
+      end
+
+      it 'reports failures and continues on the next interval' do
+        failure = StandardError.new('maintenance failed')
+        attempts = 0
+        expect(subject.logger).to receive(:error).with(failure)
+        expect(task).to receive(:sleep).with(60).twice.and_invoke(->(_seconds) {}, ->(_seconds) { raise StopIteration })
+        subject.send(scheduler, 60) do
+          attempts += 1
+          raise failure if attempts == 1
+        end
+        expect(attempts).to eq 2
+      end
+    end
+  end
+
+  describe '#migrate_activity_team_id!' do
+    it 'backfills legacy activities without changing activities that already have a team' do
+      legacy = Fabricate(:user_activity, user: Fabricate(:user))
+      current = Fabricate(:user_activity, user: Fabricate(:user))
+      legacy.unset(:team_id)
+      subject.send(:migrate_activity_team_id!)
+      expect(legacy.reload.team_id).to eq legacy.user.team_id
+      expect(current.reload.team_id).to eq current.user.team_id
+    end
+  end
+
+  describe '#aggregate_stats!' do
+    it 'updates the persisted system statistics' do
+      Fabricate(:user_activity)
+      subject.send(:aggregate_stats!)
+      expect(SystemStats.count).to eq 1
+    end
+  end
+
+  describe '#prune_pngs!' do
+    it 'removes only stale cached images, preserving polylines and recent images' do
+      stale = Fabricate(:user_activity)
+      recent = Fabricate(:user_activity)
+      stale.map.set(png: BSON::Binary.new('old image'), png_retrieved_at: 3.weeks.ago)
+      recent.map.set(png: BSON::Binary.new('recent image'), png_retrieved_at: 1.day.ago)
+      subject.send(:prune_pngs!)
+      expect(stale.reload.map.png).to be_nil
+      expect(stale.map.summary_polyline).not_to be_nil
+      expect(recent.reload.map.png.data).to eq 'recent image'
+    end
+  end
+
+  describe '#expire_subscriptions!' do
+    let!(:expired) { Fabricate(:team, created_at: 3.weeks.ago) }
+    let!(:current) { Fabricate(:team) }
+
+    it 'notifies expired installations once and leaves current trials alone' do
+      expect_any_instance_of(Team).to receive(:inform_everyone!).with(text: expired.subscribe_text).once
+      2.times { subject.send(:expire_subscriptions!) }
+      expect(expired.reload.subscription_expired_at).not_to be_nil
+      expect(current.reload.subscription_expired_at).to be_nil
+    end
+
+    it 'reports notification failures without expiring the installation' do
+      failure = StandardError.new('notification failed')
+      allow_any_instance_of(Team).to receive(:inform_everyone!).and_raise(failure)
+      expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: expired.to_s })
+      subject.send(:expire_subscriptions!)
+      expect(expired.reload.subscription_expired_at).to be_nil
+    end
+  end
+
+  describe '#check_stripe_subscribers!' do
+    let(:subscription) { Stripe::Subscription.construct_from(id: 'sub-test', customer: 'cus-test', status: 'active', plan: { nickname: 'Slava', amount: 999 }) }
+    let(:customer) { Stripe::Customer.construct_from(id: 'cus-test', metadata: { team_id: 'T-test', name: 'Workspace' }, email: 'owner@example.com') }
+
+    before do
+      allow(Stripe::Subscription).to receive(:list).with(plan: 'slava-yearly').and_return(
+        Stripe::ListObject.construct_from(data: [subscription], has_more: false)
+      )
+      allow(Stripe::Customer).to receive(:retrieve).with('cus-test').and_return(customer)
+    end
+
+    it 'leaves a correctly associated active subscriber unchanged' do
+      team = Fabricate(:team, stripe_customer_id: 'cus-test', subscribed: true)
+      expect_any_instance_of(Team).not_to receive(:inform_everyone!)
+      expect(Stripe::Subscription).not_to receive(:update)
+      subject.send(:check_stripe_subscribers!)
+      expect(team.reload.subscribed?).to be true
+    end
+
+    it 'recovers a subscription association using customer metadata' do
+      team = Fabricate(:team, team_id: 'T-test')
+      expect_any_instance_of(Team).to receive(:inform_everyone!).with(text: team.subscribed_text)
+      subject.send(:check_stripe_subscribers!)
+      expect(team.reload.stripe_customer_id).to eq 'cus-test'
+      expect(team.subscribed?).to be true
+    end
+
+    it 'cancels auto-renewal for an inactive installation with an active subscription' do
+      team = Fabricate(:team, stripe_customer_id: 'cus-test', active: false)
+      allow(Stripe::Subscription).to receive(:list).with(customer: 'cus-test').and_return([subscription])
+      expect(Stripe::Subscription).to receive(:update).with('sub-test', cancel_at_period_end: true)
+      subject.send(:check_stripe_subscribers!)
+      expect(team.reload.active?).to be false
+    end
+
+    it 'does not cancel anything for an inactive installation without an active subscription' do
+      Fabricate(:team, stripe_customer_id: 'cus-test', active: false)
+      allow(Stripe::Subscription).to receive(:list).with(customer: 'cus-test').and_return([])
+      expect(Stripe::Subscription).not_to receive(:update)
+      subject.send(:check_stripe_subscribers!)
+    end
+
+    it 'warns about a customer that cannot be associated with an installation' do
+      expect(subject.logger).to receive(:warn).with(/Cannot find team for Workspace \(T-test\)/)
+      subject.send(:check_stripe_subscribers!)
+    end
+
+    it 'reports customer lookup failures' do
+      failure = StandardError.new('Stripe unavailable')
+      allow(Stripe::Customer).to receive(:retrieve).and_raise(failure)
+      expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: 'cus-test' })
+      subject.send(:check_stripe_subscribers!)
+    end
+  end
+
   describe '#users_brag_and_rebrag!' do
     let!(:failed_team) { Fabricate(:team) }
     let!(:affected_users) { Array.new(2) { Fabricate(:user, team: failed_team, access_token: 'strava-token') } }
@@ -36,6 +190,21 @@ describe SlackStrava::App do
       2.times { subject.send(:users_brag_and_rebrag!, task, 0) }
       expect(synced_users).to eq [affected_users.first.id, healthy_user.id, healthy_user.id]
       expect(rebragged_users).to eq [healthy_user.id, healthy_user.id]
+    end
+
+    it 'reports a failed team and continues delivery for the next installation' do
+      task = instance_double(Async::Task, sleep: nil)
+      failure = StandardError.new('delivery failed')
+      synced_users = []
+      allow_any_instance_of(User).to receive(:sync_and_brag!) do |user|
+        raise failure if user.team_id == failed_team.id
+
+        synced_users << user.id
+      end
+      allow_any_instance_of(User).to receive(:rebrag!)
+      expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: failed_team.to_s })
+      subject.send(:users_brag_and_rebrag!, task, 0)
+      expect(synced_users).to eq [healthy_user.id]
     end
   end
 
@@ -58,6 +227,14 @@ describe SlackStrava::App do
       expect(active_team_two_weeks_ago.reload.active).to be false
       expect(subscribed_team_a_month_ago.reload.active).to be true
     end
+
+    it 'reports failed deactivation notifications without stopping the cron' do
+      failure = StandardError.new('notification failed')
+      allow_any_instance_of(Team).to receive(:inform_everyone!).and_raise(failure)
+      expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: active_team_two_weeks_ago.to_s })
+      subject.send(:deactivate_asleep_teams!)
+      expect(active_team_two_weeks_ago.reload.active?).to be false
+    end
   end
 
   context 'subscribed' do
@@ -67,6 +244,14 @@ describe SlackStrava::App do
     let!(:team) { Fabricate(:team, subscribed: true, stripe_customer_id: customer.id) }
 
     describe '#check_subscribed_teams!' do
+      it 'reports Stripe failures without downgrading the installation' do
+        failure = StandardError.new('Stripe unavailable')
+        allow(Stripe::Subscription).to receive(:list).and_raise(failure)
+        expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: team.to_s })
+        subject.send(:check_subscribed_teams!)
+        expect(team.reload.subscribed?).to be true
+      end
+
       it 'ignores active subscriptions' do
         expect_any_instance_of(Team).not_to receive(:inform!)
         expect_any_instance_of(Team).not_to receive(:inform_admin!)
@@ -141,6 +326,13 @@ describe SlackStrava::App do
 
     it 'notifies teams' do
       expect_any_instance_of(Team).to receive(:inform_everyone!).with(text: active_team_twelve_days_ago.trial_message)
+      subject.send(:check_trials!)
+    end
+
+    it 'reports failed trial notifications' do
+      failure = StandardError.new('notification failed')
+      allow_any_instance_of(Team).to receive(:inform_trial!).and_raise(failure)
+      expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: active_team_twelve_days_ago.to_s })
       subject.send(:check_trials!)
     end
   end

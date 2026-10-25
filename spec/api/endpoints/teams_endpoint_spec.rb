@@ -24,6 +24,19 @@ describe Api::Endpoints::TeamsEndpoint do
   end
 
   context 'team' do
+    it 'returns a public installation by its ID' do
+      team = Fabricate(:team, api: true)
+      get "/api/teams/#{team.id}"
+      expect(last_response.status).to eq 200
+      expect(JSON.parse(last_response.body)['id']).to eq team.id.to_s
+    end
+
+    it 'does not expose installations with the API disabled' do
+      team = Fabricate(:team, api: false)
+      get "/api/teams/#{team.id}"
+      expect(last_response.status).to eq 404
+    end
+
     it 'requires code' do
       expect { client.teams._post }.to raise_error Faraday::ClientError do |e|
         json = JSON.parse(e.response[:body])
@@ -66,6 +79,13 @@ describe Api::Endpoints::TeamsEndpoint do
       after do
         ENV.delete('SLACK_CLIENT_ID')
         ENV.delete('SLACK_CLIENT_SECRET')
+      end
+
+      it 'reports missing Slack OAuth configuration before attempting installation' do
+        ENV.delete('SLACK_CLIENT_ID')
+        expect { client.teams._post(code: 'code') }.to raise_error(Faraday::ClientError) do |error|
+          expect(JSON.parse(error.response[:body])['message']).to eq 'Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET.'
+        end
       end
 
       it 'creates a team' do

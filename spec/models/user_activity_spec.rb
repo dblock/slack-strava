@@ -1,6 +1,57 @@
 require 'spec_helper'
 
 describe UserActivity do
+  describe 'activity field presentation' do
+    let(:team) { Fabricate(:team, activity_fields: ['Time'], units: 'km', maps: 'off') }
+    let(:activity) { Fabricate.build(:user_activity, team: team, user: Fabricate(:user, team: team), max_speed: 10) }
+
+    it 'converts maximum speed to metric or combined units using the channel override' do
+      team.set_channel!('C1', 'general', units: 'both')
+      expect(activity.max_speed_s).to eq '36.0km/h'
+      expect(activity.max_speed_s('C1')).to eq '22.4mph 36.0km/h'
+    end
+
+    [nil, 0, -1].each do |speed|
+      it "omits unavailable or invalid maximum speed #{speed.inspect}" do
+        activity.max_speed = speed
+        expect(activity.max_speed_s).to be_nil
+      end
+    end
+
+    [
+      [{ moving_time: 600, elapsed_time: nil }, '10m'],
+      [{ moving_time: nil, elapsed_time: 900 }, '15m']
+    ].each do |times, formatted|
+      it "falls back to the available time when given #{times}" do
+        activity.assign_attributes(times)
+        expect(activity.to_slack_details_blocks).to eq [
+          { type: 'section', text: { type: 'mrkdwn', text: "*Time*: #{formatted}" } }
+        ]
+      end
+    end
+  end
+
+  describe 'activity integrity' do
+    it 'rejects an activity associated with another installation' do
+      user = Fabricate(:user)
+      activity = Fabricate.build(:user_activity, user: user, team: Fabricate(:team))
+      expect(activity).not_to be_valid
+      expect(activity.errors[:team]).to include('Activity must belong to the same team as the user.')
+    end
+
+    it 'rejects unsupported Strava response types' do
+      expect { described_class.new.attrs_from_strava(Object.new) }.to raise_error('Unexpected Object.')
+    end
+
+    it 'keeps the activity usable when the weather provider fails' do
+      activity = Fabricate(:user_activity, start_date: 1.hour.ago, elapsed_time: 600, weather: nil)
+      allow_any_instance_of(OpenWeather::Client).to receive(:one_call).and_raise(StandardError, 'weather unavailable')
+      expect(activity.send(:logger)).to receive(:warn).with(/Error getting weather.*weather unavailable/)
+      expect { activity.update_weather! }.not_to raise_error
+      expect(activity.weather).to be_nil
+    end
+  end
+
   context 'hidden?' do
     context 'default' do
       let(:activity) { Fabricate(:user_activity) }
@@ -216,6 +267,28 @@ describe UserActivity do
           }
           expect(activity.brag!).to eq []
         }.not_to change(User, :count)
+      end
+
+      it 'enforces the per-channel per-user daily limit' do
+        team.set_channel!('channel_id', 'general', max_activities_per_user_per_day: 1)
+        Fabricate(:user_activity, user: user, bragged_at: Time.now.utc, channel_messages: [ChannelMessage.new(channel: 'channel_id', ts: 'existing')])
+        expect(user.team.slack_client).not_to receive(:chat_postMessage)
+        expect(activity.brag!).to eq []
+      end
+
+      it 'does not count other athletes toward the channel per-user limit' do
+        team.set_channel!('channel_id', 'general', max_activities_per_user_per_day: 1)
+        other_user = Fabricate(:user, team: team)
+        Fabricate(:user_activity, user: other_user, bragged_at: Time.now.utc, channel_messages: [ChannelMessage.new(channel: 'channel_id', ts: 'existing')])
+        expect(activity.brag!).to eq [{ ts: '1503435956.000247', channel: 'channel_id' }]
+      end
+
+      it 'reports discovery failures without deactivating a healthy installation' do
+        failure = Slack::Web::Api::Errors::NotInChannel.new('not_in_channel')
+        allow(user).to receive(:connected_channels).and_raise(failure)
+        expect(NewRelic::Agent).to receive(:notice_error).with(failure, custom_params: { team: team.to_s, user: user.to_s, activity: activity.to_s })
+        expect(activity.brag!).to be_nil
+        expect(team.reload.active?).to be true
       end
 
       %i[daily weekly monthly].each do |threads|
