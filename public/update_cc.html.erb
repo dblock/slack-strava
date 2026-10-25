@@ -21,7 +21,7 @@
         <script
           src="https://checkout.stripe.com/checkout.js" class="stripe-button"
           data-key="<%= ENV['STRIPE_API_PUBLISHABLE_KEY'] %>"
-          data-image='/img/icon.png'
+          data-image="<%=h asset_path('/img/icon.png') %>"
           data-name='Slava'
           data-panel-label="Update Credit Card"
           data-label="Update Credit Card"
@@ -29,7 +29,7 @@
           data-locale="auto">
         </script>
         </form>
-        <p><img src="/img/stripe.png" width="119" height="26" alt="Powered by Stripe"></p>
+        <p><img src="<%=h asset_path('/img/stripe.png') %>" width="119" height="26" alt="Powered by Stripe"></p>
         <p>Need a hand? <a href="/help.html#support">Contact support</a>.</p>
       </div>
       <script>

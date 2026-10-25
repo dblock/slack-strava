@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/10/25: Upgrade slack-ruby-bot-server to 2.3 and rack-server-pages to 0.3; version website assets and nested ribbon artwork with revalidating template caching while preserving OAuth, payments, and API behavior - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/25: Improve test coverage from 92.18% to 98.84%, covering maintenance jobs, OAuth tokens, webhooks, API pagination, subscription recovery, activity delivery, and settings permissions; upload CI coverage to Coveralls and display a live coverage badge ([#298](https://github.com/dblock/slack-strava/pull/298)) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/24: Deactivate inactive Slack installations once, stop repeated activity delivery failures, and preserve pending activities for reinstallation ([#297](https://github.com/dblock/slack-strava/pull/297)) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/24: Redesign all website pages with shared navigation, fixed orange ribbon artwork derived from the logo, transparent branding, crisp install buttons, and expandable help while preserving OAuth and payment flows - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).

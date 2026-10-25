@@ -1,6 +1,23 @@
 require 'spec_helper'
 
 describe 'Website', :js, type: :feature do
+  it 'reloads generated CSS and loads its versioned artwork' do
+    visit '/'
+    page.refresh
+    image_path = "/img/screenshot-background.svg?v=#{Digest::SHA256.file('public/img/screenshot-background.svg').hexdigest}"
+    expect(page.evaluate_script("getComputedStyle(document.body, '::before').backgroundImage")).to include(image_path)
+    expect(page.evaluate_async_script(<<~JS, image_path)).to be true
+      const done = arguments[arguments.length - 1];
+      const image = new Image();
+      image.onload = () => done(image.naturalWidth > 0);
+      image.onerror = () => done(false);
+      image.src = arguments[0];
+    JS
+    expect(page).to have_css('.hero-preview img[src^="/img/notify.png?v="]') do |image|
+      image.evaluate_script('this.complete && this.naturalWidth === 1236 && this.naturalHeight === 919')
+    end
+  end
+
   it 'renders native install controls and transparent artwork' do
     visit '/'
 
