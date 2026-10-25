@@ -238,7 +238,7 @@ GEM
     rack-rewrite (1.5.1)
     rack-robotz (0.0.4)
       rack
-    rack-server-pages (0.2.1)
+    rack-server-pages (0.3.0)
       rack
     rack-test (2.3.0)
       rack (>= 1.3)
