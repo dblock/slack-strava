@@ -34,6 +34,10 @@ describe ActivityFields do
       expect { described_class.parse_s('All, elapsed time') }.to raise_error SlackStrava::Error, 'All cannot be used with other fields.'
     end
 
+    it 'cannot combine Default with explicit fields' do
+      expect { described_class.parse_s('Default, elapsed time') }.to raise_error SlackStrava::Error, 'Default cannot be used with other fields.'
+    end
+
     it 'removes duplicates' do
       expect(described_class.parse_s('elapsed time, Elapsed Time, Time')).to eq([ActivityFields::ELAPSED_TIME, ActivityFields::TIME])
     end

@@ -65,6 +65,66 @@ describe Team do
     end
   end
 
+  describe 'installation notifications and billing' do
+    describe '#inform_admin!' do
+      let(:team) { Fabricate(:team) }
+
+      it 'opens an admin DM and returns the posted message coordinates' do
+        allow(team.slack_client).to receive(:conversations_open).with(users: team.activated_user_id).and_return(Hashie::Mash.new(channel: { id: 'D-admin' }))
+        allow(team.slack_client).to receive(:chat_postMessage).with({ text: 'Subscription notice', channel: 'D-admin', as_user: true }).and_return('ts' => '123.456')
+        expect(team.inform_admin!(text: 'Subscription notice')).to eq(ts: '123.456', channel: 'D-admin')
+      end
+
+      it 'does not attempt to send without an installation owner' do
+        team.update_attributes!(activated_user_id: nil)
+        expect(team.slack_client).not_to receive(:conversations_open)
+        team.inform_admin!(text: 'Subscription notice')
+      end
+    end
+
+    describe '#bot_in_channel?' do
+      let(:team) { Fabricate(:team, bot_user_id: 'B-bot', activated_user_id: nil) }
+
+      it 'finds the bot on a later page of channel members' do
+        allow(team.slack_client).to receive(:conversations_members).with(channel: 'C1')
+                                                                   .and_yield(Hashie::Mash.new(members: ['U1']))
+                                                                   .and_yield(Hashie::Mash.new(members: ['B-bot']))
+        expect(team.bot_in_channel?('C1')).to be true
+      end
+
+      it 'returns false when all pages omit the bot' do
+        allow(team.slack_client).to receive(:conversations_members).with(channel: 'C1').and_yield(Hashie::Mash.new(members: ['U1']))
+        expect(team.bot_in_channel?('C1')).to be false
+      end
+    end
+
+    describe 'Stripe account details' do
+      let(:team) { Fabricate(:team, stripe_customer_id: 'cus-test') }
+
+      it 'formats paid and unpaid invoice amounts and dates' do
+        allow(Stripe::Customer).to receive(:retrieve).with('cus-test').and_return(Stripe::Customer.construct_from(id: 'cus-test'))
+        invoices = [true, false].map do |paid|
+          Stripe::Invoice.construct_from(amount_due: 999, created: Time.local(2026, 1, 15, 12).to_i, paid: paid)
+        end
+        allow(Stripe::Invoice).to receive(:list).with(customer: 'cus-test').and_return(invoices)
+        expect(team.stripe_customer_invoices_info).to eq [
+          'Invoice for $9.99 on January 15, 2026, paid.',
+          'Invoice for $9.99 on January 15, 2026, unpaid.'
+        ]
+      end
+
+      it 'describes generic and unrecognized payment sources without exposing their contents' do
+        allow(Stripe::Customer).to receive(:retrieve).with('cus-test').and_return(Stripe::Customer.construct_from(id: 'cus-test'))
+        sources = [Stripe::Source.construct_from(object: 'source', type: 'ideal'), Stripe::StripeObject.construct_from(object: 'unknown')]
+        allow(Stripe::Customer).to receive(:list_sources).with('cus-test').and_return(sources)
+        expect(team.stripe_customer_sources_info).to eq [
+          'Payment source registered (ideal).',
+          "On file a payment source I don't understand (unknown)."
+        ]
+      end
+    end
+  end
+
   describe '#admins' do
     let!(:team) { Fabricate(:team) }
     let!(:activated_user) { Fabricate(:user, team: team) }

@@ -192,6 +192,47 @@ describe Api::Endpoints::StravaEndpoint do
         context 'with an existing activity' do
           let!(:activity) { Fabricate(:user_activity, user: user, map: nil) }
 
+          [
+            ['inactive', { active: false }],
+            ['expired', { created_at: 3.weeks.ago }]
+          ].each do |state, attributes|
+            context "with an #{state} installation" do
+              before do
+                user.team.update_attributes!(attributes)
+              end
+
+              %w[update delete].each do |aspect|
+                it "acknowledges #{aspect} events without delivering or deleting messages" do
+                  expect_any_instance_of(User).not_to receive(:rebrag_activity!)
+                  expect_any_instance_of(UserActivity).not_to receive(:unbrag!)
+                  post '/api/strava/event',
+                       JSON.dump(event_data.merge(aspect_type: aspect, object_id: activity.strava_id, owner_id: user.athlete.athlete_id.to_s)),
+                       'CONTENT_TYPE' => 'application/json'
+                  expect(last_response.status).to eq 200
+                  expect(UserActivity.find(activity.id).strava_id).to eq activity.strava_id
+                end
+              end
+            end
+          end
+
+          it 'acknowledges and reports message deletion failures without deleting stored activity data' do
+            expect_any_instance_of(UserActivity).to receive(:unbrag!).and_raise(StandardError, 'Slack unavailable')
+            expect_any_instance_of(Logger).to receive(:warn).with(/Error deleting activity.*Slack unavailable/)
+            post '/api/strava/event',
+                 JSON.dump(event_data.merge(aspect_type: 'delete', object_id: activity.strava_id, owner_id: user.athlete.athlete_id.to_s)),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+            expect(UserActivity.find(activity.id)).not_to be_nil
+          end
+
+          it 'acknowledges deletion of an activity that is not stored' do
+            expect_any_instance_of(UserActivity).not_to receive(:unbrag!)
+            post '/api/strava/event',
+                 JSON.dump(event_data.merge(aspect_type: 'delete', object_id: 'missing', owner_id: user.athlete.athlete_id.to_s)),
+                 'CONTENT_TYPE' => 'application/json'
+            expect(last_response.status).to eq 200
+          end
+
           it 'rebrags the existing activity' do
             expect_any_instance_of(Logger).to receive(:info).with(/Updating activity/).and_call_original
             expect_any_instance_of(User).to receive(:rebrag_activity!) do |u, a|

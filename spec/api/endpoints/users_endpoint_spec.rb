@@ -6,6 +6,12 @@ describe Api::Endpoints::UsersEndpoint do
   context 'users' do
     let(:user) { Fabricate(:user) }
 
+    it 'does not connect a missing user' do
+      put "/api/users/#{BSON::ObjectId.new}", JSON.dump(code: 'code'), 'CONTENT_TYPE' => 'application/json'
+      expect(last_response.status).to eq 404
+      expect(JSON.parse(last_response.body)['error']).to eq 'Missing User'
+    end
+
     it 'connects a user to their Strava account', vcr: { cassette_name: 'strava/retrieve_access' } do
       expect_any_instance_of(User).to receive(:dm!).with(
         text: "Your Strava account has been successfully connected.\nI won't post any private activities, DM me `set private on` to toggle that and `help` for other options."
