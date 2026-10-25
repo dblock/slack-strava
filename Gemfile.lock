@@ -321,7 +321,7 @@ GEM
       activesupport
       hashie
       slack-ruby-client (>= 0.14.0)
-    slack-ruby-bot-server (2.2.0)
+    slack-ruby-bot-server (2.3.0)
       async
       foreman
       grape
@@ -421,7 +421,7 @@ DEPENDENCIES
   puma
   rack
   rack-robotz
-  rack-server-pages
+  rack-server-pages (~> 0.3.0)
   rack-test
   rackup
   rake (~> 13.0)
@@ -433,6 +433,7 @@ DEPENDENCIES
   ruby-enum
   selenium-webdriver
   simplecov
+  slack-ruby-bot-server (~> 2.3.0)
   slack-ruby-bot-server-mailchimp
   slack-ruby-bot-server-rtm
   strava-ruby-client

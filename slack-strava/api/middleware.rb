@@ -35,7 +35,9 @@ module Api
         use Rack::ConditionalGet
         use Rack::ETag
         use Rack::Robotz, 'User-Agent' => '*', 'Disallow' => '/api', 'Sitemap' => "#{SlackRubyBotServer::Service.url}/sitemap.xml"
-        use Rack::ServerPages
+        use Rack::ServerPages do |pages|
+          SlackRubyBotServer.config.server_pages&.call(pages)
+        end
 
         run Api::Middleware.new
       }.to_app

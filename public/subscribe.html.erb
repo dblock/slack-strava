@@ -16,7 +16,7 @@
         <button id='subscribeButton' class='stripe-button-el'>
           <span style='display: block; min-height: 30px;'>Pay $9.99 with Card</span>
         </button>
-        <p><img src="/img/stripe.png" width="119" height="26" alt="Powered by Stripe"></p>
+        <p><img src="<%=h asset_path('/img/stripe.png') %>" width="119" height="26" alt="Powered by Stripe"></p>
       </div>
       <script>
         $(document).ready(function() {
@@ -41,7 +41,7 @@
 
           var handler = StripeCheckout.configure({
             key: '<%= ENV['STRIPE_API_PUBLISHABLE_KEY'] %>',
-            image: '/img/icon.png',
+            image: <%= asset_path('/img/icon.png').to_json %>,
             locale: 'auto',
             token: function(token) {
               $.ajax({
