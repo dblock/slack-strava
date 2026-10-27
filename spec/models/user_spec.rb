@@ -660,6 +660,35 @@ describe User do
 
   describe '#with_strava_error_handler' do
     let(:user) { Fabricate(:user) }
+    let(:logger) { instance_double(Logger) }
+
+    [
+      Faraday::TimeoutError.new('request timed out'),
+      Slack::Web::Api::Errors::TimeoutError.new(nil),
+      Slack::Web::Api::Errors::SlackError.new('fatal_error')
+    ].each do |failure|
+      it "reports #{failure.class} without a response instead of masking the original error" do
+        allow(user).to receive(:logger).and_return(logger)
+        expect(logger).to receive(:warn).with(a_string_including(failure.message))
+        expect(NewRelic::Agent).to receive(:notice_error).with(
+          failure, custom_params: { team: user.team.to_s, response: { body: nil }, self: user.to_s }
+        )
+
+        expect { user.with_strava_error_handler { raise failure } }.not_to raise_error
+      end
+    end
+
+    it 'keeps the original Strava response body when reporting an upstream error' do
+      body = { 'message' => 'Service Unavailable', 'errors' => [] }
+      failure = Strava::Errors::Fault.new(503, body: body)
+      allow(user).to receive(:logger).and_return(logger)
+      expect(logger).to receive(:warn).with(a_string_including(failure.message, body.to_s))
+      expect(NewRelic::Agent).to receive(:notice_error).with(
+        failure, custom_params: { team: user.team.to_s, response: { body: body }, self: user.to_s }
+      )
+
+      expect { user.with_strava_error_handler { raise failure } }.not_to raise_error
+    end
 
     it 'reports rate limits and re-raises them so callers can back off' do
       response = { status: 429, body: { 'message' => 'Rate Limit Exceeded', 'errors' => [] }, response_headers: {} }
