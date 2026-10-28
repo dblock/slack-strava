@@ -29,7 +29,7 @@ gem 'slack-ruby-bot-server', '~> 2.3.0'
 gem 'slack-ruby-bot-server-mailchimp'
 gem 'slack-ruby-bot-server-rtm'
 gem 'strava-ruby-client'
-gem 'stripe', '~> 13.0'
+gem 'stripe', '~> 20.0'
 gem 'wannabe_bool'
 
 group :development, :test do
