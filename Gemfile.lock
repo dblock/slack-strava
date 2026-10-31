@@ -54,7 +54,7 @@ GEM
     crack (1.0.1)
       bigdecimal
       rexml
-    csv (3.3.6)
+    csv (3.3.7)
     dante (0.2.0)
     database_cleaner-core (2.0.1)
     database_cleaner-mongoid (2.0.1)
@@ -113,7 +113,7 @@ GEM
       thor (~> 1.4)
     gli (2.22.2)
       ostruct
-    grape (4.0.1)
+    grape (4.1.0)
       activesupport (>= 7.2)
       dry-configurable (>= 1.0)
       dry-types (>= 1.1)
@@ -219,7 +219,7 @@ GEM
       hashie
     ostruct (0.6.3)
     parallel (2.3.0)
-    parser (3.3.12.0)
+    parser (3.3.13.0)
       ast (~> 2.4.1)
       racc
     polylines (0.4.0)
@@ -231,7 +231,7 @@ GEM
     puma (8.0.2)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.2.7)
+    rack (3.2.8)
     rack-cors (3.0.0)
       logger
       rack (>= 3.0.14)
@@ -283,7 +283,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.7)
-    rubocop (1.92.1)
+    rubocop (1.92.2)
       json (>= 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -311,7 +311,7 @@ GEM
     ruby-progressbar (1.13.0)
     rubyzip (3.7.0)
     securerandom (0.4.1)
-    selenium-webdriver (4.51.0)
+    selenium-webdriver (4.52.0)
       base64 (~> 0.2)
       logger (~> 1.4)
       rubyzip (>= 1.2.2, < 4.0)
@@ -354,7 +354,7 @@ GEM
       faraday (>= 2.0)
       faraday-multipart (>= 1.0)
       hashie
-    stripe (13.5.1)
+    stripe (13.5.2)
     stripe-ruby-mock (5.0.0)
       dante (>= 0.2.0)
       drb (>= 2.0.4, < 3)
@@ -373,7 +373,7 @@ GEM
       unicode-emoji (~> 4.3)
     unicode-emoji (4.3.0)
     uri (1.1.2)
-    vcr (6.4.0)
+    vcr (6.4.1)
     wannabe_bool (0.7.1)
     webmock (3.34.0)
       addressable (>= 2.8.0)
