@@ -127,7 +127,7 @@ GEM
     grape-swagger (2.2.0)
       grape (>= 2.1, < 5.0)
     hashdiff (1.2.1)
-    hashie (5.2.0)
+    hashie (6.0.0)
       logger
     http-accept (1.7.0)
     http-cookie (1.1.6)
