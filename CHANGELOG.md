@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/11/20: Update dependencies to their latest minor versions on Ruby 4.0.10, including Faraday 2.15.1, Mongo 2.26.2, RSpec 3.13.7, RuboCop AST 1.53.0, and WebMock 3.36.0 ([#317](https://github.com/dblock/slack-strava/pull/317)) - [@dblock](https://github.com/dblock), [@Claude](https://claude.ai).
 * 2026/11/19: Upgrade Ruby to 4.0.10, synchronize the lockfile so frozen dependency installation succeeds, and include the Addressable, Hashdiff, RegexpParser, RuboCop, Selenium WebDriver, and WebMock updates from [#315](https://github.com/dblock/slack-strava/pull/315) ([#316](https://github.com/dblock/slack-strava/pull/316)) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/27: Preserve original Strava and Slack failures when an API error has no response instead of masking them with a nil-response exception during activity delivery ([#299](https://github.com/dblock/slack-strava/pull/299)) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
 * 2026/10/25: Upgrade slack-ruby-bot-server to 2.3 and rack-server-pages to 0.3; version website assets and nested ribbon artwork with revalidating template caching while preserving OAuth, payments, and API behavior - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
