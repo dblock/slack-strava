@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   RSpec:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: browser-actions/setup-firefox@latest
