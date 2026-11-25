@@ -1,5 +1,6 @@
 ### Changelog
 
+* 2026/11/25: Remove Renovate; dependencies are updated in periodic dependency sweeps ([#319](https://github.com/dblock/slack-strava/pull/319)) - [@dblock](https://github.com/dblock).
 * 2026/11/20: Update rack to 3.2.9 and httparty to 0.25.0 ([#318](https://github.com/dblock/slack-strava/pull/318)) - [@dblock](https://github.com/dblock).
 * 2026/11/20: Update dependencies to their latest minor versions on Ruby 4.0.10, including Faraday 2.15.1, Mongo 2.26.2, RSpec 3.13.7, RuboCop AST 1.53.0, and WebMock 3.36.0 ([#317](https://github.com/dblock/slack-strava/pull/317)) - [@dblock](https://github.com/dblock), [@Claude](https://claude.ai).
 * 2026/11/19: Upgrade Ruby to 4.0.10, synchronize the lockfile so frozen dependency installation succeeds, and include the Addressable, Hashdiff, RegexpParser, RuboCop, Selenium WebDriver, and WebMock updates from [#315](https://github.com/dblock/slack-strava/pull/315) ([#316](https://github.com/dblock/slack-strava/pull/316)) - [@dblock](https://github.com/dblock), [@Copilot](https://github.com/apps/copilot-swe-agent).
